@@ -92,11 +92,13 @@ namespace MetaRead
 
         public static FILETIME DateTimeToFILETIME(DateTime time)
         {
+
             FILETIME ft;
             var value = time.ToFileTimeUtc();
             ft.dwLowDateTime = (int)(value & 0xFFFFFFFF);
             ft.dwHighDateTime = (int)(value >> 32);
             return ft;
+
         }
 
         public static FILETIME ToFileTimeStructureUtc(DateTime dateTime)
