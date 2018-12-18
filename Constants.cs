@@ -24,7 +24,6 @@ namespace MetaRead
             return StructuralComparisons.StructuralEqualityComparer.Equals(a1, a2);
         }
 
-
         //public const String _empty_catalog_template = { 0xff, 0xff, 0xff, 0x7f, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         //const char _empty_catalog_template[16] = { 0xff, 0xff, 0xff, 0x7f, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         //char[] letters = { 'A', 'B', 'C' };

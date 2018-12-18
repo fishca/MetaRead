@@ -504,7 +504,7 @@ namespace MetaRead
 
         public void Flush()
         {
-            int _t = 0;
+            int _t  =  0;
             if (Flushed)
             {
                 return;

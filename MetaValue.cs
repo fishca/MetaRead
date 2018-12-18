@@ -16,6 +16,7 @@ namespace MetaRead
 
         public MetaValue()
         {
+
         }
 
         public MetaValue(MetaType _owner, String _name, String _ename, int _value) : base(_name, _ename)

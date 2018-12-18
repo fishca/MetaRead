@@ -12,7 +12,9 @@ namespace MetaRead
     public class Tree
     {
         public string Value;
+
         public Node_Type type;
+
         public int num_subnode; // количество подчиненных
         public Tree parent;     // +1
         public Tree next;       // 0

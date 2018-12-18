@@ -21,7 +21,6 @@ namespace MetaRead
         {
             MetaBase metaBase = new MetaBase("Справочник", "Reference");
             Text = metaBase.GetName(true);
-
         }
     }
 }

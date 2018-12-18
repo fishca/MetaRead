@@ -25,6 +25,7 @@ namespace MetaRead
         public bool iscatalog;
         public bool iscatalogdefined;
 
+
         public bool is_fatmodified;
         public bool is_emptymodified;
         public bool is_modified;

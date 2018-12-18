@@ -12,6 +12,7 @@ namespace MetaRead
         public MetaBase(String _name, String _ename)
         {
             Name = _name;
+
             Ename = _ename;
         }
 

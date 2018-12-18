@@ -54,7 +54,6 @@ namespace MetaRead
     public enum Version1C
     {
         v1C_min    = 0,
-
         v1C_8_0    = 1,
         v1C_8_1    = 2,
         v1C_8_2    = 3,
