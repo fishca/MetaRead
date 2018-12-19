@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices.ComTypes;
 using System.Globalization;
+using System.IO;
 using static MetaRead.Constants;
 
 namespace MetaRead
@@ -263,6 +264,48 @@ namespace MetaRead
             ;
         }
 
+        // читает блок из потока каталога stream_from, собирая его по страницам
+        public static Stream Read_Block(Stream stream_from, int start, Stream stream_to = null)
+        {
+            //char temp_buf[32]; - оригинал
+            byte[] temp_buf = new byte[32];
+
+            int len, curlen, pos, readlen;
+
+            if (stream_to == null)
+                stream_to = new MemoryStream();
+            stream_to.Seek(0, SeekOrigin.Begin);
+
+            if (start < 0 || start == 0x7fffffff || start > stream_from.Length)
+                return stream_to;
+
+            stream_from.Seek(0, SeekOrigin.Begin);
+            stream_from.Read(temp_buf, 0, 31);
+
+            len = hex_to_int(GetString(temp_buf).Substring(0, 2));
+            if (len == 0)
+                return stream_to;
+            
+            curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
+            start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
+
+            readlen = Math.Min(len, curlen);
+            stream_from.CopyTo(stream_to, readlen);
+
+            pos = readlen;
+            while (start != 0x7fffffff)
+            {
+                stream_from.Seek(start, SeekOrigin.Begin);
+                stream_from.Read(temp_buf, 0, 31);
+
+                curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
+                start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
+                readlen = Math.Min(len - pos, curlen);
+                stream_from.CopyTo(stream_to, readlen);
+                pos += readlen;
+            }
+            return stream_to;
+        }
 
     }
 }
