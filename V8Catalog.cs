@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using static MetaRead.APIcfBase;
 
 namespace MetaRead
 {
@@ -11,26 +12,151 @@ namespace MetaRead
     {
         public V8File File; // файл, которым является каталог. Для корневого каталога NULL
         public Stream Data; // поток каталога. Если file не NULL (каталог не корневой), совпадает с file->data
-        public Stream CFu; // поток файла cfu. Существует только при is_cfu == true
-        public void Initialize() { }
+        public Stream CFu;  // поток файла cfu. Существует только при is_cfu == true
+        
         public V8File First; // первый файл в каталоге
-        public V8File Last; // последний файл в каталоге
+        public V8File Last;  // последний файл в каталоге
+        
         //public std::map<String, v8file*> files; // Соответствие имен и файлов
         public SortedDictionary<String, V8File> Files; // Соответствие имен и файлов
-        public int start_empty; // начало первого пустого блока
-        public int page_size; // размер страницы по умолчанию
-        public int version; // версия
-        public bool zipped; // признак зазипованности файлов каталога
-        public bool is_cfu; // признак файла cfu (файл запакован deflate'ом)
-        public bool iscatalog;
-        public bool iscatalogdefined;
+
+        public int start_empty;       // начало первого пустого блока
+        public int page_size;         // размер страницы по умолчанию
+        public int version;           // версия
+        public bool zipped;           // признак зазипованности файлов каталога
+        public bool is_cfu;           // признак файла cfu (файл запакован deflate'ом)
+        public bool iscatalog;        // это признак каталога
+        public bool iscatalogdefined; // это признак определения каталога
 
 
-        public bool is_fatmodified;
-        public bool is_emptymodified;
-        public bool is_modified;
+        public bool is_fatmodified;    // признак модифицированности таблицы размещения
+        public bool is_emptymodified;  // признак модифицированности таблицы свободных блоков
+        public bool is_modified;       // признак модифицированности
 
-        public void FreeBlock(int start) { }
+        /// <summary>
+        /// Инициализация объекта 
+        /// </summary>
+        public void Initialize()
+        {
+            is_destructed = false;
+            Catalog_Header _ch = new Catalog_Header();
+            int _temp = 0;
+            string _name = "";
+            FAT_Item _fi;
+            //char* _temp_buf;
+            //byte[] _temp_buf = new byte[32];
+
+            MemoryStream _file_header = new MemoryStream();
+            Stream _fat  = null;
+            V8File _prev = null; 
+            V8File _file = null;
+            V8File f     = null;
+            int _countfiles = 0;
+
+            Data.Seek(0, SeekOrigin.Begin);
+
+            //Data.Read(&_ch, 16);
+            _ch = ReadFromData(Data);
+
+            start_empty = _ch.Start_Empty;
+            page_size   = _ch.Page_Size;
+            version     = _ch.Version;
+
+            First = null;
+
+            _prev = null;
+
+            try
+            {
+                if (Data.Length > 16)
+                {
+                    _fat = Read_Block(Data, 16);
+                    _fat.Seek(0, SeekOrigin.Begin);
+                    _countfiles = (int)_fat.Length / 12;
+                    for (int i = 0; i < _countfiles; i++)
+                    {
+                        _fi = ReadFatItemFromData(Data);
+
+                        Read_Block(Data, _fi.Header_Start, _file_header);
+
+                        _file_header.Seek(0, SeekOrigin.Begin);
+
+                        byte[] _temp_buf = new byte[_file_header.Length];
+
+                        // TODO: Надо пристально проверять что здесь происходит
+                        // _name = (wchar_t*)(_temp_buf + 20);
+                        _name = GetString(_temp_buf)[20].ToString();
+                        // TODO: Надо пристально проверять что здесь происходит
+                        //_file = new v8file(this, _name, _prev, _fi.data_start, _fi.header_start, (__int64*)_temp_buf, (__int64*)(_temp_buf + 8));
+                        _file = new V8File(this, _name, _prev, _fi.Data_Start, _fi.Header_Start, new DateTime(), new DateTime());
+                        if (_prev == null)
+                            First = _file;
+                        _prev = _file;
+                    }
+                    _file_header.Close();
+                    _fat.Close();
+                }
+            }
+            catch (Exception)
+            {
+                f = First;
+                while (f != null)
+                {
+                    f.Close();
+                    f = f.Next;
+                }
+                while (First != null)
+                {
+                    First.Close();
+                }
+                iscatalog = false;
+                iscatalogdefined = true;
+
+                First = null;
+                Last  = null;
+                start_empty = 0;
+                page_size   = 0;
+                version     = 0;
+                zipped = false;
+            }
+            Last = _prev;
+
+            is_fatmodified   = false;
+            is_emptymodified = false;
+            is_modified      = false;
+            is_destructed    = false;
+            flushed          = false;
+            leave_data       = false;
+        }
+
+        public void FreeBlock(int start)
+        {
+            //char temp_buf[32];
+            byte[] temp_buf = new byte[32];
+
+            int nextstart = 0;
+            int prevempty = 0;
+
+            if (start == 0)
+                return;
+            if (start == 0x7fffffff)
+                return;
+            
+            prevempty   = start_empty;
+            start_empty = start;
+
+            do
+            {
+                Data.Seek(0, SeekOrigin.Begin);
+                Data.Read(temp_buf, 0, 31);
+
+                // TODO: Надо проконтролировать
+                // nextstart = hex_to_int(&temp_buf[20]);
+                //curlen = hex_to_int(GetString(temp_buf).Substring(20, 20));
+                nextstart = hex_to_int(GetString(temp_buf).Substring(20, 20));
+
+            } while (start != 0x7fffffff);
+        }
 
         public int WriteBlock(Stream block, int start, bool use_page_size, int len = -1)  // возвращает адрес начала блока
         { return 0; }

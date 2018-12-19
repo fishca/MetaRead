@@ -10,26 +10,27 @@ using static MetaRead.Constants;
 
 namespace MetaRead
 {
+    [Serializable]
     public struct V8Header_Struct
     {
-        DateTime Time_Create;
-        DateTime Time_Modify;
-        int Zero;
+        public DateTime Time_Create;
+        public DateTime Time_Modify;
+        public int Zero;
     }
 
     public struct FAT_Item
     {
-        int Header_Start;
-        int Data_Start;
-        int ff; // всегда 7fffffff
+        public int Header_Start;
+        public int Data_Start;
+        public int ff; // всегда 7fffffff
     }
 
     public struct Catalog_Header
     {
-        int Start_Empty; // начало первого пустого блока
-        int Page_Size;   // размер страницы по умолчанию
-        int Version;     // версия
-        int Zero;        // всегда ноль?
+        public int Start_Empty; // начало первого пустого блока
+        public int Page_Size;   // размер страницы по умолчанию
+        public int Version;     // версия
+        public int Zero;        // всегда ноль?
     }
 
     public enum FileIsCatalog
@@ -306,6 +307,36 @@ namespace MetaRead
             }
             return stream_to;
         }
+
+        public static Catalog_Header ReadFromData(Stream Data)
+        {
+            Catalog_Header ch = new Catalog_Header();
+
+            using (BinaryReader reader = new BinaryReader(Data, Encoding.ASCII))
+            {
+                
+                ch.Start_Empty = reader.ReadInt32();
+                ch.Page_Size   = reader.ReadInt32();
+                ch.Version     = reader.ReadInt32();
+                ch.Zero        = reader.ReadInt32();
+
+            }
+            return ch;
+        }
+
+        public static FAT_Item ReadFatItemFromData(Stream Data)
+        {
+            FAT_Item ch = new FAT_Item();
+
+            using (BinaryReader reader = new BinaryReader(Data, Encoding.ASCII))
+            {
+                ch.Header_Start = reader.ReadInt32();
+                ch.Data_Start   = reader.ReadInt32();
+                ch.ff           = reader.ReadInt32();
+            }
+            return ch;
+        }
+
 
     }
 }
