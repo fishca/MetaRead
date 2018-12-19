@@ -129,6 +129,7 @@ namespace MetaRead
             leave_data       = false;
         }
 
+        // TODO: не забыть доделать
         public void FreeBlock(int start)
         {
             //char temp_buf[32];
@@ -212,9 +213,34 @@ namespace MetaRead
 
         public void SaveToDir(String DirName) { }
         public bool IsOpen() { return true; }
-        public void Flush() { }
-        public void HalfClose() { }
-        public void HalfOpen(String name) { }
+
+        public void Flush()
+        {
+
+        }
+
+        public void HalfClose()
+        {
+            Flush();
+            if (is_cfu)
+            {
+                CFu.Close();
+                CFu = null;
+            }
+            else
+            {
+                Data.Dispose();
+                Data = null;
+            }
+        }
+
+        public void HalfOpen(string name)
+        {
+            if (is_cfu)
+                CFu = new FileStream(name, FileMode.OpenOrCreate);
+            else
+                Data = new FileStream(name, FileMode.OpenOrCreate);
+        }
 
     }
 }

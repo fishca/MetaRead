@@ -286,9 +286,12 @@ namespace MetaRead
             len = hex_to_int(GetString(temp_buf).Substring(0, 2));
             if (len == 0)
                 return stream_to;
-            
-            curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
-            start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
+
+            //curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
+            curlen = hex_to_int(GetString(temp_buf).Substring(11, 11)); // скорее всего должно быть так
+
+            //start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
+            start = hex_to_int(GetString(temp_buf).Substring(20, 20));  // скорее всего должно быть так
 
             readlen = Math.Min(len, curlen);
             stream_from.CopyTo(stream_to, readlen);
@@ -337,6 +340,18 @@ namespace MetaRead
             return ch;
         }
 
+        public static MemoryStream WriteFatItemToStream(FAT_Item fi)
+        {
+            MemoryStream memoryStream = new MemoryStream();
+
+            using (BinaryWriter writer = new BinaryWriter(memoryStream, Encoding.ASCII))
+            {
+                writer.Write(fi.Header_Start);
+                writer.Write(fi.Data_Start);
+                writer.Write(fi.ff);
+            }
+            return memoryStream;
+        }
 
     }
 }
