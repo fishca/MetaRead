@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices.ComTypes;
+using System.Globalization;
 using static MetaRead.Constants;
 
 namespace MetaRead
@@ -157,6 +158,109 @@ namespace MetaRead
         public static void SetCurrentTime(Int64 v8t)
         {
             FileTimeToV8time(ToFileTimeStructure(DateTime.Now), ref v8t);
+        }
+
+        // string str = "1234abcd";
+        // byte[] test_str1 = APIcfBase.GetBytes(str);
+        // test_str1[0]  = 0x31
+        // test_str1[1]  = 0x00
+        // test_str1[2]  = 0x32
+        // test_str1[3]  = 0x00
+        // test_str1[4]  = 0x33
+        // test_str1[5]  = 0x00
+        // test_str1[6]  = 0x34
+        // test_str1[7]  = 0x00
+        // test_str1[8]  = 0x61
+        // test_str1[9]  = 0x00
+        // test_str1[10] = 0x62
+        // test_str1[11] = 0x00
+        // test_str1[12] = 0x63
+        // test_str1[13] = 0x00
+        // test_str1[14] = 0x64
+        // test_str1[14] = 0x00
+        public static byte[] GetBytes(string str)
+        {
+            byte[] bytes = new byte[str.Length * sizeof(char)];
+            System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+            return bytes;
+        }
+
+        public static string GetString(byte[] bytes)
+        {
+            char[] chars = new char[bytes.Length / sizeof(char)];
+            System.Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
+            return new string(chars);
+        }
+
+        public static int hex_to_int(string hexstr)
+        {
+            return Convert.ToInt32(hexstr, 16);
+        }
+
+        public static string int_to_hex(int dec)
+        {
+            return Convert.ToString(dec, 16);
+        }
+
+        public static byte[] ConvertHexStringToByteArray(string hexString)
+        {
+            if (hexString.Length % 2 != 0)
+            {
+                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hexString));
+            }
+
+            byte[] data = new byte[hexString.Length / 2];
+            for (int index = 0; index < data.Length; index++)
+            {
+                string byteValue = hexString.Substring(index * 2, 2);
+                data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            }
+
+            return data;
+        }
+
+        public static byte[] StringToByteArray(string hex)
+        {
+            return Enumerable.Range(0, hex.Length)
+                             .Where(x => x % 2 == 0)
+                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                             .ToArray();
+        }
+
+        // преобразует шестнадцатиричную восьмисимвольную строку в число
+        public static int hex_to_int(byte[] hexstr)
+        {
+
+            string syym = GetString(hexstr);
+
+            int res = 0;
+
+            int sym;
+
+            for (int i = 0; i < 8; i++)
+            {
+                //sym = hexstr[i];
+                sym = syym[i];
+                if (sym >= 'a')
+                {
+                    sym -= 'a' - '9' - 1;
+                }
+                else
+                {
+                    if (sym > '9')
+                        sym -= 'A' - '9' - 1;
+                }
+                sym -= '0';
+                res = (res << 4) | (sym & 0xf);
+
+            }
+            return res;
+        }
+
+        // преобразует число в шестнадцатиричную восьмисимвольную строку
+        public static void int_to_hex(byte[] hexstr, int dec)
+        {
+            ;
         }
 
 
