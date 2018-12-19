@@ -216,6 +216,44 @@ namespace MetaRead
 
         public void Flush()
         {
+            FAT_Item fi = new FAT_Item();
+            
+
+            if (flushed)
+            {
+                return;
+            }
+            flushed = true;
+
+            V8File f = First;
+            while (f != null)
+            {
+                f.Flush();
+                f = f.Next;
+            }
+
+            if (Data != null)
+            {
+                if (is_fatmodified)
+                {
+                    MemoryStream fat = new MemoryStream();
+                    fi.ff = 0x7fffffff;
+                    f = First;
+                    while (f != null)
+                    {
+                        fi.Header_Start = f.StartHeader;
+                        fi.Data_Start = f.StartData;
+                        fat = WriteFatItemToStream(fi);
+                        f = f.Next;
+                    }
+                    WriteBlock(fat, 16, true);
+                    is_fatmodified = false;
+                }
+                if (is_emptymodified)
+                {
+                    Data.Seek(0, SeekOrigin.Begin);
+                }
+            }
 
         }
 
