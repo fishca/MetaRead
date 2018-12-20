@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections.Specialized;
 
 namespace MetaRead
 {
@@ -66,6 +67,94 @@ namespace MetaRead
                 //}
             }
 
+            textBox1.Text += ("Новая текстовая строка"+Environment.NewLine);
+
+
+
         }
     }
+
+    public class Messager : MessageRegistrator
+    {
+        private string LogFile;
+        private TextBox MemoLog;
+        private string _s;
+
+        public Messager()
+        {
+        }
+
+        public Messager(string _logfile, TextBox _MemoLog)
+        {
+            SetLogFile(_logfile);
+            MemoLog = _MemoLog;
+        }
+
+        public void SetLogFile(string _logfile)
+        {
+            if (_logfile.Length > 0)
+            {
+                LogFile = Path.GetFullPath(_logfile);
+                if (File.Exists(LogFile))
+                    File.Delete(LogFile);
+            }
+            else
+                LogFile = _logfile;
+
+        }
+
+        public override void AddMessage(string message, MessageState mstate, StringCollection param = null)
+        {
+            string s = "";
+            s = DateTime.Now.ToString();
+            s += " ";
+            switch (mstate)
+            {
+                case MessageState.msEmpty:
+                    s += "<>";
+                    break;
+                case MessageState.msSuccesfull:
+                    s += "<ok>";
+                    break;
+                case MessageState.msWarning:
+                    s += "<warning>";
+                    break;
+                case MessageState.msInfo:
+                    s += "<info>";
+                    break;
+                case MessageState.msError:
+                    s += "<error>";
+                    break;
+                case MessageState.msWait:
+                    s += "<wait>";
+                    break;
+                case MessageState.msHint:
+                    s += "<hint>";
+                    break;
+                default:
+                    s += "<>";
+                    break;
+            }
+            s += " ";
+            s += message;
+            if (param != null)
+            {
+                for (int i = 0; i < param.Count; i++)
+                {
+                    s += (Environment.NewLine + "\t");
+                    s += param[i];
+                }
+            }
+            s += Environment.NewLine;
+            _s = s;
+        }
+
+        public override void Status(string message)
+        {
+            base.Status(message);
+        }
+
+    }
+
+
 }
