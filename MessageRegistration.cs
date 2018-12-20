@@ -20,6 +20,7 @@ namespace MetaRead
 
     public class MessageRegistrator
     {
+        // Признак отладочной информации
         private bool DebugMessage;
 
         public MessageRegistrator()
