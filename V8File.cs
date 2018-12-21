@@ -38,6 +38,9 @@ namespace MetaRead
 
         public bool SelfZipped; // Признак, что файл является запакованным независимо от признака zipped каталога
 
+        public V8File()
+        {
+        }
 
         public V8File(V8Catalog _parent, String _name, V8File _previous, int _start_data, int _start_header, DateTime _time_create, DateTime _time_modify)
         {

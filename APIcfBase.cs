@@ -82,6 +82,22 @@ namespace MetaRead
         }
     }
 
+    public enum file_format
+    {
+        ff_unknown, // неизвестный
+        ff_gif,     // GIF
+        ff_utf8,    // UTF-8
+        ff_pcx,     // PCX
+        ff_bmp,
+        ff_jpg,
+        ff_png,
+        ff_tiff,
+        ff_ico,
+        ff_wmf,
+        ff_emf,
+        ff_zip
+    }
+
     public class APIcfBase
     {
         public static readonly String str_cfu = ".cfu";
@@ -104,6 +120,25 @@ namespace MetaRead
 
         public static readonly Int64 EPOCH_START_WIN = 504911232000000;
         public static readonly Int32 HEX_INT_LEN = 2 * 2;
+
+        public static readonly char[] SIG_GIF87   = { 'G', 'I', 'F', '8', '7', 'a' }; // версия 87 года
+        public static readonly char[] SIG_GIF89   = { 'G', 'I', 'F', '8', '9', 'a' }; // версия 89 года
+        public static readonly byte[] SIG_UTF8    = { 0xEF, 0xBB, 0xBF };
+        public static readonly byte[] SIG_PCX25   = { 0x0a, 0x00, 0x01 }; // версия 2.5
+        public static readonly byte[] SIG_PCX28P  = { 0x0a, 0x02, 0x01 }; // версия 2.8  с информацией о палитре
+        public static readonly byte[] SIG_PCX28   = { 0x0a, 0x03, 0x01 }; // Версия 2.8 без информации о палитре
+        public static readonly byte[] SIG_PCX30   = { 0x0a, 0x05, 0x01 }; // Версия 3.0
+        public static readonly byte[] SIG_BMP     = { 0x42, 0x4d };
+        public static readonly byte[] SIG_JPG     = { 0xff, 0xd8, 0xff };
+        public static readonly byte[] SIG_PNG     = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52 };
+        public static readonly byte[] SIG_BIGTIFF = { 0x4D, 0x4D, 0x00, 0x2B };
+        public static readonly byte[] SIG_TIFFBE  = { 0x4D, 0x4D, 0x00, 0x2A };
+        public static readonly byte[] SIG_TIFFLE  = { 0x49, 0x49, 0x2A, 0x00 };
+        public static readonly byte[] SIG_ICO     = { 0x00, 0x00, 0x01, 0x00 };
+        public static readonly byte[] SIG_WMFOLD  = { 0x01, 0x00, 0x09, 0x00, 0x00, 0x03 };
+        public static readonly byte[] SIG_WMF     = { 0xD7, 0xCD, 0xC6, 0x9A, 0x00, 0x00 };
+        public static readonly byte[] SIG_EMF     = { 0x01, 0x00, 0x00, 0x00 };
+        public static readonly char[] SIG_ZIP     = { 'P', 'K' };
 
 
         public static FILETIME DateTimeToFILETIME(DateTime time)
@@ -668,6 +703,52 @@ namespace MetaRead
         }
         #endregion
 
+        public file_format get_file_format(Stream s)
+        {
+            byte[] buf = new byte[32];
+            int len;
+
+            s.Seek(0, SeekOrigin.Begin);
+            len = s.Read(buf, 0, 32);
+
+            if (len < 2)
+                return file_format.ff_unknown;
+
+            if (ByteArrayCompare(buf, SIG_BMP)) return file_format.ff_bmp;
+
+            if (ByteArrayCompare(buf, GetBytes(SIG_ZIP.ToString()))) return file_format.ff_zip;
+
+            if (len < 3) return file_format.ff_unknown;
+
+            if (ByteArrayCompare(buf, SIG_JPG))    return file_format.ff_jpg;
+            if (ByteArrayCompare(buf, SIG_UTF8))   return file_format.ff_utf8;
+            if (ByteArrayCompare(buf, SIG_PCX25))  return file_format.ff_pcx;
+            if (ByteArrayCompare(buf, SIG_PCX28P)) return file_format.ff_pcx;
+            if (ByteArrayCompare(buf, SIG_PCX28))  return file_format.ff_pcx;
+            if (ByteArrayCompare(buf, SIG_PCX30))  return file_format.ff_pcx;
+
+            if (len < 4) return file_format.ff_unknown;
+
+            if (ByteArrayCompare(buf, SIG_BIGTIFF)) return file_format.ff_tiff;
+            if (ByteArrayCompare(buf, SIG_TIFFBE))  return file_format.ff_tiff;
+            if (ByteArrayCompare(buf, SIG_TIFFLE))  return file_format.ff_tiff;
+            if (ByteArrayCompare(buf, SIG_ICO))     return file_format.ff_ico;
+            if (ByteArrayCompare(buf, SIG_EMF))     return file_format.ff_emf;
+
+            if (len < 6) return file_format.ff_unknown;
+
+            if (ByteArrayCompare(buf, GetBytes(SIG_GIF87.ToString())))  return file_format.ff_gif;
+            if (ByteArrayCompare(buf, GetBytes(SIG_GIF87.ToString())))  return file_format.ff_gif;
+
+            if (ByteArrayCompare(buf, SIG_WMFOLD)) return file_format.ff_wmf;
+            if (ByteArrayCompare(buf, SIG_WMF))    return file_format.ff_wmf;
+
+            if (len < 16) return file_format.ff_unknown;
+
+            if (ByteArrayCompare(buf, SIG_PNG)) return file_format.ff_png;
+
+            return file_format.ff_unknown;
+        }
 
     }
 }
