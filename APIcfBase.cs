@@ -89,8 +89,21 @@ namespace MetaRead
         public static readonly String str_cf = ".cf";
         public static readonly String str_epf = ".epf";
         public static readonly String str_erf = ".erf";
-
         public static readonly String str_backslash = "\\";
+
+        // шаблон заголовка блока
+        public static readonly String _BLOCK_HEADER_TEMPLATE = "\r\n00000000 00000000 00000000 \r\n";
+        public static readonly String _EMPTY_CATALOG_TEMPLATE = "FFFFFF7F020000000000";
+
+        public static readonly Int32  LAST_BLOCK  = 0x7FFFFFFF;
+        public static readonly UInt32 LAST_BLOCK2 = 0x7FFFFFFF;
+        public static readonly UInt32 BLOCK_HEADER_LEN    = 32U;
+        public static readonly Int32  BLOCK_HEADER_LEN2   = 32;
+        public static readonly UInt32 CATALOG_HEADER_LEN  = 16U;
+        public static readonly Int32  CATALOG_HEADER_LEN2 = 16;
+
+        public static readonly Int64 EPOCH_START_WIN = 504911232000000;
+        public static readonly Int32 HEX_INT_LEN = 2 * 2;
 
 
         public static FILETIME DateTimeToFILETIME(DateTime time)
@@ -352,6 +365,309 @@ namespace MetaRead
             }
             return memoryStream;
         }
+
+        #region InflateAndDeflate
+
+        /// <summary>
+        /// Распаковка
+        /// </summary>
+        /// <param name="compressedMemoryStream"></param>
+        /// <param name="outBufStream"></param>
+        /// <returns></returns>
+        public static bool Inflate(MemoryTributary compressedMemoryStream, out MemoryTributary outBufStream)
+        {
+            bool result = true;
+
+            outBufStream = new MemoryTributary();
+
+            try
+            {
+                compressedMemoryStream.Position = 0;
+                System.IO.Compression.DeflateStream decompressStream = new System.IO.Compression.DeflateStream(compressedMemoryStream, System.IO.Compression.CompressionMode.Decompress);
+                decompressStream.CopyTo(outBufStream);
+            }
+            catch (Exception ex)
+            {
+                outBufStream = compressedMemoryStream;
+                result = false;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Сжатие
+        /// </summary>
+        /// <param name="pDataStream"></param>
+        /// <param name="outBufStream"></param>
+        /// <returns></returns>
+        public static bool Deflate(MemoryTributary pDataStream, out MemoryTributary outBufStream)
+        {
+            bool result = true;
+
+            int DataSize = (int)pDataStream.Length;
+            outBufStream = new MemoryTributary();
+
+            pDataStream.Position = 0;
+            try
+            {
+                MemoryTributary srcMemStream = pDataStream;
+                {
+                    using (MemoryTributary compressedMemStream = new MemoryTributary())
+                    {
+                        using (System.IO.Compression.DeflateStream strmDef = new System.IO.Compression.DeflateStream(compressedMemStream, System.IO.Compression.CompressionMode.Compress))
+                        {
+                            srcMemStream.CopyTo(strmDef);
+                        }
+
+                        outBufStream = compressedMemStream;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                outBufStream = pDataStream;
+                result = false;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Распаковка произвольных файлов
+        /// </summary> 
+        public void Inflate(string in_filename, string out_filename, bool enableNewCode = true)
+        {
+            if (!File.Exists(in_filename))
+                throw new Exception("Input file not found!");
+
+            using (FileStream fileReader = File.Open(in_filename, FileMode.Open))
+            {
+                MemoryTributary memOutBuffer;
+                using (MemoryTributary memBuffer = new MemoryTributary())
+                {
+                    fileReader.CopyTo(memBuffer);
+
+                    bool success = Inflate(memBuffer, out memOutBuffer);
+                    if (!success)
+                        throw new Exception("Inflate error!");
+
+                    using (FileStream fileWriter = new FileStream(out_filename, FileMode.Create))
+                    {
+                        memOutBuffer.Position = 0;
+                        memOutBuffer.CopyTo(fileWriter);
+                    }
+                    memOutBuffer.Close();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Сжатие произвольных файлов
+        /// </summary>
+        public void Deflate(string in_filename, string out_filename, bool enableNewCode = true)
+        {
+            if (!File.Exists(in_filename))
+                throw new Exception("Input file not found!");
+
+            using (FileStream fileReader = File.Open(in_filename, FileMode.Open))
+            {
+                MemoryTributary memOutBuffer;
+                using (MemoryTributary memBuffer = new MemoryTributary())
+                {
+                    fileReader.CopyTo(memBuffer);
+
+                    bool success = Deflate(memBuffer, out memOutBuffer);
+                    if (!success)
+                        throw new Exception("Deflate error!");
+
+                    using (FileStream fileWriter = new FileStream(out_filename, FileMode.Create))
+                    {
+                        memOutBuffer.Position = 0;
+                        memOutBuffer.CopyTo(fileWriter);
+                    }
+                    memOutBuffer.Close();
+                }
+            }
+        }
+
+        #endregion
+
+
+        #region Service
+        /// <summary>
+        /// _httoi(Byte[] value) - преобразует массив Byte[] в целое значение 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static UInt32 _httoi(Byte[] value)
+        {
+            UInt32 result = 0;
+
+            string newByte = System.Text.Encoding.Default.GetString(value);
+            result = UInt32.Parse(newByte, System.Globalization.NumberStyles.HexNumber);
+
+            return result;
+        }
+
+        /// <summary>
+        /// _intTo_BytesChar - преобразует целое значение в массив Byte[]
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static Byte[] _intTo_BytesChar(UInt32 value)
+        {
+            string valueString = IntToHexString((int)value, 8).ToLower();
+            Byte[] resultBytes = new Byte[8];
+
+            for (int i = 0; i < valueString.Length; i++)
+                resultBytes[i] = Convert.ToByte(valueString[i]);
+
+            return resultBytes;
+        }
+
+        /// <summary>
+        /// _inttoBytes - преобразует целое значение в массив Byte[]
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static Byte[] _inttoBytes(UInt32 value)
+        {
+            string valueString = IntToHexString((int)value, 8).ToUpper();
+
+            Byte[] resultBytes = new Byte[8];
+
+            for (int i = 0; i < valueString.Length; i++)
+            {
+                switch (valueString[i])
+                {
+                    case 'A':
+                        resultBytes[i] = 10;
+                        break;
+                    case 'B':
+                        resultBytes[i] = 11;
+                        break;
+                    case 'C':
+                        resultBytes[i] = 12;
+                        break;
+                    case 'D':
+                        resultBytes[i] = 13;
+                        break;
+                    case 'E':
+                        resultBytes[i] = 14;
+                        break;
+                    case 'F':
+                        resultBytes[i] = 15;
+                        break;
+                    default:
+                        resultBytes[i] = (Byte)(Convert.ToByte(valueString[i]) - 0x30);
+                        break;
+                }
+            }
+
+            return resultBytes;
+        }
+
+        /// <summary>
+        /// IntToHexString - преобразование целого с определенной длиной в строку шестнадцатеричную
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="len"></param>
+        /// <returns></returns>
+        public static String IntToHexString(int n, int len)
+        {
+            Char[] ch = new Char[len--];
+            for (int i = len; i >= 0; i--)
+            {
+                ch[len - i] = ByteToHexChar((Byte)((uint)(n >> 4 * i) & 15));
+            }
+            return new String(ch);
+        }
+
+        public static Int32 HexStringToInt(String instr)
+        {
+            Int32 Result = 0;
+
+            Result = Convert.ToInt32(instr);
+
+            return Result;
+        }
+
+        /// <summary>
+        /// ByteToHexChar - перевод байта в шестнадцатеричный символ (a-f)
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Char ByteToHexChar(Byte b)
+        {
+            if (b < 0 || b > 15)
+                throw new Exception("IntToHexChar: input out of range for Hex value");
+            return b < 10 ? (Char)(b + 48) : (Char)(b + 55);
+        }
+
+        /// <summary>
+        /// ClearTempData - Очистка временного каталога
+        /// </summary>
+        /// <param name="tmpFolder"></param>
+        /// <param name="_tmpFolder"></param>
+        public static void ClearTempData(String tmpFolder = "", String _tmpFolder = "")
+        {
+            if (!String.IsNullOrEmpty(tmpFolder))
+            {
+                try
+                {
+                    Directory.Delete(_tmpFolder, true);
+                }
+                catch
+                {
+                }
+            }
+
+            String V8FormatsTmp = String.Format("{0}V8Formats{1}", Path.GetTempPath(), Path.DirectorySeparatorChar);
+            if (Directory.Exists(V8FormatsTmp))
+            {
+                string[] foundDirectories = Directory.GetDirectories(V8FormatsTmp);
+                foreach (string dirFullname in foundDirectories)
+                {
+                    try
+                    {
+                        DirectoryInfo tmpDir = new DirectoryInfo(dirFullname);
+                        if (tmpDir.CreationTime < DateTime.Now.AddHours(-1))
+                        {
+                            tmpDir.Delete(true);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Определяет размер каталога
+        /// </summary>
+        /// <param name="d"></param>
+        /// <returns></returns>
+        public static long DirSize(DirectoryInfo d)
+        {
+            long Size = 0;
+            // Добавляем размер файлов
+            FileInfo[] fis = d.GetFiles();
+            foreach (FileInfo fi in fis)
+            {
+                Size += fi.Length;
+            }
+            // Добавляем размер подкаталогов
+            DirectoryInfo[] dis = d.GetDirectories();
+            foreach (DirectoryInfo di in dis)
+            {
+                Size += DirSize(di);
+            }
+            return (Size);
+        }
+        #endregion
+
 
     }
 }

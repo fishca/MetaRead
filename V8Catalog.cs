@@ -175,11 +175,104 @@ namespace MetaRead
         public bool flushed; // признак, что происходит сброс
         public bool leave_data; // признак, что не нужно удалять основной поток (data) при уничтожении объекта
 
+        /// <summary>
+        /// создать каталог из файла
+        /// </summary>
+        /// <param name="f"></param>
         public V8Catalog(V8File f) // создать каталог из файла
-        { }
+        {
+            is_cfu = false;
+            iscatalogdefined = false;
+            File = f;
 
+            File.Open();
+            Data = File.Data;
+            zipped = false;
+
+            if (IsCatalog()) Initialize();
+            else
+            {
+                First = null;
+                Last = null;
+                start_empty = 0;
+                page_size = 0;
+                version = 0;
+                zipped = false;
+
+                is_fatmodified = false;
+                is_emptymodified = false;
+                is_modified = false;
+                is_destructed = false;
+                flushed = false;
+                leave_data = false;
+            }
+
+        }
+
+        /// <summary>
+        /// создать каталог из физического файла (cf, epf, erf, hbk, cfu)
+        /// </summary>
+        /// <param name="name"></param>
         public V8Catalog(String name) // создать каталог из физического файла (cf, epf, erf, hbk, cfu)
-        { }
+        {
+            iscatalogdefined = false;
+
+            String ext = Path.GetExtension(name).ToLower();
+            if (ext == str_cfu)
+            {
+                is_cfu = true;
+                zipped = false;
+                //data = new MemoryStream();
+                Data = new MemoryTributary();
+                if (!System.IO.File.Exists(name))
+                {
+                    //data.WriteBuffer(_EMPTY_CATALOG_TEMPLATE, CATALOG_HEADER_LEN);
+                    Data.Write(StringToByteArray(_EMPTY_CATALOG_TEMPLATE), 0, CATALOG_HEADER_LEN2);
+                    CFu = new FileStream(name, FileMode.Create);
+                }
+                else
+                {
+                    CFu = new FileStream(name, FileMode.Append);
+                    // Inflate((MemoryTributary)cfu, out data); TODO надо дорабатывать обязательно
+                }
+            }
+            else
+            {
+                zipped = ext == str_cf || ext == str_epf || ext == str_erf || ext == str_cfe;
+                is_cfu = false;
+
+                if (!System.IO.File.Exists(name))
+                {
+                    FileStream data1 = new FileStream(name, FileMode.Create);
+                    data1.Write(StringToByteArray(_EMPTY_CATALOG_TEMPLATE), 0, CATALOG_HEADER_LEN2);
+                    //data1 = null;
+                    data1.Dispose();
+                }
+                Data = new FileStream(name, FileMode.Append);
+            }
+
+            File = null;
+            if (IsCatalog()) Initialize();
+            else
+            {
+                First = null;
+                Last = null;
+                start_empty = 0;
+                page_size = 0;
+                version = 0;
+                zipped = false;
+
+                is_fatmodified = false;
+                is_emptymodified = false;
+                is_modified = false;
+                is_destructed = false;
+                flushed = false;
+                leave_data = false;
+            }
+
+            CFu.Dispose();
+            Data.Dispose();
+        }
 
         public V8Catalog(String name, bool _zipped) // создать каталог из физического файла (cf, epf, erf, hbk, cfu)
         { }

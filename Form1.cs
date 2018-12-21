@@ -10,6 +10,9 @@ using System.Windows.Forms;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Specialized;
+using NLog;
+using NLog.Targets;
+using NLog.Config;
 
 namespace MetaRead
 {
@@ -68,9 +71,29 @@ namespace MetaRead
             }
 
             textBox1.Text += ("Новая текстовая строка"+Environment.NewLine);
+            // Example usage
+            Logger logger = LogManager.GetLogger("Example");
+            logger.Trace("trace log message");
+            logger.Debug("debug log message");
+            logger.Info("info log message");
+            logger.Warn("warn log message");
+            logger.Error("error log message");
+            logger.Fatal("fatal log message");
 
 
+        }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            var config = new NLog.Config.LoggingConfiguration();
+
+            var logfile = new NLog.Targets.FileTarget("logfile") { FileName = "log_file.txt" };
+            var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
+
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
+
+            NLog.LogManager.Configuration = config;
         }
     }
 
