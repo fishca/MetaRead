@@ -8,20 +8,51 @@ namespace MetaRead
 {
     public class MetaBase
     {
-        public MetaBase() { }
-        public MetaBase(String _name, String _ename)
-        {
-            Name = _name;
+        private string fname;
+        private string fename;
 
-            Ename = _ename;
+        public MetaBase() { }
+        public MetaBase(string _name, string _ename)
+        {
+            fname  = _name;
+            fename = _ename;
         }
 
-        public String Name { get; set; }
-        public String Ename { get; set; }
+        public string Name
+        {
+            get
+            {
+                return GetName();
+            }
+            set
+            {
+                SetName(value);
+            }
+        }
+
+        public string EName
+        {
+            get
+            {
+                return GetName();
+            }
+            set
+            {
+                SetName(value);
+            }
+        }
 
         public String GetName(bool english = false)
         {
-            return english ? Ename : Name;
+            return english ? fename : fname;
+        }
+
+        public void SetName(string _name, bool english = false)
+        {
+            if (english)
+                fename = _name;
+            else
+                fname = _name;
         }
     }
 }

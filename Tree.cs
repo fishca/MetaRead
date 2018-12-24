@@ -210,7 +210,7 @@ namespace MetaRead
             return p;
         }
 
-        public Node_Type ClassificationValue(string Value)
+        public static Node_Type ClassificationValue(string Value)
         {
             string exp_number     = "^-?\\d+$";
             string exp_number_exp = "^-?\\d+(\\.?\\d*)?((e|E)-?\\d+)?$";
@@ -246,7 +246,7 @@ namespace MetaRead
             return Node_Type.nd_unknown;
         }
 
-        public Tree Parse_1Cstream(Stream str, string err, string path)
+        public static Tree Parse_1Cstream(Stream str, string err, string path)
         {
             StringBuilder __curvalue__ = new StringBuilder("");
 

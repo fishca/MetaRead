@@ -750,5 +750,11 @@ namespace MetaRead
             return file_format.ff_unknown;
         }
 
+        public static bool string_to_GUID(string str, ref Guid guid)
+        {
+            guid = new Guid(str);
+            return true;
+        }
+
     }
 }

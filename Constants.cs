@@ -92,7 +92,9 @@ namespace MetaRead
 
         public static readonly String NODE_GENERAL = "9cd510cd-abfc-11d4-9434-004095e12fc7";
 
+        public static Guid EmptyUID = new Guid();
 
+        public static readonly UInt32 maxStringLength = 4096;
 
 
         //public const String _empty_catalog_template = { 0xff, 0xff, 0xff, 0x7f, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };

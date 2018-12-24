@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using static MetaRead.Constants;
+
 
 
 namespace MetaRead
@@ -238,341 +240,39 @@ namespace MetaRead
 
     #endregion
 
+    #region Преобразование_в_Union
+    // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/attributes/how-to-create-a-c-cpp-union-by-using-attributes
+    //    typedef union byte_array
+    //    {
+    //     struct{
+    //        byte byte1; byte byte2; byte byte3; byte byte4;
+    //           };
+    //     struct{
+    //        int int1; int int2;
+    //           };
+    //   };byte_array
+
+    // Add a using directive for System.Runtime.InteropServices.  
+
+    // [System.Runtime.InteropServices.StructLayout(LayoutKind.Explicit)]
+    // struct TestUnion
+    // {
+    //     [System.Runtime.InteropServices.FieldOffset(0)]
+    //     public int i;
+    // 
+    //     [System.Runtime.InteropServices.FieldOffset(0)]
+    //     public double d;
+    // 
+    //     [System.Runtime.InteropServices.FieldOffset(0)]
+    //     public char c;
+    // 
+    //     [System.Runtime.InteropServices.FieldOffset(0)]
+    //     public byte b;
+    // }
 
 
 
-    //---------------------------------------------------------------------------
-    // Свойство метаданных
-    public class MetaProperty : MetaBase
-    {
-        public List<MetaType> ftypes;
-        public List<String> fstypes;
-        public MetaType owner;
-        public bool fpredefined;
-        public ExportType fexporttype;
-        public Class f_class;
-
-        public DefaultValueType defaultvaluetype;
-
-        /* пока непонятно на что заменить
-        union
-	    {
-		  bool dv_bool;
-          int dv_number;
-          String* dv_string;
-          char dv_date[7];
-          MetaType* dv_type;
-          MetaValue* dv_enum;
-        }
-        */
-
-        public MetaProperty(MetaType _owner, String _name, String _ename) : base(_name, _ename)
-        {
-            owner = _owner;
-        }
-        public MetaProperty(MetaType _owner, Tree tr)
-        {
-            owner = _owner;
-        }
-
-        public void FillTypes()
-        { }
-
-        public List<MetaType> Types
-        {
-            get { return ftypes; }
-        }
-
-        public MetaType GetOwner()
-        {
-            return owner;
-        }
-
-        public bool Predefined
-        {
-            get
-            {
-                return fpredefined; 
-            }
-        }
-
-        public ExportType Exporttype
-        {
-            get { return fexporttype; }
-        }
-
-        public Class _class
-        {
-            get { return f_class; }
-        }
-
-
-    }
-
-    //---------------------------------------------------------------------------
-    // Сравнение свойств метаданных
-    public static class MetaPropertyLess
-    {
-        public static bool Less(MetaProperty l, MetaProperty r)
-        {
-            return String.Compare(l.Name, r.Name) < 0 ? true : false;
-        }
-    }
-
-
-    public class Value1C_metaobj
-    {
-    }
-
-    //---------------------------------------------------------------------------
-    // Объект метаданных
-    public class MetaObject : MetaBase
-    {
-        public String ffullname;
-        public String fefullname;
-        public Guid fuid;
-        public Value1C_metaobj fvalue;
-
-        public static SortedDictionary<Guid, MetaObject> map;
-        public static SortedDictionary<String, MetaObject> smap;
-
-        public MetaObject(Guid _uid, Value1C_metaobj _value)
-        {
-            fuid = _uid;
-            fvalue = _value;
-        }
-
-        public MetaObject(Guid _uid, Value1C_metaobj _value, String _name, String _ename) : base(_name,_ename)
-        {
-            fuid = _uid;
-            fvalue = _value;
-        }
-
-        void SetFullName(String _fullname)
-        {
-            ffullname = _fullname;
-        }
-
-        void SetEfullName(String _efullname)
-        {
-            fefullname = _efullname;
-        }
-
-        public String FullName
-        {
-            get
-            {
-                return ffullname;
-            }
-        }
-
-        public String EfullName
-        {
-            get
-            {
-                return fefullname;
-            }
-        }
-
-        public Guid UID
-        {
-            get
-            {
-                return fuid;
-            }
-        }
-
-        // Value1C_metaobj* value
-        public Value1C_metaobj Value
-        {
-            get
-            {
-                return fvalue;
-            }
-        }
-
-        public String GetFullName(bool english = false)
-        {
-            return english ? fefullname : ffullname;
-        }
-
-
-    }
-
-    //---------------------------------------------------------------------------
-    // Генерируемый тип
-    public class MetaGeneratedType : MetaBase
-    {
-        public bool fwoprefix; // Признак "Без префикса"
-
-        public bool Woprefix
-        {
-            get { return fwoprefix; }
-        }
-
-        public MetaGeneratedType(String _name, String _ename, bool _pref = false) : base(_name, _ename)
-        {
-            fwoprefix = _pref;
-        }
-
-        public MetaGeneratedType(Tree tr)
-        { }
-
-    }
-
-    //---------------------------------------------------------------------------
-    // Право
-    public class MetaRight : MetaBase
-    {
-        public Guid fuid;
-        public Version1C fver1C;
-
-        public static SortedDictionary<Guid, MetaRight> map;
-        public static SortedDictionary<String, MetaRight> smap;
-
-        public MetaRight(Tree tr)
-        { }
-
-        public static MetaRight GetRight(Guid _uid)
-        {
-            return null;
-        }
-
-        public static MetaRight GetRight(String _name)
-        {
-            return null;
-        }
-
-        public Guid UID
-        {
-            get
-            {
-                return fuid;
-            }
-        }
-
-        public Version1C Ver1C
-        {
-            get
-            {
-                return fver1C;
-            }
-        }
-
-    }
-
-    //---------------------------------------------------------------------------
-    // Стандартный реквизит
-    public class MetaStandartAttribute : MetaBase
-    {
-        public int fvalue;
-        public bool fcount;
-        public int fvaluemax;
-        public Guid fuid;
-
-        public MetaStandartAttribute(String _name, String _ename, bool _count = false) : base(_name, _ename)
-        {
-            fcount = _count;
-        }
-        public MetaStandartAttribute(Tree tr)
-        { }
-
-        public int Value
-        {
-            get
-            {
-                return fvalue; 
-            }
-        }
-        public bool Count
-        {
-            get
-            {
-                return fcount;
-            }
-        }
-        public int ValueMax
-        {
-            get
-            {
-                return fvaluemax;
-            }
-        }
-        public Guid UID
-        {
-            get
-            {
-                return fuid;
-            }
-        }
-
-    }
-
-    //---------------------------------------------------------------------------
-    // Стандартная табличная часть
-    public class MetaStandartTabularSection : MetaBase
-    {
-        public int fvalue;
-        public Class f_class;
-
-        public Guid class_uid;
-
-        public static List<MetaStandartTabularSection> list;
-
-        public MetaStandartTabularSection(String _name, String _ename) : base(_name, _ename)
-        {
-            f_class = null;
-            class_uid = new Guid(); /* Пустой УИД */
-        }
-        public MetaStandartTabularSection(Tree tr)
-        { }
-
-        public int Value
-        {
-            get
-            {
-                return fvalue;
-            }
-        }
-        public Class _class
-        {
-            get
-            {
-                return f_class;
-            }
-            set
-            {
-                f_class = value;
-            }
-        }
-
-    }
-
-    //---------------------------------------------------------------------------
-    // Параметры классов
-    public class ClassParameter
-    {
-        public String fname;
-        public static SortedDictionary<String, ClassParameter> map;
-
-        public ClassParameter(Tree tr)
-        {
-
-        }
-
-        public String Name
-        {
-            get
-            {
-                return fname;
-            }
-        }
-
-        public static ClassParameter GetParam(String paramname)
-        {
-            return null;
-        }
-    }
+    #endregion
 
     //---------------------------------------------------------------------------
     // Допустимое значение переменной дерева сериализации
@@ -583,100 +283,20 @@ namespace MetaRead
         public int globalvalue;
     }
 
-    //---------------------------------------------------------------------------
-    // Классы
-    public class Class : MetaBase
+
+
+    public class Value1C_metaobj
     {
-        public Guid fuid;
-        public List<VarValidValue> fvervalidvalues;
-        public SortedDictionary<ClassParameter, int> fparamvalues;
-        public static SortedDictionary<Guid, Class> map;
-        public List<MetaStandartAttribute> fstandartattributes; // Стандартные реквизиты
-        public List<MetaStandartTabularSection> fstandarttabularsections; // Стандартные табличные части
-
-        public Class(Tree tr)
-        { }
-
-        public Guid UID
-        {
-            get
-            {
-                return fuid;
-            }
-        }
-
-        public List<VarValidValue> vervalidvalues
-        {
-            get
-            {
-                return fvervalidvalues;
-            }
-        }
-
-        public SortedDictionary<ClassParameter, int> paramvalues
-        {
-            get
-            {
-                return fparamvalues;
-            }
-        }
-
-        public List<MetaStandartAttribute> standartattributes
-        {
-            get
-            {
-                return fstandartattributes;
-            }
-        }
-
-        public List<MetaStandartTabularSection> standarttabularsections
-        {
-            get
-            {
-                return fstandarttabularsections;
-            }
-        }
-
-        public int GetParamValue(ClassParameter p)
-        {
-            return 0;
-        }
-
-        public static Class GetClass(Guid id)
-        {
-            return null;
-        }
-
-
     }
 
-    //---------------------------------------------------------------------------
-    // Экземпляр класса
-    public class ClassItem
-    {
-        public Class fcl;
-        public bool fversionisset;
-        public int fversion;
 
-        public ClassItem(Class _cl, bool fverset = false)
-        {
-            fcl = _cl;
-            fversionisset = fverset;
 
-        }
 
-        public Class Cl
-        {
-            get { return fcl; }
-        }
 
-        public int Version
-        {
-            get { return fversion; }
-            set { fversion = value; }
-        }
 
-    }
+
+
+
 
 
 
@@ -728,254 +348,7 @@ namespace MetaRead
 
     }
 
-    /// <summary>
-    /// Тип метаданных
-    /// </summary>
-    public class MetaType : MetaBase
-    {
-        private void Init()
-        {
-        }
 
-        public MetaTypeSet typeSet; // набор типов, которому принадлежит этот тип
-        public Guid fuid;                  // УИД типа
-        public bool fhasuid;               // Признак наличия УИД
-        public String fmetaname;
-        public String femetaname;
-        public String fgentypeprefix;
-        public String fegentypeprefix;
-
-        public uint fserialization_ver; // Вариант сериализации
-        public int fimageindex;         // индекс картинки
-        public uint fprenameindex;      // Индекс колонки имя предопределенного
-        public uint fpreidindex;        // ИндексКолонкиИДПредопределенного
-
-        //public std::vector<MetaProperty*> fproperties; // Свойства
-
-        //std::map<Key, Value> → SortedDictionary<TKey, TValue>
-        //std::unordered_map<Key, Value> → Dictionary<TKey, TValue>
-
-        public List<MetaProperty> fproperties; // Свойства
-
-        public SortedDictionary<String, MetaProperty> fproperties_by_name; // Соответствие имен (русских и английских) свойствам
-
-        public List<MetaValue> fvalues;  // Предопределенные значения типа
-
-        public SortedDictionary<int, MetaValue> fvalues_by_value; // Соответствие числовых значений предопределенным значениям
-
-        public SortedDictionary<String, MetaValue> fvalues_by_name; // Соответствие имен (русских и английских) предопределенным значениям
-
-        public List<MetaType> fcollectiontypes; // Типы элементов коллекции
-        public List<String> fscollectiontypes; // Имена типов элементов коллекции
-
-        public List<MetaGeneratedType> fgeneratedtypes; // Генерируемые типы
-
-        public bool fmeta; // Признак объекта метаданных
-
-        public ExportType fexporttype;
-
-        public Class fdefaultclass;
-        
-        // Дерево сериализации
-        public List<SerializationTreeVar> fserializationvars;
-        public SerializationTreeNode fserializationtree; // Если NULL - дерева сериализации нет
-        public List<ExternalFile> fexternalfiles;
-
-        public MetaType(MetaTypeSet _typeSet, String _name, String _ename, String _metaname, String _emetaname, String _uid)
-        { }
-
-        public MetaType(MetaTypeSet _typeSet, String _name, String _ename, String _metaname, String _emetaname, Guid _uid)
-        { }
-
-        public MetaGeneratedType gentypeRef; // генерируемый тип Ссылка
-        public MetaType(MetaTypeSet _typeSet, Tree tr)
-        { }
-
-        public String Metaname
-        {
-            get { return fmetaname; }
-        }
-        public String Emetaname
-        {
-            get { return femetaname; }
-        }
-        public String GenTypePrefix
-        {
-            get { return fgentypeprefix; }
-        }
-        public String EgenTypePrefix
-        {
-            get { return fegentypeprefix; }
-        }
-
-        public bool HasUid
-        {
-            get { return fhasuid; }
-        }
-        public uint Serialization_Ver
-        {
-            get { return fserialization_ver; }
-        }
-        public int ImageIndex
-        {
-            get { return fimageindex; }
-        }
-        public uint PreNameIndex
-        {
-            get { return fprenameindex; }
-        }
-        public uint PreIdIndex
-        {
-            get { return fpreidindex; }
-        }
-        public List<MetaProperty> Properties
-        {
-            get { return fproperties; }
-        }
-        public List<MetaValue> Values
-        {
-            get { return fvalues; }
-        }
-
-        public List<MetaType> CollectionTypes
-        {
-            get { return fcollectiontypes; }
-        }
-
-        public List<MetaGeneratedType> GeneratedTypes
-        {
-            get { return fgeneratedtypes; }
-        }
-
-        public MetaTypeSet TypeSet
-        {
-            get { return typeSet; }
-        }
-
-        public List<SerializationTreeVar> SerializationVars
-        {
-            get { return fserializationvars; }
-        }
-
-        public SerializationTreeNode SerializationTree
-        {
-            get { return fserializationtree; }
-        }
-
-        public List<ExternalFile> ExternalFiles
-        {
-            get { return fexternalfiles; }
-        }
-
-        public bool Meta
-        {
-            get { return fmeta; }
-        }
-
-        public ExportType ExportType
-        {
-            get { return fexporttype; }
-        }
-
-        public Class DefaultClass
-        {
-            get { return fdefaultclass; }
-        }
-
-        public MetaProperty GetProperty(String n)
-        { return null; }
-
-        public MetaProperty GetProperty(int index)
-        { return null; }
-
-        public MetaProperty GetValue(String n)
-        { return null; }
-
-        public MetaProperty GetValue(int value)
-        { return null; }
-
-        public int NumberOfProperties()
-        { return 0; }
-
-        public void FillCollectionTypes() { } // Заполнить типы элементов коллекции по их именам (по fscollectiontypes заполнить fcollectiontypes)
-
-        public String GetMetaName(bool english = false)
-        {
-            return english ? femetaname : fmetaname;
-        }
-
-
-    }
-
-    //---------------------------------------------------------------------------
-    // Набор типов метаданных (статических или генерируемых)
-    public class MetaTypeSet
-    {
-        public SortedDictionary<String, MetaType> mapname; // соответствие имен (русских и английских) типам
-        public SortedDictionary<Guid, MetaType> mapuid;    // соответствие идентификаторов типам
-        public List<MetaType> alltype;                     // массив всех типов
-
-
-        public static MetaTypeSet staticTypes; // Cтатические типы
-        // Пустой тип
-        public static MetaType mt_empty;
-        // Примитивные типы
-        public static MetaType mt_string;
-        public static MetaType mt_number;
-        public static MetaType mt_bool;
-        public static MetaType mt_date;
-        public static MetaType mt_undef;
-        public static MetaType mt_null;
-        public static MetaType mt_type;
-        // УникальныйИдентификатор
-        public static MetaType mt_uid;
-        // ОписаниеТипаВнутр
-        public static MetaType mt_typedescrinternal;
-        // Двоичные данные
-        public static MetaType mt_binarydata;
-        // Произвольный тип
-        public static MetaType mt_arbitrary;
-        // Корневой тип
-        public static MetaType mt_container;
-        public static MetaType mt_config;
-        // Псевдо-тип Стандартный атрибут
-        public static MetaType mt_standart_attribute;
-        // Псевдо-тип Стандартная табличная часть
-        public static MetaType mt_standart_tabular_section;
-        // Значения частей даты для квалификатора даты
-        public static MetaValue mv_datefractionsdate;
-        public static MetaValue mv_datefractionstime;
-        // Тип ЧастиДаты
-        public static MetaType mt_datefractions;
-        // Свойство ЧастиДаты типа КвалификаторыДаты
-        public static MetaProperty mp_datefractions;
-        // ОбъектМетаданных: ТабличнаяЧасть
-        public static MetaType mt_tabularsection;
-        // ОбъектМетаданных: Реквизит
-        public static MetaType mt_attribute;
-        // ОбъектМетаданныхСсылка
-        public static MetaType mt_metaobjref;
-        // ОбъектМетаданныхСсылкаВнутр
-        public static MetaType mt_metarefint; // специальный тип для свойств с галочкой Ссылка в деревьях сериализации
-                                               // ТабличнаяЧасть
-        public static MetaType mt_tabsection;
-        // МетаСсылка
-        public static MetaType mt_metaref;
-
-        public MetaTypeSet() { }
-        public MetaType GetTypeByName(String n) { return null; } // Получить тип по имени
-        public MetaType GetTypeByUID(Guid u) { return null; } // Получить тип по УИД
-
-        public void FillAll() { }
-        public void Add(MetaType t) { }
-
-        public static void StaticTypesLoad(Stream str) { }
-        public int Number() { return 0; }
-
-        public MetaType GetType(int indes) { return null; }
-
-
-    }
 
 
 
