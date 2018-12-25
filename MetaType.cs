@@ -194,6 +194,35 @@ namespace MetaRead
             typeSet.Add(this);
         }
 
+        public void setSerializationTree(Tree tr)
+        {
+            Tree t;
+            int num, i;
+
+            // Переменные дерева сериализации
+            t = tr.Get_First();
+            num = Convert.ToInt32( t.Get_Value() );
+            for (i = 0; i < num; ++i)
+            {
+                t = t.Get_Next();
+                fserializationvars.Add(new SerializationTreeVar(t));
+            }
+
+            // Дерево сериализации
+            tr = tr.Get_Next();
+            t = tr.Get_First();
+            fserializationtree = SerializationTreeNode. SerializationTree(this, t, NULL);
+
+            // Внешние файлы
+            tr = tr->get_next();
+            t = tr->get_first();
+            num = t->get_value().ToIntDef(0);
+            for (i = 0; i < num; ++i)
+            {
+                t = t->get_next();
+                fexternalfiles.push_back(new ExternalFile(this, t));
+            }
+        }
 
         public MetaGeneratedType gentypeRef; // генерируемый тип Ссылка
  

@@ -8,6 +8,24 @@ using static MetaRead.APIcfBase;
 
 namespace MetaRead
 {
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct tUnion
+    {
+        [FieldOffset(0)]
+        public bool dv_bool;
+        [FieldOffset(0)]
+        public int dv_number;
+        [FieldOffset(0)]
+        public string dv_string;
+        [FieldOffset(0)]
+        public char[] dv_date;
+        [FieldOffset(0)]
+        public MetaType dv_type;
+        [FieldOffset(0)]
+        public MetaValue dv_enum;
+    }
+
     //Свойство метаданных
     // 
     public class MetaProperty : MetaBase
@@ -33,23 +51,23 @@ namespace MetaRead
             }
         */
 
-        [StructLayout(LayoutKind.Explicit)]
-        public struct tUnion
-        {
-            [FieldOffset(0)]
-            public bool dv_bool;
-            [FieldOffset(0)]
-            public int dv_number;
-            [FieldOffset(0)]
-            public string dv_string;
-            [FieldOffset(0)]
-            public char[] dv_date;
-            [FieldOffset(0)]
-            public MetaType dv_type;
-            [FieldOffset(0)]
-            public MetaValue dv_enum;
-
-        }
+        //[StructLayout(LayoutKind.Explicit)]
+        //public struct tUnion
+        //{
+        //    [FieldOffset(0)]
+        //    public bool dv_bool;
+        //    [FieldOffset(0)]
+        //    public int dv_number;
+        //    [FieldOffset(0)]
+        //    public string dv_string;
+        //    [FieldOffset(0)]
+        //    public char[] dv_date;
+        //    [FieldOffset(0)]
+        //    public MetaType dv_type;
+        //    [FieldOffset(0)]
+        //    public MetaValue dv_enum;
+        //}
+        public tUnion dv_union_type;
 
 
         public MetaProperty(MetaType _owner, string _name, string _ename) : base(_name, _ename)

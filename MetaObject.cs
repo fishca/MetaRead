@@ -30,12 +30,12 @@ namespace MetaRead
             fvalue = _value;
         }
 
-        void SetFullName(String _fullname)
+        public void SetFullName(String _fullname)
         {
             ffullname = _fullname;
         }
 
-        void SetEfullName(String _efullname)
+        public void SetEfullName(String _efullname)
         {
             fefullname = _efullname;
         }

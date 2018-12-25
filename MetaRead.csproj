@@ -97,6 +97,7 @@
     <Compile Include="MetaValue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SerializationTree.cs" />
     <Compile Include="Structures.cs" />
     <Compile Include="Tree.cs" />
     <Compile Include="V8Catalog.cs" />

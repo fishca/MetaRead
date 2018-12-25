@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using static MetaRead.APIcfBase;
 
 namespace MetaRead
 {
@@ -123,13 +124,13 @@ namespace MetaRead
             int number, i;
             uint j;
             MetaType mtype;
-            MetaType vtype;
+            MetaType vtype = null;
             MetaProperty prop = null;
             MetaValue value;
             Tree tr;
             Tree tt;
             Tree t;
-            Guid uid;
+            Guid uid = new Guid();
             string sn, sen;
             MetaObject metaobj;
 
@@ -184,11 +185,14 @@ namespace MetaRead
                     case DefaultValueType.dvt_novalue:
                         break;
                     case DefaultValueType.dvt_bool:
-                        // TODO: Вернуться сюда после доработки MetaType
+                        // TODO: Вернуться сюда после доработки MetaProperty
+                        prop.dv_union_type.dv_bool = t.Get_Value().CompareTo("1") == 0 ? true : false;
                         break;
                     case DefaultValueType.dvt_number:
+                        prop.dv_union_type.dv_number = Convert.ToInt32(t.Get_Value());
                         break;
                     case DefaultValueType.dvt_string:
+                        prop.dv_union_type.dv_string = t.Get_Value();
                         break;
                     case DefaultValueType.dvt_date:
                         break;
@@ -197,12 +201,66 @@ namespace MetaRead
                     case DefaultValueType.dvt_null:
                         break;
                     case DefaultValueType.dvt_type:
+                        prop.dv_union_type.dv_type = staticTypes.GetTypeByName(t.Get_Value());
                         break;
                     case DefaultValueType.dvt_enum:
+                        vtype = staticTypes.GetTypeByName(t.Get_Value());
                         break;
                     default:
                         break;
                 }
+                t = t.Get_Next();
+                if (prop.defaultvaluetype == DefaultValueType.dvt_enum)
+                    prop.dv_union_type.dv_enum = vtype.GetValue(t.Get_Value());
+            }
+
+            // Предопределенные объекты метаданных
+            tt = tt.Get_Next();
+            number = Convert.ToInt32(tt.Get_Value());
+            for (i = 0; i < number; ++i)
+            {
+                tt = tt.Get_Next();
+                t = tt.Get_First();
+                sn = t.Get_Value();
+                t = t.Get_Next();
+                sen = t.Get_Value();
+                t = t.Get_Next();
+                if (!string_to_GUID(t.Get_Value(), ref uid))
+                {
+                    // error(L"Ошибка загрузки статических типов. Ошибка преобразования УИД в предопределенном объекте метаданных"
+                    //         , L"Имя", sn
+                    //         , L"УИД", t->get_value());
+                    continue;
+                }
+                metaobj = new MetaObject(uid, null, sn, sen);
+                metaobj.SetFullName(sn);
+                metaobj.SetEfullName(sen);
+                MetaObject.map[uid] = metaobj;
+                MetaObject.smap[sn.ToUpper()] = metaobj;
+                MetaObject.smap[sen.ToUpper()] = metaobj;
+            }
+
+            // Права
+            tt = tt.Get_Next();
+            number = Convert.ToInt32(tt.Get_Value());
+            for (i = 0; i < number; ++i)
+            {
+                tt = tt.Get_Next();
+                new MetaRight(tt);
+            }
+
+            // Деревья сериализации
+            tt = tt.Get_Next();
+            number = Convert.ToInt32(tt.Get_Value());
+            for (i = 0; i < number; ++i)
+            {
+                tt = tt.Get_Next();
+                t = tt.Get_First();
+                mtype = staticTypes.GetTypeByName(t.Get_Value());
+                // TODO: Не забыть доделать вернуться сюда обязательно!!!!!!!!!!!!!!!!!!!
+                //mtype.set
+
+                //mtype.setSerializationTree(t->get_next());
             }
 
         }

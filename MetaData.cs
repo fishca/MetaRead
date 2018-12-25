@@ -300,62 +300,11 @@ namespace MetaRead
 
 
 
-    //---------------------------------------------------------------------------
-    // Переменная дерева сериализации
-    public class SerializationTreeVar
-    {
-        public String fname;
-        public bool fcolcount;
-        public bool fisglobal;
-        public bool fisfix;
-        public int ffixvalue;
-        public List<VarValidValue> fvalidvalues;
-
-        public SerializationTreeVar(Tree tr)
-        {
-
-        }
-
-        public String Name
-        {
-            get { return fname; }
-        }
-
-        public bool ColCount
-        {
-            get { return fcolcount; }
-        }
-
-        public bool IsGlobal
-        {
-            get { return fisglobal; }
-        }
-
-        public bool IsFix
-        {
-            get { return fisfix; }
-        }
-
-        public int FixValue
-        {
-            get { return ffixvalue; }
-        }
-
-        public List<VarValidValue> validvalues
-        {
-            get { return fvalidvalues; }
-        }
-
-    }
 
 
 
 
 
-    //---------------------------------------------------------------------------
-    // Узел дерева сериализации
-    public struct SerializationTreeNode
-    { }
 
     //---------------------------------------------------------------------------
     // Внешний файл типа
