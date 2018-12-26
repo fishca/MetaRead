@@ -114,6 +114,10 @@ namespace MetaRead
 
         SerializationTreeValueType typeval1; // Тип значения 1 (type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol)
         string str1; // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_var ИЛИ type == stt_elcol) И typeval1 = stv_string ИЛИ typeval1 = stv_var ИЛИ typeval1 = stv_globalvar)
+
+        UTreeNode1 uTreeNode1;
+        UTreeNode2 UTreeNode2;
+
     }
 
 }
