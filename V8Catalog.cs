@@ -129,7 +129,6 @@ namespace MetaRead
             leave_data       = false;
         }
 
-        // TODO: не забыть доделать
         public void FreeBlock(int start)
         {
             //char temp_buf[32];
@@ -151,12 +150,20 @@ namespace MetaRead
                 Data.Seek(0, SeekOrigin.Begin);
                 Data.Read(temp_buf, 0, 31);
 
-                // TODO: Надо проконтролировать
+                // TODO: Надо проконтролировать обязательно!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 // nextstart = hex_to_int(&temp_buf[20]);
                 //curlen = hex_to_int(GetString(temp_buf).Substring(20, 20));
                 nextstart = hex_to_int(GetString(temp_buf).Substring(20, 20));
+                int_to_hex(temp_buf, 0x7fffffff);
+                if (nextstart == 0x7fffffff)
+                    int_to_hex(temp_buf, prevempty);
+                Data.Seek(start, SeekOrigin.Begin);
+                Data.Write(temp_buf, 0, 31);
+                start = nextstart;
 
             } while (start != 0x7fffffff);
+            is_emptymodified = true;
+            is_modified = true;
         }
 
         public int WriteBlock(Stream block, int start, bool use_page_size, int len = -1)  // возвращает адрес начала блока

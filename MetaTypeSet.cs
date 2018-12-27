@@ -102,10 +102,14 @@ namespace MetaRead
 
         public void FillAll()
         {
-            // TODO: Надо дорабатывать
+            // TODO: Пристально тестировать
             for (int i = 0; i < alltype.Count; ++i)
             {
-                ;
+                alltype[i].FillCollectionTypes();
+                for (int j = 0; j < alltype[i].NumberOfProperties(); ++j)
+                {
+                    alltype[i].GetProperty(j).FillTypes();
+                }
             }
         }
 
@@ -257,12 +261,42 @@ namespace MetaRead
                 tt = tt.Get_Next();
                 t = tt.Get_First();
                 mtype = staticTypes.GetTypeByName(t.Get_Value());
-                // TODO: Не забыть доделать вернуться сюда обязательно!!!!!!!!!!!!!!!!!!!
-                //mtype.set
-
-                //mtype.setSerializationTree(t->get_next());
+                mtype.setSerializationTree(t.Get_Next());
             }
 
+            tr = null;
+            mt_empty = new MetaType(staticTypes, "<Пустой тип>", "<Empty type>", "", "", "00000000-0000-0000-0000-000000000000"); // Этот тип нигде не удаляется
+
+            mt_string = staticTypes.GetTypeByName("Строка");
+            mt_number = staticTypes.GetTypeByName("Число");
+            mt_bool   = staticTypes.GetTypeByName("Булево");
+            mt_date   = staticTypes.GetTypeByName("Дата");
+            mt_undef  = staticTypes.GetTypeByName("Неопределено");
+            mt_null   = staticTypes.GetTypeByName("Null");
+            mt_type   = staticTypes.GetTypeByName("Тип");
+            mt_uid    = staticTypes.GetTypeByName("УникальныйИдентификатор");
+
+            mt_typedescrinternal        = staticTypes.GetTypeByName("ОписаниеТипаВнутр");
+            mt_binarydata               = staticTypes.GetTypeByName("ДвоичныеДанные");
+            mt_arbitrary                = staticTypes.GetTypeByName("Произвольный");
+            mt_container                = staticTypes.GetTypeByName("Контейнер");
+            mt_config                   = staticTypes.GetTypeByName("ОбъектМетаданныхКонфигурация");
+            mt_standart_attribute       = staticTypes.GetTypeByName("СтандартныйРеквизит");
+            mt_standart_tabular_section = staticTypes.GetTypeByName("СтандартнаяТабличнаяЧасть");
+            mtype                       = staticTypes.GetTypeByName("КвалификаторыДаты");
+            mp_datefractions            = mtype.GetProperty("ЧастиДаты");
+            mt_datefractions            = staticTypes.GetTypeByName("ЧастиДаты");
+            mv_datefractionsdate        = mt_datefractions.GetValue("Дата");
+            mv_datefractionstime        = mt_datefractions.GetValue("Время");
+            mt_tabularsection           = staticTypes.GetTypeByName("ОбъектМетаданных: ТабличнаяЧасть");
+            mt_attribute                = staticTypes.GetTypeByName("ОбъектМетаданных: Реквизит");
+            mt_metaobjref               = staticTypes.GetTypeByName("ОбъектМетаданныхСсылка");
+            mt_metarefint               = staticTypes.GetTypeByName("ОбъектМетаданныхСсылкаВнутр");
+            mt_tabsection               = staticTypes.GetTypeByName("ТабличнаяЧасть");
+            mt_metaref                  = staticTypes.GetTypeByName("МетаСсылка");
+
+            for (j = 0; j < MetaStandartTabularSection.list.Count; ++j)
+                MetaStandartTabularSection.list[(int)j]._class = Class.GetClass(MetaStandartTabularSection.list[(int)j].class_uid);
         }
 
         public int Number()

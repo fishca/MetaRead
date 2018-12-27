@@ -284,36 +284,6 @@ namespace MetaRead
     }
 
 
-
-    public class Value1C_metaobj
-    {
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //---------------------------------------------------------------------------
-    // Внешний файл типа
-    public struct ExternalFile
-    { }
-
-
-
-
     class MetaData
     {
     }

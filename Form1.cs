@@ -95,6 +95,18 @@ namespace MetaRead
 
             NLog.LogManager.Configuration = config;
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            int n1 = 2;
+            int n2 = 5;
+
+            int result = n2 * 3 + 20 / 2 * (n1--);
+
+            Logger logger = LogManager.GetLogger("Example");
+            logger.Info("result = " + result);
+
+        }
     }
 
     public class Messager : MessageRegistrator

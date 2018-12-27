@@ -76,6 +76,7 @@
     <Compile Include="Class.cs" />
     <Compile Include="ClassParameter.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="ExternalFile.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -85,6 +86,7 @@
     <Compile Include="MemoryTributary.cs" />
     <Compile Include="MessageRegistration.cs" />
     <Compile Include="MetaBase.cs" />
+    <Compile Include="MetaContainer.cs" />
     <Compile Include="MetaData.cs" />
     <Compile Include="MetaGeneratedType.cs" />
     <Compile Include="MetaObject.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="V8Field.cs" />
     <Compile Include="V8File.cs" />
     <Compile Include="V8Table.cs" />
+    <Compile Include="Value1C.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

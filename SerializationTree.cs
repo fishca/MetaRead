@@ -8,47 +8,6 @@ using static MetaRead.APIcfBase;
 
 namespace MetaRead
 {
-    [StructLayout(LayoutKind.Explicit)]
-    public struct UTreeNode1
-    {
-        [FieldOffset(0)]
-        public int num1;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
-        [FieldOffset(0)]
-        public Guid uid1;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
-        [FieldOffset(0)]
-        public MetaValue val1;                           // значение (type == stt_cond И typeval1 = stv_value)
-        [FieldOffset(0)]
-        public MetaProperty prop1;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
-        [FieldOffset(0)]
-        public MetaGeneratedType gentype;                // генерируемый тип (type == stt_gentype)
-        [FieldOffset(0)]
-        public ContainerVer vercon1;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
-        [FieldOffset(0)]
-        public Version1C ver1C1;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
-        [FieldOffset(0)]
-        public SerializationTreeClassType classtype;     // вид коллекции классов ((type == stt_classcol) 
-        [FieldOffset(0)]
-        public ClassParameter classpar1;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
-    }
-
-    [StructLayout(LayoutKind.Explicit)]
-    public struct UTreeNode2
-    {
-        [FieldOffset(0)]
-        public int num2;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
-        [FieldOffset(0)]
-        public Guid uid2;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
-        [FieldOffset(0)]
-        public MetaValue val2;                           // значение (type == stt_cond И typeval1 = stv_value)
-        [FieldOffset(0)]
-        public MetaProperty prop2;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
-        [FieldOffset(0)]
-        public ContainerVer vercon2;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
-        [FieldOffset(0)]
-        public Version1C ver1C2;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
-        [FieldOffset(0)]
-        public ClassParameter classpar2;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
-    }
 
 
     //---------------------------------------------------------------------------
@@ -345,17 +304,17 @@ namespace MetaRead
                     break;
                 case SerializationTreeNodeType.stt_gentype:
                     uTreeNode1.gentype = null;
-                    for (i = 0; i < owner.generatedtypes.size(); ++i) if (sval1.CompareIC(owner->generatedtypes[i]->name) == 0)
-                        {
-                            gentype = owner->generatedtypes[i];
-                        }
-                    if (!gentype)
-                    {
-                        error(L"Ошибка загрузки статических типов. Некорректное имя генерируемого типа"
-                            , L"Тип", owner->name
-                            , L"Путь", path()
-                            , L"Имя генерируемого типа", sval1);
-                    }
+                    // for (i = 0; i < owner.generatedtypes.size(); ++i) if (sval1.CompareIC(owner->generatedtypes[i]->name) == 0)
+                    //     {
+                    //         gentype = owner->generatedtypes[i];
+                    //     }
+                    // if (!gentype)
+                    // {
+                    //     error(L"Ошибка загрузки статических типов. Некорректное имя генерируемого типа"
+                    //         , L"Тип", owner->name
+                    //         , L"Путь", path()
+                    //         , L"Имя генерируемого типа", sval1);
+                    // }
 
                     break;
                 case SerializationTreeNodeType.stt_cond:
@@ -386,7 +345,7 @@ namespace MetaRead
 
             for (stn = parent, path = Convert.ToString(index); stn != null; stn = stn.parent)
             {
-                path = Convert.ToString((stn.index) + ":" + path;
+                path = Convert.ToString(stn.index) + ":" + path;
             }
             return path;
         }

@@ -212,9 +212,10 @@ namespace MetaRead
             IsDataModified = true;
             if (Data.Length > Length)
             {
-                // TODO: Надо реализовать
+                // TODO: Надо проконтролировать
                 // пока непонятно что с этим делать...
                 //Data.Length = Length;
+                Data.SetLength(Length);
             }
             Data.Seek(0, SeekOrigin.Begin);
             Data.Write(Buffer, 0, Length);
@@ -235,9 +236,10 @@ namespace MetaRead
             IsDataModified = true;
             if (Data.Length > Length)
             {
-                // TODO: Надо реализовать
+                // TODO: Надо проконтролировать
                 // пока непонятно что с этим делать...
                 //Data.Length = Length;
+                Data.SetLength(Length);
             }
             Data.Seek(0, SeekOrigin.Begin);
             _Stream.CopyTo(Data, Length);
@@ -259,9 +261,11 @@ namespace MetaRead
             IsDataModified = true;
             if (Data.Length > _Stream.Length)
             {
-                // TODO: Надо реализовать
+                // TODO: Надо проконтролировать
                 // пока непонятно что с этим делать...
                 //Data.Length = Length;
+
+                Data.SetLength(_Stream.Length);
             }
             Data.Seek(0, SeekOrigin.Begin);
             //_Stream.CopyTo(Data, Length);

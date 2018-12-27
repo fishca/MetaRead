@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+
 using System.Globalization;
 using System.IO;
 using static MetaRead.Constants;
@@ -98,6 +100,57 @@ namespace MetaRead
         ff_zip
     }
 
+    [StructLayout(LayoutKind.Explicit)]
+    public struct UTreeNode1
+    {
+        [FieldOffset(0)] public int num1;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
+        [FieldOffset(0)] public Guid uid1;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
+        [FieldOffset(0)] public MetaValue val1;                           // значение (type == stt_cond И typeval1 = stv_value)
+        [FieldOffset(0)] public MetaProperty prop1;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
+        [FieldOffset(0)] public MetaGeneratedType gentype;                // генерируемый тип (type == stt_gentype)
+        [FieldOffset(0)] public ContainerVer vercon1;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
+        [FieldOffset(0)] public Version1C ver1C1;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
+        [FieldOffset(0)] public SerializationTreeClassType classtype;     // вид коллекции классов ((type == stt_classcol) 
+        [FieldOffset(0)] public ClassParameter classpar1;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct UTreeNode2
+    {
+        [FieldOffset(0)] public int num2;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
+        [FieldOffset(0)] public Guid uid2;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
+        [FieldOffset(0)] public MetaValue val2;                           // значение (type == stt_cond И typeval1 = stv_value)
+        [FieldOffset(0)] public MetaProperty prop2;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
+        [FieldOffset(0)] public ContainerVer vercon2;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
+        [FieldOffset(0)] public Version1C ver1C2;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
+        [FieldOffset(0)] public ClassParameter classpar2;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct UTreeNode3
+    {
+        [FieldOffset(0)] public int num1;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
+        [FieldOffset(0)] public Guid uid1;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
+        [FieldOffset(0)] public MetaValue val1;                           // значение (type == stt_cond И typeval1 = stv_value)
+        [FieldOffset(0)] public MetaProperty prop1;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
+        [FieldOffset(0)] public ContainerVer vercon1;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
+        [FieldOffset(0)] public Version1C ver1C1;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
+        [FieldOffset(0)] public ClassParameter classpar1;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct UTreeNode4
+    {
+        [FieldOffset(0)] public int num2;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
+        [FieldOffset(0)] public Guid uid2;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
+        [FieldOffset(0)] public MetaValue val2;                           // значение (type == stt_cond И typeval1 = stv_value)
+        [FieldOffset(0)] public MetaProperty prop2;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
+        [FieldOffset(0)] public ContainerVer vercon2;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
+        [FieldOffset(0)] public Version1C ver1C2;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
+        [FieldOffset(0)] public ClassParameter classpar2;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
+    }
+
+
     public class APIcfBase
     {
         public static readonly String str_cfu = ".cfu";
@@ -141,10 +194,10 @@ namespace MetaRead
         public static readonly char[] SIG_ZIP     = { 'P', 'K' };
 
 
-        public static FILETIME DateTimeToFILETIME(DateTime time)
+        public static System.Runtime.InteropServices.ComTypes.FILETIME DateTimeToFILETIME(DateTime time)
         {
 
-            FILETIME ft;
+            System.Runtime.InteropServices.ComTypes.FILETIME ft;
             var value = time.ToFileTimeUtc();
             ft.dwLowDateTime = (int)(value & 0xFFFFFFFF);
             ft.dwHighDateTime = (int)(value >> 32);
@@ -152,26 +205,25 @@ namespace MetaRead
 
         }
 
-        public static FILETIME ToFileTimeStructureUtc(DateTime dateTime)
+        public static System.Runtime.InteropServices.ComTypes.FILETIME ToFileTimeStructureUtc(DateTime dateTime)
         {
             var value = dateTime.ToFileTimeUtc();
-            return new FILETIME
+            return new System.Runtime.InteropServices.ComTypes.FILETIME
             {
                 dwHighDateTime = unchecked((int)((value >> 32) & 0xFFFFFFFF)),
                 dwLowDateTime = unchecked((int)(value & 0xFFFFFFFF))
             };
         }
 
-        public static FILETIME ToFileTimeStructure(DateTime dateTime)
+        public static System.Runtime.InteropServices.ComTypes.FILETIME ToFileTimeStructure(DateTime dateTime)
         {
             var value = dateTime.ToFileTime();
-            return new FILETIME
+            return new System.Runtime.InteropServices.ComTypes.FILETIME
             {
                 dwHighDateTime = unchecked((int)((value >> 32) & 0xFFFFFFFF)),
                 dwLowDateTime = unchecked((int)(value & 0xFFFFFFFF))
             };
         }
-
 
         public static bool IsValidValue(DateTime value)
         {
@@ -187,8 +239,7 @@ namespace MetaRead
             return flag;
         }
 
-
-        public static void V8timeToFileTime(Int64 v8t, ref FILETIME ft)
+        public static void V8timeToFileTime(Int64 v8t, ref System.Runtime.InteropServices.ComTypes.FILETIME ft)
         {
             Int64 t = v8t;
             t -= DeltaData1C;
@@ -197,7 +248,7 @@ namespace MetaRead
             ft = DateTimeToFILETIME(dateTime);
         }
 
-        public static void FileTimeToV8time(FILETIME ft, ref Int64 v8t)
+        public static void FileTimeToV8time(System.Runtime.InteropServices.ComTypes.FILETIME ft, ref Int64 v8t)
         {
             DateTime dateTime = ft.ToDateTime();
             v8t = dateTime.Ticks;
@@ -755,6 +806,21 @@ namespace MetaRead
             guid = new Guid(str);
             return true;
         }
-
+        
+        public static Version1C stringtover1C(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return Version1C.v1C_min;
+            if (s == "8.0")    return Version1C.v1C_8_0;
+            if (s == "8.1")    return Version1C.v1C_8_1;
+            if (s == "8.2")    return Version1C.v1C_8_2;
+            if (s == "8.2.14") return Version1C.v1C_8_2_14;
+            if (s == "8.3.1")  return Version1C.v1C_8_3_1;
+            if (s == "8.3.2")  return Version1C.v1C_8_3_2;
+            if (s == "8.3.3")  return Version1C.v1C_8_3_3;
+            if (s == "8.3.4")  return Version1C.v1C_8_3_4;
+            if (s == "8.3.5")  return Version1C.v1C_8_3_5;
+            if (s == "8.3.6")  return Version1C.v1C_8_3_6;
+            return Version1C.v1C_min;
+        }
     }
 }

@@ -211,17 +211,19 @@ namespace MetaRead
             // Дерево сериализации
             tr = tr.Get_Next();
             t = tr.Get_First();
-            fserializationtree = SerializationTreeNode. SerializationTree(this, t, NULL);
-
+            fserializationtree = SerializationTreeNode.SerializationTree(this, t, null);
+            
             // Внешние файлы
-            tr = tr->get_next();
-            t = tr->get_first();
-            num = t->get_value().ToIntDef(0);
+            tr = tr.Get_Next();
+            t = tr.Get_First();
+            num = Convert.ToInt32(t.Get_Value());
             for (i = 0; i < num; ++i)
             {
-                t = t->get_next();
-                fexternalfiles.push_back(new ExternalFile(this, t));
+                t = t.Get_Next();
+                fexternalfiles.Add(new ExternalFile(this, t));
+
             }
+            // TODO : Продолжить доработки
         }
 
         public MetaGeneratedType gentypeRef; // генерируемый тип Ссылка
