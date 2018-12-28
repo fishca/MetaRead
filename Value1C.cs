@@ -20,6 +20,9 @@ namespace MetaRead
 
         public Value1C(Value1C_obj _parent)
         {
+            type = null;
+            kind = KindOfValue1C.kv_unknown;
+            index = -1;
         }
 
         public virtual string presentation(bool english = false)
@@ -44,6 +47,10 @@ namespace MetaRead
 
         public string path(MetaContainer mc, bool english = false)
         {
+            if (parent is null)
+                return "";
+            if (type == mc.types->mt_config) return L"";
+            j = parent->v_objpropv.size();
             return "";
         }
 
@@ -479,20 +486,103 @@ namespace MetaRead
     //     }
     // }
 
-    //////////////////////////////////////////////////////////////
 
+    //---------------------------------------------------------------------------
+    // Сравнение свойств метаданных
+    // struct MetaPropertyLess
+    // {
+    //     bool operator()(MetaProperty* const l, MetaProperty* const r) const
+    // 	{
+    // 	return l->name<r->name;
+    // }
+    // }
+
+    public class MetaPropertyComparer : IComparer<MetaProperty>
+    {
+        public int Compare(MetaProperty l, MetaProperty r)
+        {
+            return String.Compare(l.Name, r.Name);
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////
     public class Value1C_obj : Value1C
     {
-        public Value1C_obj(Value1C_obj _parent) : base(_parent)
+        public MetaContainer owner;
+        // std::map<MetaProperty*, Value1C*, MetaPropertyLess> v_objprop; //Объект - коллекция свойств
+        public SortedDictionary<MetaProperty, Value1C>       v_objprop;   //Объект - коллекция свойств
+        public List<SortedDictionary<MetaProperty, Value1C>> v_objpropv;  // Коллекция свойств в векторе
+        public List<Value1C> v_objcol; //Объект (kv_obj или kv_metaobj???) - коллекция упорядоченных элементов
+        public SortedDictionary<string, int> globalvars; // Коллекция глобальных переменных со значениями
+        public void fillpropv()
+        {
+        }
+
+        public static bool compare(MetaProperty p, Value1C v)
+        {
+            return true;
+        }
+        public Value1C_obj(Value1C_obj _parent, MetaContainer _owner) : base(_parent)
         { }
+
+        public override string presentation(bool english = false)
+        {
+            return "";
+        }
+
+        public override string valuepresentation(bool english = false)
+        {
+            return "";
+        }
+
+        public override bool Export(string path, StreamWriter str, int indent, bool english = false)
+        {
+            return false;
+        }
+
+        public override bool IsEmpty()
+        {
+            return false;
+        }
+
     }
 
     //////////////////////////////////////////////////////////////
 
     public class Value1C_metaobj : Value1C_obj
     {
-        public Value1C_metaobj(Value1C_obj _parent) : base(_parent)
-        { }
+        public MetaObject v_metaobj;
+
+        public SortedDictionary<MetaGeneratedType, GeneratedType> v_objgentypes; // коллекция генерируемых типов
+        public List<PredefinedValue>                              v_prevalues;   // коллекция предопределенных элементов
+
+        public Value1C_metaobj(Value1C_obj _parent, MetaContainer _owner) : base(_parent, _owner)
+        {
+        }
+
+        public override string presentation(bool english = false)
+        {
+            return "";
+        }
+
+        public override string valuepresentation(bool english = false)
+        {
+            return "";
+        }
+
+        public override bool Export(string path, StreamWriter str, int indent, bool english = false)
+        {
+            return false;
+        }
+
+        public override bool IsEmpty()
+        {
+            return false;
+        }
+
     }
 
 
