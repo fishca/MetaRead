@@ -525,11 +525,34 @@ namespace MetaRead
         {
             return true;
         }
-        public Value1C_obj(Value1C_obj _parent, MetaContainer _owner) : base(_parent)
-        { }
+        public Value1C_obj(Value1C_obj _parent, MetaContainer _owner) : base(_parent) 
+        {
+            owner = _owner;
+            kind = KindOfValue1C.kv_obj;
+        }
 
         public override string presentation(bool english = false)
         {
+            Value1C_obj vo;
+            Value1C v;
+            Value1C_enum ve;
+            Value1C_number vn;
+            Value1C v2;
+            uint i;
+            String s;
+            String s2;
+
+            if (!(type is null))
+            {
+                if ((type.Name.CompareTo("МногоязычнаяСтрока") == 0) || (type.Name.CompareTo("МногоязычнаяСтрокаВнутр") == 0))
+                {
+                    if (v_objcol.Count > 0)
+                    {
+                        vo = (Value1C_obj)v_objcol[0];
+                        v = vo.ge
+                    }
+                }
+            }
             return "";
         }
 
