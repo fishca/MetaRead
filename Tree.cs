@@ -466,6 +466,292 @@ namespace MetaRead
             return ret;
         } // end of parce of tree
 
+        /// <summary>
+        /// Парсинг скобочного дерева 1С
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static Tree Parse_1Ctext(String text, String path)
+        {
+
+            StringBuilder __curvalue__ = new StringBuilder("");
+
+            String curvalue = "";
+            Tree ret = new Tree("", Node_Type.nd_list, null);
+            Tree t = ret;
+            int len = text.Length;
+            int i = 0;
+            char sym = '0';
+            Node_Type nt = Node_Type.nd_unknown;
+
+            _state state = _state.s_value;
+
+            //for (i = 0; i <= len-1; i++)
+            for (i = 1; i < len; i++)
+            {
+                sym = text[i];
+
+                if (String.IsNullOrEmpty(sym.ToString())) break;
+
+                switch (state)
+                {
+                    case _state.s_value:
+                        switch (sym)
+                        {
+                            case ' ': // space
+                            case '\t':
+                            case '\r':
+                            case '\n':
+                                break;
+                            case '"':
+
+                                __curvalue__.Clear();
+                                state = _state.s_string;
+                                break;
+
+                            case '{':
+
+                                t = new Tree("", Node_Type.nd_list, t);
+                                break;
+
+                            case '}':
+
+                                if (t.Get_First() != null)
+                                    t.AddChild("", Node_Type.nd_empty);
+
+                                t = t.Get_Parent();
+
+                                if (t == null)
+                                {
+                                    //if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.", "Позиция", i, "Путь", path);
+                                    //delete ret;
+                                    //String msreg = $"Ошибка формата потока. Лишняя закрывающая скобка. Позиция: { i }, Путь: {path}";
+                                    Console.WriteLine($"Ошибка формата потока. Лишняя закрывающая скобка. В позиции: { i }, Путь: {path}");
+                                    ret = null;
+                                    return null;
+                                }
+                                state = _state.s_delimitier;
+                                break;
+
+                            case ',':
+
+                                t.AddChild("", Node_Type.nd_empty);
+                                break;
+
+                            default:
+
+                                __curvalue__.Clear();
+                                __curvalue__.Append(sym);
+                                state = _state.s_nonstring;
+
+                                break;
+                        }
+                        break;
+                    case _state.s_delimitier:
+                        switch (sym)
+                        {
+                            case ' ': // space
+                            case '\t':
+                            case '\r':
+                            case '\n':
+                                break;
+                            case ',':
+                                state = _state.s_value;
+                                break;
+                            case '}':
+                                t = t.Get_Parent();
+                                if (t == null)
+                                {
+                                    /*
+                                    if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.",
+                                         "Позиция", i,
+                                         "Путь", path);
+                                    */
+                                    Console.WriteLine($"Ошибка формата потока. Лишняя закрывающая скобка. В позиции: { i }, Путь: {path}");
+                                    ret = null;
+                                    return null;
+                                }
+                                break;
+                            default:
+                                /*
+                                if (msreg) msreg->AddError("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.",
+                                     "Символ", sym,
+                                     "Код символа", tohex(sym),
+                                     "Путь", path);
+                                */
+                                Console.WriteLine($"Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя. Символ: { sym }, код символа: {sym} Путь: {path}");
+                                ret = null;
+                                return null;
+                        }
+                        break;
+                    case _state.s_string:
+                        if (sym == '"')
+                        {
+                            state = _state.s_quote_or_endstring;
+                        }
+                        else
+                            __curvalue__.Append(sym);
+                        break;
+                    case _state.s_quote_or_endstring:
+                        if (sym == '"')
+                        {
+                            __curvalue__.Append(sym);
+                            state = _state.s_string;
+                        }
+                        else
+                        {
+                            t.AddChild(__curvalue__.ToString(), Node_Type.nd_string);
+                            switch (sym)
+                            {
+                                case ' ': // space
+                                case '\t':
+                                case '\r':
+                                case '\n':
+                                    state = _state.s_delimitier;
+                                    break;
+                                case ',':
+                                    state = _state.s_value;
+                                    break;
+                                case '}':
+                                    t = t.Get_Parent();
+                                    if (t == null)
+                                    {
+                                        /*
+                                        if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.",
+                                             "Позиция", i,
+                                             "Путь", path);
+                                        */
+                                        Console.WriteLine($"Ошибка формата потока. Лишняя закрывающая скобка. Позиция: { i }, путь: {path}");
+                                        ret = null;
+                                        return null;
+                                    }
+                                    state = _state.s_delimitier;
+                                    break;
+                                default:
+                                    /*
+                                    if (msreg) msreg->AddError("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.",
+                                         "Символ", sym,
+                                         "Код символа", tohex(sym),
+                                         "Путь", path);
+                                    */
+                                    Console.WriteLine($"Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя. Символ: { sym }, путь: {path}");
+                                    ret = null;
+                                    return null;
+                            }
+                        }
+                        break;
+                    case _state.s_nonstring:
+                        switch (sym)
+                        {
+                            case ',':
+                                curvalue = __curvalue__.ToString();
+                                nt = ClassificationValue(curvalue);
+                                if (nt == Node_Type.nd_unknown)
+                                {
+                                    /*
+                                    if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный тип значения.",
+                                      "Значение", curvalue,
+                                      "Путь", path);
+                                      */
+                                    Console.WriteLine($"Ошибка формата потока. Неизвестный тип значения. Значение: { curvalue }, путь: {path}");
+                                }
+                                t.AddChild(curvalue, nt);
+                                state = _state.s_value;
+                                break;
+                            case '}':
+                                curvalue = __curvalue__.ToString();
+
+                                nt = ClassificationValue(curvalue);
+
+                                if (nt == Node_Type.nd_unknown)
+                                {
+                                    //if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный тип значения.", "Значение", curvalue, "Путь", path);
+                                    Console.WriteLine($"Ошибка формата потока. Неизвестный тип значения. Значение: { curvalue }, путь: {path}");
+                                }
+                                t.AddChild(curvalue, nt);
+                                t = t.Get_Parent();
+                                if (t == null)
+                                {
+                                    /*
+                                    if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.",
+                                         "Позиция", i,
+                                         "Путь", path);
+                                    */
+                                    Console.WriteLine($"Ошибка формата потока. Лишняя закрывающая скобка. Позиция: { i }, путь: {path}");
+                                    ret = null;
+                                    return null;
+                                }
+                                state = _state.s_delimitier;
+                                break;
+                            default:
+                                __curvalue__.Append(sym);
+                                break;
+                        }
+                        break;
+                    default:
+                        /*
+                        if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный режим разбора.",
+                             "Режим разбора", tohex(state),
+                             "Путь", path);
+                             */
+                        Console.WriteLine($"Ошибка формата потока. Неизвестный режим разбора. Режим разбора: { state }, путь: {path}");
+                        ret = null;
+                        return null;
+                }
+            }
+
+
+            if (state == _state.s_nonstring)
+            {
+                curvalue = __curvalue__.ToString();
+                nt = ClassificationValue(curvalue);
+                if (nt == Node_Type.nd_unknown)
+                {
+                    /*
+                    if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный тип значения.",
+                      "Значение", curvalue,
+                      "Путь", path);
+                      */
+                    Console.WriteLine($"Ошибка формата потока. Неизвестный тип значения. Значение: { curvalue }, путь: {path}");
+                }
+                t.AddChild(curvalue, nt);
+            }
+            else
+                if (state == _state.s_quote_or_endstring)
+                t.AddChild(__curvalue__.ToString(), Node_Type.nd_string);
+            else
+                if (state != _state.s_delimitier)
+            {
+                /*
+                if (msreg) msreg->AddError("Ошибка формата потока. Незавершенное значение",
+                     "Режим разбора", tohex(state),
+                     "Путь", path);
+                */
+                Console.WriteLine($"Ошибка формата потока. Незавершенное значение. Режим разбора: { state }, путь: {path}");
+                ret = null;
+                return null;
+            }
+
+            if (t != ret)
+            {
+                /*
+                if (msreg) msreg->AddError("Ошибка формата потока. Не хватает закрывающих скобок } в конце текста разбора.",
+                     "Путь", path);
+                    */
+                Console.WriteLine($"Ошибка формата потока. Не хватает закрывающих скобок в конце текста разбора, путь: {path}");
+                ret = null;
+                return null;
+            }
+
+            return ret;
+
+        } // End parse_1Ctext
+
+        public int Get_num_subnode()
+        {
+            return num_subnode;
+        }
 
 
     }

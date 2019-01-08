@@ -97,7 +97,7 @@ namespace MetaRead
         /// <summary>
         /// структура версии
         /// </summary>
-        public struct _version_rec
+        public struct _VersionRec
         {
             private UInt32 version_1; // версия реструктуризации
             private UInt32 version_2; // версия изменения
@@ -112,7 +112,7 @@ namespace MetaRead
         /// <summary>
         /// структура версии
         /// </summary>
-        public struct _version
+        public struct _Version
         {
             private UInt32 version_1; // версия реструктуризации
             private UInt32 version_2; // версия изменения
@@ -121,7 +121,7 @@ namespace MetaRead
             public uint Version_1 { get { return version_1; } set { version_1 = value; } }
             public uint Version_2 { get { return version_2; } set { version_2 = value; } }
             public uint Version_3 { get { return version_3; } set { version_3 = value; } }
-            public _version(UInt32 v1, UInt32 v2, UInt32 v3)
+            public _Version(UInt32 v1, UInt32 v2, UInt32 v3)
             {
                 version_1 = v1;
                 version_2 = v2;
@@ -146,12 +146,12 @@ namespace MetaRead
         {
             private char[] sig; // сигнатура SIG_OBJ
             private UInt32 len; // длина файла
-            private _version version;
+            private _Version version;
             private UInt32[] blocks;
 
             public char[] Sig { get { return sig; } set { sig = value; } }
             public uint Len { get { return len; } set { len = value; } }
-            public _version Version { get { return version; } set { version = value; } }
+            public _Version Version { get { return version; } set { version = value; } }
             public uint[] Blocks { get { return blocks; } set { blocks = value; } }
         }
 
@@ -163,14 +163,14 @@ namespace MetaRead
             //public char[] sig;       // сигнатура 0x1C 0xFD (1C File Data?)
             private byte[] sig;
             private Int16 fatlevel;   // уровень таблицы размещения (0x0000 - в таблице blocks номера страниц с данными, 0x0001 - в таблице blocks номера страниц с таблицами размещения второго уровня, в которых уже, в свою очередь, находятся номера страниц с данными)
-            private _version version;
+            private _Version version;
             private UInt64 len;       // длина файла
             private UInt32[] blocks;  // Реальная длина массива зависит от размера страницы и равна pagesize/4-6 (от это 1018 для 4К до 16378 для 64К)
 
             public byte[] Sig { get { return sig; } set { sig = value; } }
 
             public short Fatlevel { get { return fatlevel; } set { fatlevel = value; } }
-            public _version Version { get { return version; } set { version = value; } }
+            public _Version Version { get { return version; } set { version = value; } }
             public ulong Len { get { return len; } set { len = value; } }
             public uint[] Blocks { get { return blocks; } set { blocks = value; } }
         }
@@ -326,7 +326,45 @@ namespace MetaRead
 
         }
 
-        public struct Root_80
+        /// <summary>
+        /// структура заголовочной страницы файла свободных страниц начиная с версии 8.3.8 
+        /// </summary>
+        public struct V838ObjFree
+        {
+            //public char[] sig;     // сигнатура 0x1C 0xFF (1C File Free?)
+            private byte[] sig;     // сигнатура 0x1C 0xFF (1C File Free?)
+            private Int16 fatlevel; // 0x0000 пока! но может ... уровень таблицы размещения (0x0000 - в таблице blocks номера страниц с данными, 0x0001 - в таблице blocks номера страниц с таблицами размещения второго уровня, в которых уже, в свою очередь, находятся номера страниц с данными)
+            private UInt32 version;        // ??? предположительно...
+            private UInt32[] blocks;       // Реальная длина массива зависит от размера страницы и равна pagesize/4-6 (от это 1018 для 4К до 16378 для 64К)
+
+            public byte[] Sig { get { return sig; } set { sig = value; } }
+            public short FatLevel { get { return fatlevel; } set { fatlevel = value; } }
+            public uint Version { get { return version; } set { version = value; } }
+            public uint[] Blocks { get { return blocks; } set { blocks = value; } }
+        }
+
+        /// <summary>
+        /// структура заголовочной страницы файла данных начиная с версии 8.3.8 
+        /// </summary>
+        public struct V838ObjData
+        {
+            //public char[] sig;       // сигнатура 0x1C 0xFD (1C File Data?)
+            private byte[] sig;
+            private Int16 fatlevel;   // уровень таблицы размещения (0x0000 - в таблице blocks номера страниц с данными, 0x0001 - в таблице blocks номера страниц с таблицами размещения второго уровня, в которых уже, в свою очередь, находятся номера страниц с данными)
+            private _Version version;
+            private UInt64 len;       // длина файла
+            private UInt32[] blocks;  // Реальная длина массива зависит от размера страницы и равна pagesize/4-6 (от это 1018 для 4К до 16378 для 64К)
+
+            public byte[] Sig { get { return sig; } set { sig = value; } }
+
+            public short Fatlevel { get { return fatlevel; } set { fatlevel = value; } }
+            public _Version Version { get { return version; } set { version = value; } }
+            public ulong Len { get { return len; } set { len = value; } }
+            public uint[] Blocks { get { return blocks; } set { blocks = value; } }
+        }
+
+
+        public struct Root80
         {
             private char[] lang; // 8
             private UInt32 numblocks;
@@ -351,7 +389,7 @@ namespace MetaRead
             }
         }
 
-        public struct Root_81
+        public struct Root81
         {
             private char[] lang; //32
             private UInt32 numblocks;
@@ -544,7 +582,7 @@ namespace MetaRead
         }
 
         // типы измененных записей
-        public enum Changed_rec_type
+        public enum ChangedRecType
         {
             not_changed,
             changed,
@@ -555,7 +593,7 @@ namespace MetaRead
         /// <summary>
         /// типы внутренних файлов
         /// </summary>
-        public enum V8objtype
+        public enum V8ObjType
         {
             unknown = 0, // тип неизвестен
             data80  = 1, // файл данных формата 8.0 (до 8.2.14 включительно)
