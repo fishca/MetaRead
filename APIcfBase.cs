@@ -972,6 +972,11 @@ namespace MetaRead
 
         }
 
+        public static bool string1C_to_date(string str, ref string bytedate)
+        {
+            return true;
+        }
+
 
     }
 }

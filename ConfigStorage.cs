@@ -8,6 +8,19 @@ using static MetaRead.Structures;
 
 namespace MetaRead
 {
+    /// <summary>
+    /// Структура открытого файла адаптера контейнера конфигурации
+    /// </summary>
+    public class ConfigFile
+    {
+        public Stream str;
+        public Object addin; // Не очень понятно что это такое...
+        public ConfigFile()
+        {
+            str = null;
+            addin = null;
+        }
+    }
 
     /// <summary>
     /// Структура файла контейнера файлов
