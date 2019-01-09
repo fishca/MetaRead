@@ -645,6 +645,265 @@ namespace MetaRead
                 else
                 {
                     // TODO : Необходима реализация
+                    switch (t.Serialization_Ver)
+                    {
+                        case 0:
+                            vo = t.Meta ? new Value1C_metaobj(valparent, this) : new Value1C_obj(valparent, this);
+                            vo.type = t;
+                            v = vo;
+                            if (t.SerializationTree is null)
+                            {
+                                // TODO : Надо реализовывать
+                                // error(L"Ошибка формата потока 13. Не определен алгоритм загрузки типа."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Путь", spath + tr->path());
+                                ptr = tr.Get_Next();
+                                break;
+                            }
+                            loadValue1C(vo, tr, t.SerializationTree, metauid, metats, clitem, path, checkend);
+                            ptr = tr;
+                            break;
+                        case 1: // Без значения. В реальности, должно было бы обработаться выше в блоке if(*ptr == NULL)
+                                //v->kind = kv_obj;
+                                // TODO : Надо реализовывать
+                                // error(L"Ошибка формата потока 19. Не ожидаемое значение."
+                                //      , L"Загружаемый тип", t->name
+                                //      , L"Тип значения", get_node_type_presentation(tr->get_type())
+                                //      , L"Значение", tr->get_value()
+                                //      , L"Путь", spath + tr->path());
+                            ptr = tr;
+                            break;
+                        case 2:
+                            if (tr.Get_Type() == Node_Type.nd_number)
+                            {
+                                i = Convert.ToInt32(tr.Get_Value());
+                                for (j = 0; j < t.Values.Count; ++j)
+                                {
+                                    if (t.Values[j].Value == i)
+                                    {
+                                        ve = new Value1C_enum(valparent);
+                                        ve.type = t;
+                                        v = ve;
+                                        ve.v_enum = t.Values[j];
+                                        break;
+                                    }
+                                }
+                                if (v is null)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 15. Не найдено значение системного перечисления по числовому значению."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", i
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                            }
+                            else if (tr.Get_Type() == Node_Type.nd_guid)
+                            {
+                                if (!string_to_GUID(tr.Get_Value(), ref uid))
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 20. Ошибка преобразвания UID."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", tr->get_value()
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                                else
+                                {
+                                    for (j = 0; j < t.Values.Count; ++j)
+                                    {
+                                        if (t.Values[j].ValueUID == uid)
+                                        {
+                                            ve = new Value1C_enum(valparent);
+                                            ve.type = t;
+                                            v = ve;
+                                            ve.v_enum = t.Values[j];
+                                            break;
+                                        }
+                                    }
+                                    if (v is null)
+                                    {
+                                        // TODO : Надо реализовывать
+                                        // error(L"Ошибка формата потока 21. Не найдено значение системного перечисления по UID."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Значение", tr->get_value()
+                                        //     , L"Путь", spath + tr->path());
+                                    }
+
+                                }
+                            }
+                            else
+                            {
+                                // error(L"Ошибка формата потока 14. Ожидается значение типа Число или UID."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Тип значения", get_node_type_presentation(tr->get_type())
+                                //     , L"Путь", spath + tr->path());
+                            }
+                            ptr = tr.Get_Next();
+                            break;
+                        case 3:
+                            if (tr.Get_Type() == Node_Type.nd_number)
+                            {
+                                i = Convert.ToInt32(tr.Get_Value());
+                                for (j = 0; j < t.Values.Count; ++j)
+                                {
+                                    if (t.Values[j].Value == i)
+                                    {
+                                        ve = new Value1C_enum(valparent);
+                                        ve.type = t;
+                                        v = ve;
+                                        ve.v_enum = t.Values[j];
+                                        break;
+                                    }
+                                }
+                                if (v is null)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 65. Не найдено значение системного перечисления по числовому значению."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", i
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                            }
+                            else if (tr.Get_Type() == Node_Type.nd_list)
+                            {
+                                tt = tr.Get_First();
+                                ptr = tr.Get_Next();
+                                if (tt is null)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 66. Ожидается UID типа системного перечисления."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь", spath + tr->path());
+                                    break;
+                                }
+                                if (tt.Get_Type() != Node_Type.nd_guid)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 67. Тип значения не UID, ожидается UID типа системного перечисления."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Тип значения", tt->get_type()
+                                    //     , L"Путь", spath + tt->path());
+                                    break;
+                                }
+                                if (!string_to_GUID(tt.Get_Value(), ref uid))
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 68. Ошибка преобразвания UID."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", tt->get_value()
+                                    //     , L"Путь", spath + tt->path());
+                                    break;
+                                }
+                                if (uid != t.uid)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 69. UID типа не совпадает с UID загружаемого системного перечисления."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"UID типа", GUID_to_string(t->uid)
+                                    //     , L"Загружаемый UID", tt->get_value()
+                                    //     , L"Путь", spath + tt->path());
+                                    break;
+                                }
+                                tt = tt.Get_Next();
+                                if (tt is null)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 70. Ожидается значение системного перечисления."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь", spath + tr->path());
+                                    break;
+                                }
+                                if (tt.Get_Type() != Node_Type.nd_number)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 71. Тип значения не Число, ожидается значение системного перечисления."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Тип значения", tt->get_type()
+                                    //     , L"Путь", spath + tt->path());
+                                    break;
+                                }
+                                i = Convert.ToInt32(tt.Get_Value());
+                                for (j = 0; j < t.Values.Count; ++j)
+                                {
+                                    if (t.Values[j].Value == i)
+                                    {
+                                        ve = new Value1C_enum(valparent);
+                                        ve.type = t;
+                                        v = ve;
+                                        ve.v_enum = t.Values[j];
+                                        break;
+                                    }
+                                }
+                                if (v is null)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 72. Не найдено значение системного перечисления по числовому значению."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", i
+                                    //     , L"Путь", spath + tt->path());
+                                }
+                                break;
+                            }
+                            else
+                            {
+                                // TODO : Надо реализовывать
+                                // error(L"Ошибка формата потока 14. Ожидается значение типа Число или UID."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Тип значения", get_node_type_presentation(tr->get_type())
+                                //     , L"Путь", spath + tr->path());
+                            }
+                            ptr = tr.Get_Next();
+                            break;
+                        case 4:
+                            vu = new Value1C_uid(valparent);
+                            v = vu;
+                            if (tr.Get_Type() != Node_Type.nd_guid)
+                            {
+                                // TODO : Надо реализовывать
+                                // error(L"Ошибка формата потока 100. Тип значения не UID."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Тип значения", tr->get_type()
+                                //     , L"Путь", spath + tr->path());
+                            }
+                            else
+                            {
+                                if (!string_to_GUID(tr.Get_Value(), ref uid))
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 101. Ошибка преобразвания UID."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", tr->get_value()
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                                else
+                                {
+                                    vu.v_uid = uid;
+                                }
+                            }
+                            ptr = tr.Get_Next();
+                            break;
+                        case 5: // Стандартный реквизит
+                            vsa = new Value1C_stdattr(valparent);
+                            v = vsa;
+                            vsa.v_stdattr = null;
+                            if (tr.Get_Type() != Node_Type.nd_number)
+                            {
+                                // TODO : Надо реализовывать
+                                // error(L"Ошибка формата потока 104. Тип значения не Число при загрузке стандартного реквизита."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Тип значения", tr->get_type()
+                                //     , L"Значение", tr->get_value()
+                                //     , L"Путь", spath + tr->path());
+
+                            }
+                            break;
+                        case 6:
+                            break;
+                        case 7:
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
             if (vo != null)
