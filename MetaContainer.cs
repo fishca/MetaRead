@@ -201,6 +201,7 @@ namespace MetaRead
         {
             return 0;
         }
+
         public void setValue(string vname, MetaType t, Value1C_obj v, VarValue varvalues, ClassItem clitem, int value, string path)
         {
 
@@ -211,7 +212,88 @@ namespace MetaRead
 
         }
 
-        public MetaContainer()
-        { }
+        public ConfigStorage stor;
+
+        public string storpresetn;
+
+        public static Tree gettree(ConfigStorage stor, string path, bool reporterror = true)
+        {
+            return null;
+        }
+
+        public void loadValue1C(Value1C_obj v, Tree ptr, SerializationTreeNode tn, Guid metauid, Value1C_stdtabsec metats, ClassItem clitem, string path, bool checkend = false)
+        {
+        }
+
+        public void inituninitvalues()
+        {
+        }
+
+        // Если _useExternal истина, _stor принадлежит MetaContainer и удаляется в деструкторе. 
+        // Иначе _stor принадлежит вызывающей стороне, и может быть удален сразу после выполнения конструктора
+        public MetaContainer(ConfigStorage _stor, bool _useExternal = false)
+        {
+        }
+
+        public MetaObject getMetaObject(string n) // Получить объект метаданных по имени
+        {
+            return null;
+        }
+
+        public MetaObject getMetaObject(Guid u) // Получить объект метаданных по УИД
+        {
+            return null;
+        }
+
+        public PredefinedValue getPreValue(Guid u)  // Получить предопределенный элемент по УИД
+        {
+            return null;
+        }
+
+        public bool Export(string path, bool english = false, uint thread_count = 0)
+        {
+            return true;
+        }
+
+        public bool ExportThread(Value1C_obj v, string path, bool english)
+        {
+            return true;
+        }
+
+        public Value1C_obj root
+        {
+            get
+            {
+                return froot;
+            }
+              
+        }
+
+        public MetaTypeSet types
+        {
+            get
+            {
+                return ftypes;
+            }
+
+        }
+
+        public SortedDictionary<Guid, MetaObject> metamap
+        {
+            get { return fmetamap; }
+        }
+
+        public SortedDictionary<string, MetaObject> smetamap
+        {
+            get { return fsmetamap; }
+        }
+
+        public SortedDictionary<Guid, PredefinedValue> predefinedvalues
+        {
+            get { return fpredefinedvalues; }
+        }
+
+        public long export_work_count; // количество заданий выгрузки
+
     }
 }
