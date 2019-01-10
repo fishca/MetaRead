@@ -1424,37 +1424,542 @@ namespace MetaRead
                                     //     , L"Путь", spath + tr->path());
                                 }
                                 break;
-                            case SerializationTreeValueType.stv_value:
-                                break;
-                            case SerializationTreeValueType.stv_var:
-                                break;
-                            case SerializationTreeValueType.stv_prop:
-                                break;
-                            case SerializationTreeValueType.stv_vercon:
-                                break;
-                            case SerializationTreeValueType.stv_ver1C:
-                                break;
-                            case SerializationTreeValueType.stv_classpar:
-                                break;
-                            case SerializationTreeValueType.stv_globalvar:
-                                break;
-                            case SerializationTreeValueType.stv_none:
-                                break;
                             default:
+                                // error(L"Ошибка формата потока 24. Недопустимыйый тип значения константы дерева сериализации."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Путь ДС", tn->path()
+                                //     , L"Тип значения", tn->typeval1presentation()
+                                //     , L"Путь", spath + tr->path());
                                 break;
                         }
+                        if (!tn.nomove)
+                            tr = tr.Get_Next();
                         break;
                     case SerializationTreeNodeType.stt_var:
+                        if (tr is null) 
+                        {
+                            // error(L"Ошибка формата потока 94. Отсутствует ожидаемое значение переменной."
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь ДС", tn->path()
+                            //     , L"Путь", spath);
+                            break;
+                        }
+                        if (tr.Get_Type() == Node_Type.nd_number)
+                            setVarValue(tn.str1, t, v, varvalues, clitem, Convert.ToInt32(tr.Get_Value()), spath);
+                        else
+                        {
+                            // error(L"Ошибка формата потока 33. Тип переменной не Число."
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь ДС", tn->path()
+                            //     , L"Тип переменной", get_node_type_presentation(tr->get_type())
+                            //     , L"Имя переменной", tn->str1
+                            //     , L"Путь", spath + tr->path());
+                        }
+                        if (!tn.nomove)
+                            tr = tr.Get_Next();
                         break;
                     case SerializationTreeNodeType.stt_list:
+                        if (tr is null)
+                        {
+                            // error(L"Ошибка формата потока 95. Отсутствует ожидаемый список."
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь ДС", tn->path()
+                            //     , L"Путь", spath);
+                            break;
+                        }
+                        if (tr.Get_Type() != Node_Type.nd_list)
+                        {
+                            // error(L"Ошибка формата потока 35. Значение не является списком."
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь ДС", tn->path()
+                            //     , L"Путь", spath + tr->path());
+                        }
+                        else
+                        {
+                            tt = tr.Get_First();
+                            recursiveLoadValue1C(v, varvalues, tt, tn.first, metauid, metats, clitem, path, true);
+                        }
+                        if (!tn.nomove)
+                            tr = tr.Get_Next();
                         break;
                     case SerializationTreeNodeType.stt_prop:
+                        if (tr is null)
+                        {
+                            if (!tn.nomove)
+                                // error(L"Ошибка формата потока 96. Отсутствует ожидаемое значение свойства."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Путь ДС", tn->path()
+                                //     , L"Путь", spath);
+                            break;
+                        }
+                        if (tn.isref)
+                            nt = MetaTypeSet.mt_metarefint; // Для ссылки на объект метаданных жестко задаем тип ОбъектМетаданныхСсылкаВнутр
+                        else
+                        {
+                            nt = tn.typeprop;
+                            if (nt is null)
+                            {
+                                if (tn.uTreeNode1.prop1.Types.Count == 1)
+                                    nt = tn.uTreeNode1.prop1.Types[0];
+                            }
+                        }
+
+                        //_metats = metats;
+                        prop = tn.uTreeNode2.prop2;
+                        if (prop != null)
+                        {
+                            vv = v.getproperty(prop);
+                            if (vv != null)
+                            {
+                                if (vv.kind == KindOfValue1C.kv_obj && vv.type == MetaTypeSet.mt_metaobjref) // ОбъектМетаданныхСсылка
+                                {
+                                    vv = ((Value1C_obj)vv).getproperty("ОбъектМетаданных");
+                                }
+                            }
+                            if (vv != null)
+                            {
+                                if (vv.kind == KindOfValue1C.kv_metaobj)
+                                {
+                                    if (((Value1C_metaobj)vv).v_metaobj != null)
+                                        uv1 = ((Value1C_metaobj)vv).v_metaobj.UID;
+                                    else
+                                    {
+                                        // error(L"Ошибка формата потока 199. Ошибка получения metauid из свойства. metauid еще не загружен."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Свойство", prop->name
+                                        //     , L"Путь", spath);
+                                        uv1 = EmptyUID;
+                                    }
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_refobj) uv1 = ((Value1C_refobj)vv).v_uid;
+                                else if (vv.kind == KindOfValue1C.kv_obj && vv.type == MetaTypeSet.mt_tabsection)
+                                {
+                                    vvv = ((Value1C_obj)vv).getproperty("ТабличнаяЧасть");
+                                    if (vvv != null)
+                                    {
+                                        if (vvv.kind == KindOfValue1C.kv_refobj)
+                                            uv1 = ((Value1C_refobj)vvv).v_uid;
+                                        else if (vvv.kind == KindOfValue1C.kv_stdtabsec)
+                                            metats = (Value1C_stdtabsec)vvv;
+                                    }
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_obj && vv.type == MetaTypeSet.mt_metaref)
+                                {
+                                    vvv = ((Value1C_obj)vv).getproperty("Объект");
+                                    if (vvv != null)
+                                        uv1 = ((Value1C_refobj)vvv).v_uid;
+                                    else
+                                    {
+                                        // error(L"Ошибка формата потока 231. Ошибка получения свойства Объект из значения типа МетаСсылка."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Свойство", prop->name
+                                        //     , L"Путь", spath);
+                                        uv1 = EmptyUID;
+                                    }
+                                }
+                                else
+                                {
+                                    // error(L"Ошибка формата потока 103. Ошибка получения metauid из свойства. Свойство имеет недопустимый тип."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Тип значения", KindOfValue1C_presantation(vv->kind)
+                                    //     , L"Путь", spath);
+                                    uv1 = EmptyUID;
+                                }
+                            }
+                            else
+                            {
+                                // error(L"Ошибка формата потока 102. Ошибка получения metauid из свойства. Свойство не определено"
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Путь ДС", tn->path()
+                                //     , L"Свойство", prop->name
+                                //     , L"Путь", spath);
+                                uv1 = EmptyUID;
+                            }
+                        }
+                        else
+                            uv1 = metauid;
+                        nv = readValue1C(nt, tn, tr, v, uv1, metats, clitem, path);
+                        prop = tn.uTreeNode1.prop1;
+                        v.v_objprop[prop] = nv;
+
+                        //==> Обработка предопределенных значений
+                        if (prop.Predefined)
+                        {
+                            if (nv.kind != KindOfValue1C.kv_obj)
+                            {
+                                // error(L"Ошибка формата потока 195. Ошибка получения значения предопределенного элемента. Значение свойства не является объектом"
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Путь ДС", tn->path()
+                                //     , L"Свойство", prop->name
+                                //     , L"Путь", spath);
+                            }
+                            else if (v.kind != KindOfValue1C.kv_metaobj)
+                            {
+                                // error(L"Ошибка формата потока 196. Ошибка получения значения предопределенного элемента. Значение, которому принадлежит свойство с признаком \"Предопределенные\" не является объектом метаданных"
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Путь ДС", tn->path()
+                                //     , L"Свойство", prop->name
+                                //     , L"Путь", spath
+                                //     , L"Тип владельца", KindOfValue1C_presantation(v->kind));
+                            }
+                            else
+                            {
+                                vm = (Value1C_metaobj)v;
+                                vo = (Value1C_obj)nv;
+                                for (ii = 0; ii < vo.v_objcol.Count; ++ii)
+                                {
+                                    vvm = (Value1C_metaobj)vo.v_objcol[ii];
+                                    if (vvm is null)
+                                    {
+                                        // error(L"Ошибка формата потока 187. Ошибка получения значения предопределенного элемента"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Свойство", prop->name
+                                        //     , L"Путь", spath);
+                                        continue;
+                                    }
+                                    if (vvm.kind != KindOfValue1C.kv_metaobj)
+                                    {
+                                        // error(L"Ошибка формата потока 188. Ошибка получения значения предопределенного элемента. Значение не является объектом метаданных"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Свойство", prop->name
+                                        //     , L"Путь", spath
+                                        //     , L"Тип значения", KindOfValue1C_presantation(vvm->kind));
+                                        continue;
+                                    }
+                                    u = vvm.v_metaobj.UID;
+                                    if (u != EmptyUID)
+                                    {
+                                        nv = vvm.getproperty("Имя");
+                                        if (nv is null)
+                                        {
+                                            // error(L"Ошибка формата потока 189. Ошибка получения имени предопределенного элемента"
+                                            //     , L"Загружаемый тип", t->name
+                                            //     , L"Путь ДС", tn->path()
+                                            //     , L"Свойство", prop->name
+                                            //     , L"Путь", spath);
+                                            continue;
+                                        }
+                                        if (nv.kind != KindOfValue1C.kv_string && nv.kind != KindOfValue1C.kv_binary)
+                                        {
+                                            // error(L"Ошибка формата потока 190. Ошибка получения имени предопределенного элемента. Тип значения не Строка"
+                                            //     , L"Загружаемый тип", t->name
+                                            //     , L"Путь ДС", tn->path()
+                                            //     , L"Свойство", prop->name
+                                            //     , L"Путь", spath
+                                            //     , L"Тип значения", KindOfValue1C_presantation(nv->kind));
+                                            continue;
+                                        }
+                                        n = nv.presentation();
+                                        pre = new PredefinedValue(n, u, vm);
+                                        vm.v_prevalues.Add(pre);
+                                        fpredefinedvalues[u] = pre;
+                                    }
+                                }
+                            }
+                        }
+                        //<== Обработка предопределенных значений
                         break;
                     case SerializationTreeNodeType.stt_elcol:
+                        nt = tn.typeprop;
+                        if (nt is null)
+                        {
+                            if (t.CollectionTypes.Count == 1)
+                                nt = t.CollectionTypes[0];
+                        }
+
+                        if (tn.typeval1 == SerializationTreeValueType.stv_none)
+                        {
+                            for (tt = tr; tt != null;)
+                            {
+                                nv = readValue1C(nt, tn, tt, v, metauid, metats, clitem, path);
+                                v.v_objcol.Add(nv);
+                            }
+                        }
+                        else
+                        {
+                            j = 0;
+                            switch (tn.typeval1)
+                            {
+                                case SerializationTreeValueType.stv_number:
+                                    j = tn.uTreeNode1.num1;
+                                    break;
+                                case SerializationTreeValueType.stv_prop:
+                                    vn = (Value1C_number)v.getproperty(tn.uTreeNode1.prop1);
+                                    if (vn is null)
+                                    {
+                                        // error(L"Ошибка формата потока 40. Не установлено значение свойства, являющегося счетчиком коллекции."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Свойство", tn->prop1->name
+                                        //     , L"Путь", spath + tr->path());
+                                    }
+                                    else if (vn.kind !=  KindOfValue1C.kv_number)
+                                    {
+                                        // error(L"Ошибка формата потока 41. Cвойство, являющееся счетчиком коллекции, имеет значение типа не Число."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Свойство", tn->prop1->name
+                                        //     , L"Путь", spath + tr->path());
+                                    }
+                                    else
+                                        j = vn.v_number;
+                                    break;
+                                case SerializationTreeValueType.stv_var:
+                                    j = getVarValue(tn.str1, t, varvalues, clitem, spath);
+                                    break;
+                                default:
+                                    // error(L"Ошибка формата потока 42. Недопусимый тип значения счетчика коллекции дерева сериализации."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Тип значения", tn->typeval1presentation()
+                                    //     , L"Путь", spath + tr->path());
+                                    break;
+                            }
+                            for (tt = tr, i = 0; i < j; ++i)
+                            {
+                                nv = readValue1C(nt, tn, tt, v, metauid, metats, clitem, path);
+                                v.v_objcol.Add(nv);
+                            }
+                        }
+                        if (!tn.nomove)
+                            tr = tt;
                         break;
                     case SerializationTreeNodeType.stt_gentype:
+                        if (tr is null)
+                        {
+                            // error(L"Ошибка формата потока 97. Отсутствует ожидаемое значение генерируемого типа."
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь ДС", tn->path()
+                            //     , L"Путь", spath);
+                            break;
+                        }
+                        if (v.kind != KindOfValue1C.kv_metaobj)
+                        {
+                            // error(L"Ошибка формата потока 197. Попытка загрузки генерируемого типа для значения, не являющегося объектом метаданных."
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь ДС", tn->path()
+                            //     , L"Путь", spath + tr->path());
+                            break;
+                        }
+                        gt = new GeneratedType(tr, spath);
+                        ((Value1C_metaobj)v).v_objgentypes[tn.uTreeNode1.gentype] = gt;
                         break;
                     case SerializationTreeNodeType.stt_cond:
+                        cv = false;
+
+                        //Значение 1
+                        vt1 = SerializationTreeValueType.stv_none;
+                        switch (tn.typeval1)
+                        {
+                            case SerializationTreeValueType.stv_string:
+                                vt1 = SerializationTreeValueType.stv_string;
+                                sv1 = tn.str1;
+                                break;
+                            case SerializationTreeValueType.stv_number:
+                                vt1 = SerializationTreeValueType.stv_number;
+                                nv1 = tn.uTreeNode1.num1;
+                                break;
+                            case SerializationTreeValueType.stv_uid:
+                                vt1 = SerializationTreeValueType.stv_uid;
+                                uv1 = tn.uTreeNode1.uid1;
+                                break;
+                            case SerializationTreeValueType.stv_value:
+                                mv = tn.uTreeNode1.val1;
+                                if (mv.ValueUID == EmptyUID)
+                                {
+                                    vt1 = SerializationTreeValueType.stv_number;
+                                    nv1 = mv.Value;
+                                }
+                                else
+                                {
+                                    vt1 = SerializationTreeValueType.stv_uid;
+                                    uv1 = mv.ValueUID;
+                                }
+                                break;
+                            case SerializationTreeValueType.stv_var:
+                                vt1 = SerializationTreeValueType.stv_number;
+                                nv1 = getVarValue(tn.str1, t, varvalues, clitem, spath);
+                                break;
+                            case SerializationTreeValueType.stv_prop:
+                                p = tn.uTreeNode1.prop1;
+
+                                ip = v.v_objprop.find(p);
+                                if (ip == v->v_objprop.end())
+                                {
+                                    dvt = p->defaultvaluetype;
+                                    switch (dvt)
+                                    {
+                                        case dvt_bool:
+                                            vt1 = stv_number;
+                                            nv1 = p->dv_bool ? 1 : 0;
+                                            break;
+                                        case dvt_number:
+                                            vt1 = stv_number;
+                                            nv1 = p->dv_number;
+                                            break;
+                                        case dvt_string:
+                                            vt1 = stv_string;
+                                            sv1 = *(p->dv_string);
+                                            break;
+                                        case dvt_type:
+                                            vt1 = stv_uid;
+                                            uv1 = p->dv_type->uid;
+                                            break;
+                                        case dvt_enum:
+                                            mv = p->dv_enum;
+                                            if (mv->valueUID == EmptyUID)
+                                            {
+                                                vt1 = stv_number;
+                                                nv1 = mv->value;
+                                            }
+                                            else
+                                            {
+                                                vt1 = stv_uid;
+                                                uv1 = mv->valueUID;
+                                            }
+                                            break;
+                                        default:
+                                            error(L"Ошибка формата потока 53. Ошибка вычисления условия. Не найдено значение свойства"
+                                                , L"Загружаемый тип", t->name
+                                                , L"Путь ДС", tn->path()
+                                                , L"Свойство", p->name
+                                                , L"Путь", spath + tr->path());
+                                    }
+                                }
+                                else
+                                {
+                                    vv = ip->second;
+                                    if (!vv)
+                                    {
+                                        error(L"Ошибка формата потока 232. Ошибка вычисления условия. Значение свойства не определено"
+                                            , L"Загружаемый тип", t->name
+                                            , L"Путь ДС", tn->path()
+                                            , L"Свойство", p->name
+                                            , L"Путь", spath + tr->path());
+                                    }
+                                    else
+                                    {
+                                        if (vv->kind == kv_string)
+                                        {
+                                            vt1 = stv_string;
+                                            sv1 = ((Value1C_string*)vv)->v_string;
+                                        }
+                                        else if (vv->kind == kv_number)
+                                        {
+                                            vt1 = stv_number;
+                                            nv1 = ((Value1C_number*)vv)->v_number;
+                                        }
+                                        else if (vv->kind == kv_number_exp)
+                                        {
+                                            vt1 = stv_number;
+                                            nv1 = (int)((Value1C_number_exp*)vv)->v_number;
+                                        }
+                                        else if (vv->kind == kv_uid)
+                                        {
+                                            vt1 = stv_uid;
+                                            uv1 = ((Value1C_uid*)vv)->v_uid;
+                                        }
+                                        else if (vv->kind == kv_enum)
+                                        {
+                                            mv = ((Value1C_enum*)vv)->v_enum;
+                                            if (mv->valueUID == EmptyUID)
+                                            {
+                                                vt1 = stv_number;
+                                                nv1 = mv->value;
+                                            }
+                                            else
+                                            {
+                                                vt1 = stv_uid;
+                                                uv1 = mv->valueUID;
+                                            }
+                                        }
+                                        else if (vv->kind == kv_bool)
+                                        {
+                                            vt1 = stv_number;
+                                            nv1 = ((Value1C_bool*)vv)->v_bool ? 1 : 0;
+                                        }
+                                        else if (vv->kind == kv_type)
+                                        {
+                                            vt1 = stv_uid;
+                                            uv1 = ((Value1C_type*)vv)->v_uid;
+                                        }
+                                        else if (vv->kind == kv_binary)
+                                        {
+                                            vt1 = stv_string;
+                                            sv1 = vv->presentation();
+                                        }
+                                        else
+                                        {
+                                            error(L"Ошибка формата потока 54. Ошибка вычисления условия. Недопустимый тип значения свойства"
+                                                , L"Загружаемый тип", t->name
+                                                , L"Путь ДС", tn->path()
+                                                , L"Свойство", p->name
+                                                , L"Тип значения", vv->kind
+                                                , L"Путь", spath + tr->path());
+                                        }
+                                    }
+                                }
+                                break;
+                            case stv_vercon:
+                                vt1 = stv_number;
+                                nv1 = (int)tn->vercon1;
+                                break;
+                            case stv_ver1C:
+                                vt1 = stv_number;
+                                nv1 = (int)tn->ver1C1;
+                                break;
+                            case stv_classpar:
+                                vt1 = stv_number;
+                                if (clitem) nv1 = clitem->cl->getparamvalue(tn->classpar1);
+                                else
+                                {
+                                    error(L"Ошибка формата потока 120. Ошибка вычисления условия. Класс не определён."
+                                        , L"Загружаемый тип", t->name
+                                        , L"Путь ДС", tn->path()
+                                        , L"Параметр класса", tn->classpar1->name
+                                        , L"Тип значения", vv->kind
+                                        , L"Путь", spath + tr->path());
+                                    nv1 = -1;
+                                }
+                                break;
+                            case stv_globalvar:
+                                vt1 = stv_number;
+                                nv1 = 0;
+                                ok = false;
+                                for (vo = v->parent; vo; vo = vo->parent)
+                                {
+                                    icv = vo->globalvars.find(tn->str1.UpperCase());
+                                    if (icv != vo->globalvars.end())
+                                    {
+                                        nv1 = icv->second;
+                                        ok = true;
+                                        break;
+                                    }
+                                }
+                                if (!ok)
+                                {
+                                    error(L"Ошибка формата потока 123. Ошибка получения первого значения условия. Не удалось получить значение глобальной переменной"
+                                        , L"Загружаемый тип", t->name
+                                        , L"Путь ДС", tn->path()
+                                        , L"Глобальная переменная", tn->str1
+                                        , L"Путь", spath + tr->path());
+                                }
+                                break;
+                            default:
+                                error(L"Ошибка формата потока 55. Ошибка вычисления условия. Недопустимый тип значения 1"
+                                    , L"Загружаемый тип", t->name
+                                    , L"Путь ДС", tn->path()
+                                    , L"Тип значения", tn->typeval1presentation()
+                                    , L"Путь", spath + tr->path());
+
+                        }
+
                         break;
                     case SerializationTreeNodeType.stt_metaid:
                         break;
