@@ -896,12 +896,352 @@ namespace MetaRead
                                 //     , L"Путь", spath + tr->path());
 
                             }
+                            else
+                            {
+                                i = Convert.ToInt32(tr.Get_Value());
+                                vsa.v_value = i;
+                                if (metauid == EmptyUID)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 105. Ошибка загрузки стандартного реквизита. Не определён metauid."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", tr->get_value()
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                                else
+                                {
+                                    tt = tr;
+                                    tr = tr.Get_Next();
+                                    if (tr != null && i >= 0)
+                                    {
+                                        if (tr.Get_Type() == Node_Type.nd_guid)
+                                        {
+                                            uid = EmptyUID;
+                                            string_to_GUID(tr.Get_Value(), ref uid);
+                                            puninitvalues.Add(new UninitValue1C(v, spath + tt.Path(), metauid, uid, metats));
+                                            tr = tr.Get_Next();
+                                        }
+                                        else
+                                        {
+                                            // TODO : Надо реализовывать
+                                            // error(L"Ошибка формата потока 205. Ошибка загрузки стандартного реквизита. Тип значения не UID."
+                                            //     , L"Загружаемый тип", t->name
+                                            //     , L"Тип значения", tr->get_type()
+                                            //     , L"Значение", tr->get_value()
+                                            //     , L"Путь", spath + tr->path());
+                                            puninitvalues.Add(new UninitValue1C(v, spath + tt.Path(), metauid, EmptyUID, metats));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        puninitvalues.Add(new UninitValue1C(v, spath + tt.Path(), metauid, EmptyUID, metats));
+                                    }
+                                }
+                            }
+                            ptr = tr;
                             break;
                         case 6:
+                            vo = new Value1C_obj(valparent, this);
+                            v = vo;
+                            ve = new Value1C_enum(vo);
+                            ve.type = MetaTypeSet.mt_datefractions;
+                            ve.v_enum = null;
+                            vo.v_objprop[MetaTypeSet.mp_datefractions] = ve;
+                            if (tr.Get_Type() != Node_Type.nd_string)
+                            {
+                                // TODO : Надо реализовывать
+                                // error(L"Ошибка формата потока 111. Тип значения не Строка."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Тип значения", tr->get_type()
+                                //     , L"Значение", tr->get_value()
+                                //     , L"Путь", spath + tr->path());
+                            }
+                            else
+                            {
+                                s = tr.Get_Value();
+                                if (s.CompareTo("D") == 0)
+                                {
+                                    ve.v_enum = MetaTypeSet.mv_datefractionsdate;
+                                }
+                                else if (s.CompareTo("T") == 0)
+                                {
+                                    ve.v_enum = MetaTypeSet.mv_datefractionstime;
+                                }
+                                else
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 112. Неизвестное значение частей даты."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", s
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                            }
+                            ptr = tr.Get_Next();
                             break;
-                        case 7:
+                        case 7: // Стандартная табличная часть
+                            vst = new Value1C_stdtabsec(valparent);
+                            v = vst;
+                            metats = vst;
+                            vst.v_stdtabsec = null;
+                            if (tr.Get_Type() == Node_Type.nd_number)
+                            {
+                                // TODO : Надо реализовывать
+                                // error(L"Ошибка формата потока 207. Тип значения не Число при загрузке стандартной табличной части."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Тип значения", tr->get_type()
+                                //     , L"Значение", tr->get_value()
+                                //     , L"Путь", spath + tr->path());
+                            }
+                            else
+                            {
+                                i = Convert.ToInt32(tr.Get_Value());
+                                vst.v_value = i;
+                                if (metauid == EmptyUID)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 208. Ошибка загрузки стандартной табличной части. Не определён metauid."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Значение", tr->get_value()
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                                else
+                                {
+                                    puninitvalues.Add(new UninitValue1C(v, spath + tr.Path(), metauid));
+                                }
+                            }
+                            ptr = tr.Get_Next();
+                            break;
+                        case 8:
+                            vo = new Value1C_obj(valparent, this);
+                            v = vo;
+                            _metats = null;
+                            vo.type = t;
+                            if (tr.Get_Type() != Node_Type.nd_list)
+                            {
+                                // TODO : Надо реализовывать
+                                // error(L"Ошибка формата потока 216. Ошибка загрузки типа МетаСсылка. Узел не является списком."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Тип значения", tr->get_type()
+                                //     , L"Значение", tr->get_value()
+                                //     , L"Путь", spath + tr->path());
+
+                            }
+                            else
+                            {
+                                tt = tr.Get_First();
+                                if (tt is null)
+                                {
+                                    // TODO : Надо реализовывать
+                                    // error(L"Ошибка формата потока 217. Ошибка загрузки типа МетаСсылка. Нет значений."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                                else
+                                {
+                                    if (tt.Get_Type() != Node_Type.nd_number)
+                                    {
+                                        // TODO : Надо реализовывать
+                                        // error(L"Ошибка формата потока 218. Ошибка загрузки типа МетаСсылка. Узел не является числом."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Тип значения", tt->get_type()
+                                        //     , L"Значение", tt->get_value()
+                                        //     , L"Путь", spath + tt->path());
+                                    }
+                                    else
+                                    {
+                                        if (tt.Get_Value().CompareTo("1") != 0)
+                                        {
+                                            // TODO : Надо реализовывать
+                                            // error(L"Ошибка формата потока 219 Ошибка загрузки типа МетаСсылка. Значение узла не равно 1."
+                                            //     , L"Загружаемый тип", t->name
+                                            //     , L"Значение", tt->get_value()
+                                            //     , L"Путь", spath + tt->path());
+                                        }
+                                        tt = tt.Get_Next();
+                                        if (tt.Get_Type() != Node_Type.nd_guid)
+                                        {
+                                            // TODO : Надо реализовывать
+                                            // error(L"Ошибка формата потока 220. Ошибка загрузки типа МетаСсылка. Узел не UID."
+                                            //     , L"Загружаемый тип", t->name
+                                            //     , L"Тип значения", tt->get_type()
+                                            //     , L"Значение", tt->get_value()
+                                            //     , L"Путь", spath + tt->path());
+
+                                        }
+                                        else
+                                        {
+                                            ouid = EmptyUID;
+                                            vro = new Value1C_refobj(valparent);
+                                            vro.type = MetaTypeSet.mt_metarefint;
+                                            if (!string_to_GUID(tt.Get_Value(), ref ouid))
+                                            {
+                                                // TODO : Надо реализовывать
+                                                // error(L"Ошибка формата потока 221. Ошибка преобразования UID при загрузке ссылки на объект метаданных."
+                                                //     , L"Загружаемый тип", t->name
+                                                //     , L"Значение", tt->get_value()
+                                                //     , L"Путь", spath + tt->path());
+                                            }
+                                            else if (ouid != EmptyUID)
+                                            {
+                                                puninitvalues.Add(new UninitValue1C(vro, spath + tr.Path(), ouid));
+                                                vro.v_uid = ouid;
+                                            }
+
+                                            prop = t.GetProperty("Объект");
+                                            vo.v_objprop[prop] = vro;
+
+                                            tt = tt.Get_Next();
+                                            if (tt.Get_Type() != Node_Type.nd_number)
+                                            {
+                                                // TODO : Надо реализовывать
+                                                // error(L"Ошибка формата потока 222. Ошибка загрузки типа МетаСсылка. Узел не является числом."
+                                                //     , L"Загружаемый тип", t->name
+                                                //     , L"Тип значения", tt->get_type()
+                                                //     , L"Значение", tt->get_value()
+                                                //     , L"Путь", spath + tt->path());
+                                            }
+                                            else
+                                            {
+                                                vst = null;
+                                                vsa = null;
+                                                k = Convert.ToInt32(tt.Get_Value());
+                                                for (i = 0; i < k; ++i)
+                                                {
+                                                    tt = tt.Get_Next();
+                                                    if (tt.Get_Type() != Node_Type.nd_list)
+                                                    {
+                                                        // TODO : Надо реализовывать
+                                                        // error(L"Ошибка формата потока 225. Ошибка загрузки типа МетаСсылка. Узел не является списком."
+                                                        //     , L"Загружаемый тип", t->name
+                                                        //     , L"Тип значения", tt->get_type()
+                                                        //     , L"Значение", tt->get_value()
+                                                        //     , L"Путь", spath + tt->path());
+                                                    }
+                                                    else
+                                                    {
+                                                        ttt = tt.Get_First();
+                                                        if (ttt is null)
+                                                        {
+                                                            // TODO : Надо реализовывать
+                                                            // error(L"Ошибка формата потока 226. Ошибка загрузки типа МетаСсылка. Нет значений."
+                                                            //     , L"Загружаемый тип", t->name
+                                                            //     , L"Путь", spath + tt->path());
+                                                        }
+                                                        else
+                                                        {
+                                                            tx = ttt;
+                                                            ttt = ttt.Get_Next();
+                                                            if (ttt is null)
+                                                            {
+                                                                // TODO : Надо реализовывать
+                                                                // error(L"Ошибка формата потока 227. Ошибка загрузки типа МетаСсылка. Нет значений."
+                                                                //     , L"Загружаемый тип", t->name
+                                                                //     , L"Путь", spath + tx->path());
+                                                            }
+                                                            else
+                                                            {
+                                                                if (ttt.Get_Type() != Node_Type.nd_guid)
+                                                                {
+                                                                    // TODO : Надо реализовывать
+                                                                    // error(L"Ошибка формата потока 228. Ошибка загрузки типа МетаСсылка. Узел не UID."
+                                                                    //     , L"Загружаемый тип", t->name
+                                                                    //     , L"Тип значения", ttt->get_type()
+                                                                    //     , L"Значение", ttt->get_value()
+                                                                    //     , L"Путь", spath + ttt->path());
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (!string_to_GUID(ttt.Get_Value(), ref uid))
+                                                                    {
+                                                                        // TODO : Надо реализовывать
+                                                                        // error(L"Ошибка формата потока 229. Ошибка преобразования UID при загрузке типа МетаСсылка."
+                                                                        //     , L"Загружаемый тип", t->name
+                                                                        //     , L"Значение", ttt->get_value()
+                                                                        //     , L"Путь", spath + ttt->path());
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (uid == sig_standart_attribute)
+                                                                        {
+                                                                            if (i == k - 1) // стандартный реквизит читаем только если он последний
+                                                                            {
+                                                                                vv = readValue1C(tx, MetaTypeSet.mt_standart_attribute, vo, ouid, _metats, clitem, path, true);
+                                                                                prop = t.GetProperty("СтандартныйРеквизит");
+                                                                                vo.v_objprop[prop] = vv;
+                                                                            }
+                                                                        }
+                                                                        else if (uid == sig_standart_table_sec)
+                                                                        {
+                                                                            vv = readValue1C(tx, MetaTypeSet.mt_standart_tabular_section, vo, ouid, _metats, clitem, path, true);
+                                                                            prop = t.GetProperty("СтандартнаяТабличнаяЧасть");
+                                                                            vo.v_objprop[prop] = vv;
+                                                                        }
+                                                                        else if (uid == sig_ext_dimension || uid == sig_ext_dimension_type)
+                                                                        {
+                                                                            vv = readValue1C(tx, MetaTypeSet.mt_standart_attribute, vo, ouid, _metats, clitem, path, true);
+                                                                            prop = t.GetProperty("СтандартныйРеквизит");
+                                                                            vo.v_objprop[prop] = vv;
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            // TODO : Надо реализовывать
+                                                                            // error(L"Ошибка формата потока 230. Неизвестная сигнатура при загрузке типа МетаСсылка."
+                                                                            //     , L"Загружаемый тип", t->name
+                                                                            //     , L"Значение", ttt->get_value()
+                                                                            //     , L"Путь", spath + ttt->path());
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+
+                                                        }
+                                                    }
+                                                }
+
+                                                tt = tt.Get_Next();
+                                                if (tt.Get_Type() != Node_Type.nd_number)
+                                                {
+                                                    // TODO : Надо реализовывать
+                                                    // error(L"Ошибка формата потока 223. Ошибка загрузки типа МетаСсылка. Узел не является числом."
+                                                    //     , L"Загружаемый тип", t->name
+                                                    //     , L"Тип значения", tt->get_type()
+                                                    //     , L"Значение", tt->get_value()
+                                                    //     , L"Путь", spath + tt->path());
+                                                }
+                                                else
+                                                {
+                                                    vb = new Value1C_bool(vo);
+                                                    if (tt.Get_Value().CompareTo("0") == 0)
+                                                        b = false;
+                                                    else if (tt.Get_Value().CompareTo("1") == 0)
+                                                        b = true;
+                                                    else
+                                                    {
+                                                        // TODO : Надо реализовывать
+                                                        // error(L"Ошибка формата потока 224. Ошибка загрузки типа Булево."
+                                                        //     , L"Загружаемый тип", t->name
+                                                        //     , L"Значение", tt->get_value()
+                                                        //     , L"Путь", spath + tt->path());
+                                                        b = false;
+                                                    }
+                                                    vb.v_bool = b;
+                                                    prop = t.GetProperty("Подчиненный");
+                                                    vo.v_objprop[prop] = vb;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            ptr = tr.Get_Next();
                             break;
                         default:
+                            // TODO : Надо реализовывать
+                            // error(L"Ошибка формата потока 16. Неизвестный вариант сериализации."
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Вариант сериализации", t->serialization_ver
+                            //     , L"Путь", spath + tr->path());
+                            ptr = tr.Get_Next();
                             break;
                     }
                 }
@@ -919,6 +1259,221 @@ namespace MetaRead
 
         public void recursiveLoadValue1C(Value1C_obj v, VarValue[] varvalues, Tree ptr, SerializationTreeNode tn, Guid metauid, Value1C_stdtabsec metats, ClassItem clitem, string path, bool checkend = false)
         {
+            MetaType t;
+            Guid uid = EmptyUID;
+            Tree tr;
+            Tree tt;
+            Value1C nv;
+            Value1C_metaobj vm;
+            Value1C_metaobj vvm;
+            Value1C_obj vo;
+            Value1C_string vs;
+            Value1C_number vn;
+            Value1C vv;
+            Value1C vvv;
+            MetaType nt;
+            int i, j;
+            GeneratedType gt;
+            SerializationTreeNode tnn;
+
+            SerializationTreeValueType vt1, vt2;
+            string sv1 = "";
+            string sv2 = "";
+            int nv1, nv2;
+            Guid uv1 = EmptyUID;
+            Guid uv2 = EmptyUID;
+            bool cv, ok;
+            //std::map<MetaProperty*, Value1C*, MetaPropertyLess>::iterator ip;
+            MetaProperty prop;
+            Class cl;
+            ClassItem cli;
+            //std::map<String, int>::iterator icv;
+            string spath;
+            MetaValue mv;
+
+            int ii;
+            Guid u = EmptyUID;
+            string n = "";
+            PredefinedValue pre;
+            MetaProperty p;
+            DefaultValueType dvt;
+
+            spath = storpresent + path;
+            tr = ptr;
+            if (tn is null)
+            {
+                if (checkend)
+                {
+                    if (tr != null)
+                    {
+                        // error(L"Ошибка формата потока 63. Остались необработанные значения."
+                        //     , L"Путь", spath + tr->path());
+                    }
+                }
+                return;
+            }
+
+            t = tn.owner;
+
+            for (; tn != null; tn = tn.next)
+            {
+                switch (tn.type)
+                {
+                    case SerializationTreeNodeType.stt_const:
+                        if (tr is null)
+                        {
+                            // error(L"Ошибка формата потока 27. Отсутствует ожидаемое значение константы."
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь ДС", tn->path()
+                            //     , L"Путь", spath);
+                            break;
+                        }
+
+                        switch (tn.typeval1)
+                        {
+                            case SerializationTreeValueType.stv_string:
+                                if (tr.Get_Type() == Node_Type.nd_string)
+                                {
+                                    if (tr.Get_Value().CompareTo(tn.str1) != 0)
+                                    {
+                                        // error(L"Ошибка формата потока 26. Значение не совпадает с константой дерева сериализации."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Значение", tr->get_value()
+                                        //     , L"Значение константы", tn->str1
+                                        //     , L"Путь", spath + tr->path());
+                                    }
+
+                                }
+                                else
+                                {
+                                    // error(L"Ошибка формата потока 25. Тип значения не совпадает с типом значения константы дерева сериализации."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
+                                    //     , L"Тип значения константы", tn->typeval1presentation()
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                                break;
+                            case SerializationTreeValueType.stv_number:
+                                if (tr.Get_Type() == Node_Type.nd_number)
+                                {
+                                    if (Convert.ToInt32(tr.Get_Value()) != tn.uTreeNode1.num1)
+                                    {
+                                        // error(L"Ошибка формата потока 28. Значение не совпадает с константой дерева сериализации."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Значение", tr->get_value()
+                                        //     , L"Значение константы", tn->num1
+                                        //     , L"Путь", spath + tr->path());
+                                    }
+
+                                }
+                                else if (tr.Get_Type() == Node_Type.nd_number_exp)
+                                {
+                                    if (Convert.ToDouble(tr.Get_Value()) != (double)tn.uTreeNode1.num1)
+                                    {
+                                        // error(L"Ошибка формата потока 235. Значение не совпадает с константой дерева сериализации."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Значение", tr->get_value()
+                                        //     , L"Значение константы", tn->num1
+                                        //     , L"Путь", spath + tr->path());
+                                    }
+
+                                }
+                                else
+                                {
+                                    // error(L"Ошибка формата потока 29. Тип значения не совпадает с типом значения константы дерева сериализации."
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
+                                    //     , L"Тип значения константы", tn->typeval1presentation()
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                                break;
+                            case SerializationTreeValueType.stv_uid:
+                                if (tr.Get_Type() == Node_Type.nd_guid)
+                                {
+                                    if (!string_to_GUID(tr.Get_Value(), ref uid))
+                                    {
+                                        // error(L"Ошибка формата потока 30. Ошибка преобразования UID при загрузке константы."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Значение", tr->get_value()
+                                        //     , L"Значение константы", GUID_to_string(tn->uid1)
+                                        //     , L"Путь", spath + tr->path());
+                                    }
+                                    else if (uid != tn.uTreeNode1.uid1)
+                                    {
+                                        // error(L"Ошибка формата потока 31. Значение не совпадает с константой дерева сериализации."
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Значение", tr->get_value()
+                                        //     , L"Значение константы", GUID_to_string(tn->uid1)
+                                        //     , L"Путь", spath + tr->path());
+                                    }
+                                }
+                                else
+                                {
+                                    // error(L"Ошибка формата потока 32. Тип значения не совпадает с типом значения константы дерева сериализации."
+                                    //     , L"Загружаемый тип", t->name
+                                    //         , L"Путь ДС", tn->path()
+                                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
+                                    //     , L"Тип значения константы", tn->typeval1presentation()
+                                    //     , L"Путь", spath + tr->path());
+                                }
+                                break;
+                            case SerializationTreeValueType.stv_value:
+                                break;
+                            case SerializationTreeValueType.stv_var:
+                                break;
+                            case SerializationTreeValueType.stv_prop:
+                                break;
+                            case SerializationTreeValueType.stv_vercon:
+                                break;
+                            case SerializationTreeValueType.stv_ver1C:
+                                break;
+                            case SerializationTreeValueType.stv_classpar:
+                                break;
+                            case SerializationTreeValueType.stv_globalvar:
+                                break;
+                            case SerializationTreeValueType.stv_none:
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case SerializationTreeNodeType.stt_var:
+                        break;
+                    case SerializationTreeNodeType.stt_list:
+                        break;
+                    case SerializationTreeNodeType.stt_prop:
+                        break;
+                    case SerializationTreeNodeType.stt_elcol:
+                        break;
+                    case SerializationTreeNodeType.stt_gentype:
+                        break;
+                    case SerializationTreeNodeType.stt_cond:
+                        break;
+                    case SerializationTreeNodeType.stt_metaid:
+                        break;
+                    case SerializationTreeNodeType.stt_classcol:
+                        break;
+                    case SerializationTreeNodeType.stt_class:
+                        break;
+                    case SerializationTreeNodeType.stt_idcol:
+                        break;
+                    case SerializationTreeNodeType.stt_idel:
+                        break;
+                    case SerializationTreeNodeType.stt_max:
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+
         }
 
         public int getVarValue(string vname, MetaType t, VarValue[] varvalues, ClassItem clitem, string path)
@@ -1155,6 +1710,1026 @@ namespace MetaRead
 
         public void loadValue1C(Value1C_obj v, Tree ptr, SerializationTreeNode tn, Guid metauid, Value1C_stdtabsec metats, ClassItem clitem, string path, bool checkend = false)
         {
+            MetaType t;
+            MetaType nt;
+            //VarValue varvalues;
+            int i, j;
+            int k, l;
+            //std::map<MetaProperty*, Value1C*, MetaPropertyLess>::iterator ip;
+            MetaProperty p;
+            MetaGeneratedType gt;
+            SerializationTreeVar var;
+            ExternalFile ext;
+
+            bool cv, ok;
+            SerializationTreeValueType vt1, vt2;
+            String sv1 = "";
+            String sv2 = "";
+            int nv1 = 0;
+            int nv2 = 0;
+            Guid uv1 = EmptyUID;
+            Guid uv2 = EmptyUID;
+            Value1C vv;
+            Value1C_obj vo;
+            Value1C_number vn = null;
+            //std::map<String, int>::iterator icv;
+            String spath, npath;
+            Tree tt;
+            Tree tte;
+            //TStreamReader* reader;
+            Stream str;
+            MetaValue mv;
+            DefaultValueType dvt;
+
+            MetaProperty prop;
+            int ni, ui;
+            int ii;
+            Value1C_obj vValues;
+            Value1C_obj vColumns;
+            Value1C_obj vColumnsAndValuesMap = null;
+            Value1C_obj vStrings = null;
+            Value1C_binary vb;
+            Value1C_extobj veo;
+            bool nok, uok;
+
+            ConfigFile cf;
+            ConfigFile cfc;
+            String sn;
+
+
+            spath = storpresent + path;
+            t = tn.owner;
+            //varvalues = null;
+            VarValue[] varvalues = null;
+            i = t.SerializationVars.Count;
+            if (i != 0)
+            {
+                varvalues = new VarValue[i];
+                for (j = 0; j < i; ++j)
+                {
+                    var = t.SerializationVars[j];
+                    if (var.IsGlobal)
+                    {
+                        if (var.IsFix)
+                        {
+                            v.globalvars[var.Name.ToUpper()] = var.FixValue;
+                        }
+                    }
+                }
+            }
+
+            recursiveLoadValue1C(v, varvalues, ptr, tn, metauid, metats, clitem, path, checkend);
+
+            if (v.kind == KindOfValue1C.kv_metaobj)
+            {
+                if (((Value1C_metaobj)v).v_metaobj is null)
+                {
+                    // TODO : Требуется реализовать...
+                    // error(L"Ошибка формата потока 203. Не загружен UID объекта метаданных."
+                    //     , L"Загружаемый тип", t->name
+                    //     , L"Путь", spath);
+                }
+            }
+
+            #region Чтение внешних файлов
+
+            for (i = 0; i < t.ExternalFiles.Count; ++i)
+            {
+                ext = t.ExternalFiles[i];
+                if (ext.havecondition)
+                {
+                    cv = false;
+
+                    //Значение 1
+                    vt1 = SerializationTreeValueType.stv_none;
+                    switch (ext.typeval1)
+                    {
+                        case SerializationTreeValueType.stv_string:
+                            vt1 = SerializationTreeValueType.stv_string;
+                            sv1 = ext.str1;
+                            break;
+                        case SerializationTreeValueType.stv_number:
+                            vt1 = SerializationTreeValueType.stv_number;
+                            nv1 = ext.uTreeNode3.num1;
+                            break;
+                        case SerializationTreeValueType.stv_uid:
+                            vt1 = SerializationTreeValueType.stv_uid;
+                            uv1 = ext.uTreeNode3.uid1;
+                            break;
+                        case SerializationTreeValueType.stv_value:
+                            mv = ext.uTreeNode3.val1;
+                            if (mv.ValueUID == EmptyUID)
+                            {
+                                vt1 = SerializationTreeValueType.stv_number;
+                                nv1 = mv.Value;
+                            }
+                            else
+                            {
+                                vt1 = SerializationTreeValueType.stv_uid;
+                                uv1 = mv.ValueUID;
+                            }
+                            break;
+                        case SerializationTreeValueType.stv_var:
+                            vt1 = SerializationTreeValueType.stv_number;
+                            nv1 = getVarValue(ext.str1, t, varvalues, clitem, spath);
+                            break;
+                        case SerializationTreeValueType.stv_prop:
+
+                            if (!v.v_objprop.TryGetValue(ext.uTreeNode3.prop1, out Value1C val))
+                            {
+                                p = ext.uTreeNode3.prop1;
+                                dvt = p.defaultvaluetype;
+                                switch (dvt)
+                                {
+                                    case DefaultValueType.dvt_bool:
+                                        vt1 = SerializationTreeValueType.stv_number;
+                                        nv1 = p.dv_union_type.dv_bool ? 1 : 0;
+                                        break;
+                                    case DefaultValueType.dvt_number:
+                                        vt1 = SerializationTreeValueType.stv_number;
+                                        nv1 = p.dv_union_type.dv_number;
+                                        break;
+                                    case DefaultValueType.dvt_string:
+                                        vt1 = SerializationTreeValueType.stv_string;
+                                        sv1 = p.dv_union_type.dv_string;
+                                        break;
+                                    case DefaultValueType.dvt_type:
+                                        vt1 = SerializationTreeValueType.stv_uid;
+                                        uv1 = p.dv_union_type.dv_type.uid;
+                                        break;
+                                    case DefaultValueType.dvt_enum:
+                                        mv = p.dv_union_type.dv_enum;
+                                        if (mv.ValueUID == EmptyUID)
+                                        {
+                                            vt1 = SerializationTreeValueType.stv_number;
+                                            nv1 = mv.Value;
+                                        }
+                                        else
+                                        {
+                                            vt1 = SerializationTreeValueType.stv_uid;
+                                            uv1 = mv.ValueUID;
+                                        }
+                                        break;
+                                    default:
+                                        // TODO : Требуется реализация
+                                        // error(L"Ошибка формата потока 126. Ошибка вычисления условия внешнего файла. Не найдено значение свойства"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Свойство", p->name
+                                        //     , L"Путь", spath);
+
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                vv = val;
+                                if (vv.kind == KindOfValue1C.kv_string)
+                                {
+                                    vt1 = SerializationTreeValueType.stv_string;
+                                    sv1 = ((Value1C_string)vv).v_string;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_number)
+                                {
+                                    vt1 = SerializationTreeValueType.stv_number;
+                                    nv1 = ((Value1C_number)vv).v_number;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_number_exp)
+                                {
+                                    vt1 = SerializationTreeValueType.stv_number;
+                                    nv1 = (int)((Value1C_number_exp)vv).v_number;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_uid)
+                                {
+                                    vt1 = SerializationTreeValueType.stv_uid;
+                                    uv1 = ((Value1C_uid)vv).v_uid;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_enum)
+                                {
+                                    mv = ((Value1C_enum)vv).v_enum;
+                                    if (mv.ValueUID == EmptyUID)
+                                    {
+                                        vt1 = SerializationTreeValueType.stv_number;
+                                        nv1 = mv.Value;
+                                    }
+                                    else
+                                    {
+                                        vt1 = SerializationTreeValueType.stv_uid;
+                                        uv1 = mv.ValueUID;
+                                    }
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_bool)
+                                {
+                                    vt1 = SerializationTreeValueType.stv_number;
+                                    nv1 = ((Value1C_bool)vv).v_bool ? 1 : 0;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_binary)
+                                {
+                                    vt1 = SerializationTreeValueType.stv_string;
+                                    sv1 = vv.presentation();
+                                }
+                                else
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 127. Ошибка вычисления условия внешнего файла. Недопустимый тип значения свойства"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Свойство", ext->prop1->name
+                                    //     , L"Тип значения", vv->kind
+                                    //     , L"Путь", spath);
+                                }
+
+                            }
+                            break;
+                        case SerializationTreeValueType.stv_vercon:
+                            vt1 = SerializationTreeValueType.stv_number;
+                            nv1 = (int)ext.uTreeNode3.vercon1;
+                            break;
+                        case SerializationTreeValueType.stv_ver1C:
+                            vt1 = SerializationTreeValueType.stv_number;
+                            nv1 = (int)ext.uTreeNode3.ver1C1;
+                            break;
+                        case SerializationTreeValueType.stv_classpar:
+                            vt1 = SerializationTreeValueType.stv_number;
+                            if (clitem != null)
+                            {
+                                nv1 = clitem.Cl.GetParamValue(ext.uTreeNode3.classpar1);
+                            }
+                            else
+                            {
+                                // TODO : Требуется реализовать...
+                                // error(L"Ошибка формата потока 128. Ошибка вычисления условия внешнего файла. Класс не определён."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Параметр класса", ext->classpar1->name
+                                //     , L"Тип значения", vv->kind
+                                //     , L"Путь", spath);
+                                nv1 = -1;
+                            }
+                            break;
+                        case SerializationTreeValueType.stv_globalvar:
+                            vt1 = SerializationTreeValueType.stv_number;
+                            nv1 = 0;
+                            ok = false;
+                            vo = null;
+                            for (vo = vo.parent; vo != null; vo = vo.parent)
+                            {
+                                if (vo.globalvars.TryGetValue(ext.str1.ToUpper(), out int val2))
+                                {
+                                    nv1 = val2;
+                                    ok = true;
+                                    break;
+                                }
+                            }
+                            if (!ok)
+                            {
+                                // TODO : Требуется реализовать...
+                                // error(L"Ошибка формата потока 129. Ошибка получения первого значения условия внешнего файла. Не удалось получить значение глобальной переменной"
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Глобальная переменная", ext->str1
+                                //     , L"Путь", spath);
+
+                            }
+                            break;
+                        default:
+                            // TODO : Требуется реализовать...
+                            // error(L"Ошибка формата потока 130. Ошибка вычисления условия внешнего файла. Недопустимый тип значения 1"
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Тип значения", ext->typeval1presentation()
+                            //     , L"Путь", spath);
+
+                            break;
+                    }
+
+                    // Значение 2
+                    vt2 = SerializationTreeValueType.stv_none;
+                    switch (ext.typeval2)
+                    {
+                        case SerializationTreeValueType.stv_string:
+                            vt2 = SerializationTreeValueType.stv_string;
+                            sv2 = ext.str2;
+                            break;
+                        case SerializationTreeValueType.stv_number:
+                            vt2 = SerializationTreeValueType.stv_number;
+                            nv2 = ext.uTreeNode4.num2;
+                            break;
+                        case SerializationTreeValueType.stv_uid:
+                            vt2 = SerializationTreeValueType.stv_uid;
+                            uv2 = ext.uTreeNode4.uid2;
+                            break;
+                        case SerializationTreeValueType.stv_value:
+                            mv = ext.uTreeNode4.val2;
+                            if (mv.ValueUID == EmptyUID)
+                            {
+                                vt2 = SerializationTreeValueType.stv_number;
+                                nv2 = mv.Value;
+                            }
+                            else
+                            {
+                                vt2 = SerializationTreeValueType.stv_uid;
+                                uv2 = mv.ValueUID;
+                            }
+                            break;
+                        case SerializationTreeValueType.stv_var:
+                            vt2 = SerializationTreeValueType.stv_number;
+                            nv2 = getVarValue(ext.str2, t, varvalues, clitem, spath);
+                            break;
+                        case SerializationTreeValueType.stv_prop:
+
+                            if (!v.v_objprop.TryGetValue(ext.uTreeNode4.prop2, out Value1C val))
+                            {
+                                p = ext.uTreeNode4.prop2;
+                                dvt = p.defaultvaluetype;
+                                switch (dvt)
+                                {
+                                    case DefaultValueType.dvt_bool:
+                                        vt2 = SerializationTreeValueType.stv_number;
+                                        nv2 = p.dv_union_type.dv_bool ? 1 : 0;
+                                        break;
+                                    case DefaultValueType.dvt_number:
+                                        vt2 = SerializationTreeValueType.stv_number;
+                                        nv2 = p.dv_union_type.dv_number;
+                                        break;
+                                    case DefaultValueType.dvt_string:
+                                        vt2 = SerializationTreeValueType.stv_string;
+                                        sv2 = p.dv_union_type.dv_string;
+                                        break;
+                                    case DefaultValueType.dvt_type:
+                                        vt2 = SerializationTreeValueType.stv_uid;
+                                        uv2 = p.dv_union_type.dv_type.uid;
+                                        break;
+                                    case DefaultValueType.dvt_enum:
+                                        mv = p.dv_union_type.dv_enum;
+                                        if (mv.ValueUID == EmptyUID)
+                                        {
+                                            vt2 = SerializationTreeValueType.stv_number;
+                                            nv2 = mv.Value;
+                                        }
+                                        else
+                                        {
+                                            vt2 = SerializationTreeValueType.stv_uid;
+                                            uv2 = mv.ValueUID;
+                                        }
+                                        break;
+                                    default:
+                                        // TODO : Требуется реализация
+                                        // error(L"Ошибка формата потока 131. Ошибка вычисления условия внешнего файла. Не найдено значение свойства"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Свойство", p->name
+                                        //     , L"Путь", spath);
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                vv = val;
+                                if (vv.kind == KindOfValue1C.kv_string)
+                                {
+                                    vt2 = SerializationTreeValueType.stv_string;
+                                    sv2 = ((Value1C_string)vv).v_string;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_number)
+                                {
+                                    vt2 = SerializationTreeValueType.stv_number;
+                                    nv2 = ((Value1C_number)vv).v_number;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_number_exp)
+                                {
+                                    vt2 = SerializationTreeValueType.stv_number;
+                                    nv2 = (int)((Value1C_number_exp)vv).v_number;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_uid)
+                                {
+                                    vt2 = SerializationTreeValueType.stv_uid;
+                                    uv2 = ((Value1C_uid)vv).v_uid;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_enum)
+                                {
+                                    mv = ((Value1C_enum)vv).v_enum;
+                                    if (mv.ValueUID == EmptyUID)
+                                    {
+                                        vt2 = SerializationTreeValueType.stv_number;
+                                        nv2 = mv.Value;
+                                    }
+                                    else
+                                    {
+                                        vt2 = SerializationTreeValueType.stv_uid;
+                                        uv2 = mv.ValueUID;
+                                    }
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_bool)
+                                {
+                                    vt2 = SerializationTreeValueType.stv_number;
+                                    nv2 = ((Value1C_bool)vv).v_bool ? 1 : 0;
+                                }
+                                else if (vv.kind == KindOfValue1C.kv_binary)
+                                {
+                                    vt2 = SerializationTreeValueType.stv_string;
+                                    sv2 = vv.presentation();
+                                }
+                                else
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 132. Ошибка вычисления условия внешнего файла. Недопустимый тип значения свойства"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Свойство", ext->prop2->name
+                                    //     , L"Тип значения", vv->kind
+                                    //     , L"Путь", spath);
+                                }
+
+                            }
+                            break;
+                        case SerializationTreeValueType.stv_vercon:
+                            vt2 = SerializationTreeValueType.stv_number;
+                            nv2 = (int)ext.uTreeNode4.vercon2;
+                            break;
+                        case SerializationTreeValueType.stv_ver1C:
+                            vt2 = SerializationTreeValueType.stv_number;
+                            nv2 = (int)ext.uTreeNode4.ver1C2;
+                            break;
+                        case SerializationTreeValueType.stv_classpar:
+                            vt2 = SerializationTreeValueType.stv_number;
+                            if (clitem != null)
+                            {
+                                nv2 = clitem.Cl.GetParamValue(ext.uTreeNode4.classpar2);
+                            }
+                            else
+                            {
+                                // TODO : Требуется реализовать...
+                                // error(L"Ошибка формата потока 133. Ошибка вычисления условия внешнего файла. Класс не определён."
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Параметр класса", ext->classpar2->name
+                                //     , L"Тип значения", vv->kind
+                                //     , L"Путь", spath);
+                                nv1 = -1;
+                            }
+                            break;
+                        case SerializationTreeValueType.stv_globalvar:
+                            vt2 = SerializationTreeValueType.stv_number;
+                            nv2 = 0;
+                            ok = false;
+                            vo = null;
+                            for (vo = vo.parent; vo != null; vo = vo.parent)
+                            {
+                                if (vo.globalvars.TryGetValue(ext.str2.ToUpper(), out int val2))
+                                {
+                                    nv2 = val2;
+                                    ok = true;
+                                    break;
+                                }
+                            }
+                            if (!ok)
+                            {
+                                // TODO : Требуется реализовать...
+                                // error(L"Ошибка формата потока 134. Ошибка получения второго значения условия внешнего файла. Не удалось получить значение глобальной переменной"
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Глобальная переменная", ext->str2
+                                //     , L"Путь", spath);
+
+                            }
+                            break;
+                        default:
+                            // TODO : Требуется реализовать...
+                            // error(L"Ошибка формата потока 135. Ошибка вычисления условия внешнего файла. Недопустимый тип значения 2"
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Тип значения", ext->typeval2presentation()
+                            //     , L"Путь", spath);
+
+                            break;
+                    }
+
+                    ///
+                    if (vt1 != SerializationTreeValueType.stv_none && vt2 != SerializationTreeValueType.stv_none)
+                    {
+                        if (vt1 != vt2)
+                        {
+                            // TODO : Требуется реализовать...
+                            // error(L"Ошибка формата потока 136. Ошибка вычисления условия внешнего файла. Несовпадающие типы сравниваемых значений"
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Тип значения 1", vt1
+                            //     , L"Тип значения 2", vt2
+                            //     , L"Путь", spath);
+                        }
+                        else
+                        {
+                            if (vt1 == SerializationTreeValueType.stv_string)
+                            {
+                                switch (ext.condition)
+                                {
+                                    case SerializationTreeCondition.stc_e:
+                                        cv = sv1.CompareTo("sv2") == 0;
+                                        break;
+                                    case SerializationTreeCondition.stc_ne:
+                                        cv = sv1.CompareTo("sv2") != 0;
+                                        break;
+                                    case SerializationTreeCondition.stc_l:
+                                        cv = sv1.CompareTo("sv2") < 0;
+                                        break;
+                                    case SerializationTreeCondition.stc_g:
+                                        cv = sv1.CompareTo("sv2") > 0;
+                                        break;
+                                    case SerializationTreeCondition.stc_le:
+                                        cv = sv1.CompareTo("sv2") <= 0;
+                                        break;
+                                    case SerializationTreeCondition.stc_ge:
+                                        cv = sv1.CompareTo("sv2") >= 0;
+                                        break;
+                                    default:
+                                        // TODO : Требуется реализовать...
+                                        // error(L"Ошибка формата потока 137. Ошибка вычисления условия внешнего файла. Некорректное условие при сравнении строк"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Условие", ext->condition
+                                        //     , L"Путь", spath);
+                                        break;
+                                }
+                            }
+                            else if (vt1 == SerializationTreeValueType.stv_number)
+                            {
+                                switch (ext.condition)
+                                {
+                                    case SerializationTreeCondition.stc_e:
+                                        cv = nv1 == nv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_ne:
+                                        cv = nv1 != nv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_l:
+                                        cv = nv1 < nv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_g:
+                                        cv = nv1 > nv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_le:
+                                        cv = nv1 <= nv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_ge:
+                                        cv = nv1 >= nv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_bs:
+                                        if (nv2 < 0 || nv2 > 31)
+                                        {
+                                            // TODO : Требуется реализовать...
+                                            // error(L"Ошибка формата потока 191. Ошибка вычисления условия внешнего файла. Номер бита за пределами 0-31"
+                                            //     , L"Загружаемый тип", t->name
+                                            //     , L"Номер бита", nv2
+                                            //     , L"Путь", spath);
+                                            break;
+                                        }
+                                        cv = (nv1 & (1 << nv2)) != 0;
+                                        break;
+                                    case SerializationTreeCondition.stc_bn:
+                                        if (nv2 < 0 || nv2 > 31)
+                                        {
+                                            // TODO : Требуется реализовать...
+                                            // error(L"Ошибка формата потока 192. Ошибка вычисления условия внешнего файла. Номер бита за пределами 0-31"
+                                            //     , L"Загружаемый тип", t->name
+                                            //     , L"Номер бита", nv2
+                                            //     , L"Путь", spath);
+                                            break;
+                                        }
+                                        cv = (nv1 & (1 << nv2)) == 0;
+                                        break;
+                                    default:
+                                        // TODO : Требуется реализовать...
+                                        // error(L"Ошибка формата потока 138. Ошибка вычисления условия внешнего файла. Некорректное условие при сравнении чисел"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Условие", ext->condition
+                                        //     , L"Путь", spath);
+
+                                        break;
+                                }
+                            }
+                            else if (vt1 == SerializationTreeValueType.stv_uid)
+                            {
+                                switch (ext.condition)
+                                {
+                                    case SerializationTreeCondition.stc_e:
+                                        cv = uv1 == uv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_ne:
+                                        cv = uv1 != uv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_l:
+                                        cv = (uv1.CompareTo(uv2) < 0);
+                                        break;
+                                    case SerializationTreeCondition.stc_g:
+                                        cv = (uv1.CompareTo(uv2) > 0);
+                                        break;
+                                    case SerializationTreeCondition.stc_le:
+                                        cv = (uv1.CompareTo(uv2) < 0) || uv1 == uv2;
+                                        break;
+                                    case SerializationTreeCondition.stc_ge:
+                                        cv = (uv1.CompareTo(uv2) > 0) || uv1 == uv2;
+                                        break;
+                                    default:
+                                        // error(L"Ошибка формата потока 139. Ошибка вычисления условия внешнего файла. Некорректное условие при сравнении UID"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Условие", ext->condition
+                                        //     , L"Путь", spath);
+                                        break;
+                                }
+
+                            }
+                        }
+                    } // if (vt1 != SerializationTreeValueType.stv_none && vt2 != SerializationTreeValueType.stv_none)
+                    if (!cv)
+                        continue;
+
+                }
+
+                npath = "";
+                if (ext.relativepath)
+                {
+                    k = path.LastIndexOfAny("\\/".ToCharArray());
+                    npath = path.Substring(1, k);
+                }
+
+                if (ext.name.CompareTo("<Мета ИД>") == 0)
+                {
+                    if (v.kind == KindOfValue1C.kv_metaobj)
+                    {
+                        if (((Value1C_metaobj)v).v_metaobj != null)
+                        {
+                            npath += ((Value1C_metaobj)v).v_metaobj.UID.ToString();
+                        }
+                        else
+                        {
+                            // TODO : Требуется реализовать...
+                            // error(L"Ошибка формата потока 144. Ошибка получения <Мета ИД> при определении имени внешнего файла. UID объекта метаданных не загружен"
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь", spath);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        // TODO : Требуется реализовать...
+                        // error(L"Ошибка формата потока 141. Ошибка получения <Мета ИД> при определении имени внешнего файла. Значение 1С не является объектом метаданных"
+                        //     , L"Загружаемый тип", t->name
+                        //     , L"Вид значения 1С", KindOfValue1C_presantation(v->kind)
+                        //     , L"Путь", spath);
+                        continue;
+                    }
+                }
+                else
+                {
+                    npath += ext.name;
+                }
+
+                if (ext.ext.Length > 0)
+                {
+                    npath += ".";
+                    npath += ext.ext;
+                }
+                cfc = null;
+                if (ext.catalog)
+                {
+                    cfc = stor.readfile(npath);
+                    npath += "\\";
+                    npath += ext.filename;
+                }
+
+                nt = ext.type;
+                if (nt is null)
+                {
+                    if (ext.prop.Types.Count == 1)
+                    {
+                        nt = ext.prop.Types[0];
+                    }
+                }
+
+                switch (ext.format)
+                {
+                    case ExternalFileFormat.eff_servalue:
+                        prop = ext.prop;
+                        if (useExternal && !prop.Predefined)
+                        {
+                            if (stor.fileexists(npath))
+                            {
+                                veo = new Value1C_extobj(v, this, npath, nt, metauid);
+                                vo = veo;
+                            }
+                            else
+                            {
+                                if (ext.optional)
+                                    break;
+                                // TODO : Требуется реализовать...
+                                // error(L"Ошибка формата потока 200. Не найден внешний файл"
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Свойство", prop->name
+                                //     , L"Путь", storpresent + npath);
+                                vo = null;
+                            }
+                        }
+                        else
+                        {
+                            tt = gettree(stor, npath, !ext.optional);
+                            if (tt is null)
+                            {
+                                if (ext.optional)
+                                    break;
+                                // TODO : Требуется реализовать...
+                                // error(L"Ошибка формата потока 142. Не найден или пустой внешний файл"
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Путь", storpresent + npath);
+                                vo = null;
+                            }
+                            else
+                            {
+                                tte = tt.Get_First();
+                                vo = (Value1C_obj)readValue1C(tte, nt, v, metauid, metats, clitem, npath);
+                            }
+                        }
+
+                        v.v_objprop[prop] = vo;
+                        
+                        #region Обработка предопределенных элементов
+
+                        vValues = null;
+                        vColumns = null;
+
+                        if (prop.Predefined)
+                        {
+                            ni = (int)v.type.PreNameIndex;
+                            ui = (int)v.type.PreIdIndex;
+                            ok = true;
+                            if (ni == ui)
+                            {
+                                // TODO : Требуется реализовать...
+                                // error(L"Ошибка формата потока 165. Не установлены индексы колонок предопределенных значений"
+                                //     , L"Загружаемый тип", t->name
+                                //     , L"Путь ДС", tn->path()
+                                //     , L"Свойство", prop->name
+                                //     , L"Путь", spath);
+                                ok = false;
+                            }
+                            if (ok)
+                            {
+                                vValues = (Value1C_obj)vo.getproperty("Значения");
+                                if (vValues is null)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 166. Не найдено свойство \"Значения\" при разборое предопределенных значений"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                vColumns = (Value1C_obj)vValues.getproperty("Колонки");
+                                if (vColumns is null)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 167. Не найдено свойство \"Колонки\" при разборое предопределенных значений"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                vColumnsAndValuesMap = (Value1C_obj)vValues.getproperty("СоответствиеКолонокИЗначений");
+                                if (vColumnsAndValuesMap is null)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 168. Не найдено свойство \"СоответствиеКолонокИЗначений\" при разборое предопределенных значений"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                vStrings = (Value1C_obj)vValues.getproperty("Строки");
+                                if (vStrings is null)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 169. Не найдено свойство \"Строки\" при разборое предопределенных значений"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                if (ni >= (int)vColumns.v_objcol.Count)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 170. Индекс колонки имени предопределенного элемента больше количества колонок"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                if (ui >= (int)vColumns.v_objcol.Count)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 171. Индекс колонки идентификатора предопределенного элемента больше количества колонок"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                vo = (Value1C_obj)vColumns.v_objcol[ni];
+                                if (vo is null)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 172. Ошибка получения колонки имени предопределенного элемента"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                vn = (Value1C_number)vo.getproperty("УникальныйНомер");
+                                if (vn is null)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 173. Ошибка получения уникального номера колонки имени предопределенного элемента"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                ni = vn.v_number;
+                                vo = (Value1C_obj)vColumns.v_objcol[ui];
+                                if (vo is null)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 174. Ошибка получения колонки идентификатора предопределенного элемента"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                vn = (Value1C_number)vo.getproperty("УникальныйНомер");
+                                if (vn is null)
+                                {
+                                    // TODO : Требуется реализовать...
+                                    // error(L"Ошибка формата потока 175. Ошибка получения уникального номера колонки идентификатора предопределенного элемента"
+                                    //     , L"Загружаемый тип", t->name
+                                    //     , L"Путь ДС", tn->path()
+                                    //     , L"Свойство", prop->name
+                                    //     , L"Путь", spath);
+                                    ok = false;
+                                }
+                            }
+                            if (ok)
+                            {
+                                ui = vn.v_number;
+                                nok = uok = false;
+                                for (ii = 0; ii < vColumnsAndValuesMap.v_objcol.Count; ++ii)
+                                {
+                                    vo = (Value1C_obj)vColumnsAndValuesMap.v_objcol[ii];
+                                    if (vo is null)
+                                    {
+                                        // TODO : Требуется реализовать...
+                                        // error(L"Ошибка формата потока 176. Ошибка получения соответствия уникального номера колонки и индекса значения при разборе предопределенных элементов"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Свойство", prop->name
+                                        //     , L"Путь", spath);
+                                        ok = false;
+                                        break;
+                                    }
+                                    vn = (Value1C_number)vo.getproperty("УникальныйНомерКолонки");
+                                    if (vn is null)
+                                    {
+                                        // TODO : Требуется реализовать...
+                                        // error(L"Ошибка формата потока 177. Ошибка получения уникального номера колонки в соответствии колонок и значений при разборе предопределенных элементов"
+                                        //     , L"Загружаемый тип", t->name
+                                        //     , L"Путь ДС", tn->path()
+                                        //     , L"Свойство", prop->name
+                                        //     , L"Путь", spath);
+                                        ok = false;
+                                        break;
+                                    }
+                                    if (!nok)
+                                    {
+                                        if (ni == vn.v_number)
+                                        {
+                                            vn = (Value1C_number)vo.getproperty("ИндексЗначения");
+                                            if (vn is null)
+                                            {
+                                                // TODO : Требуется реализовать...
+                                                // error(L"Ошибка формата потока 178. Ошибка получения индекса значения в соответствии колонок и значений при разборе предопределенных элементов"
+                                                //     , L"Загружаемый тип", t->name
+                                                //     , L"Путь ДС", tn->path()
+                                                //     , L"Свойство", prop->name
+                                                //     , L"Путь", spath);
+                                                ok = false;
+                                                break;
+                                            }
+                                            ni = vn.v_number;
+                                            nok = true;
+                                        }
+                                    }
+                                    if (!uok)
+                                    {
+                                        if (ui == vn.v_number)
+                                        {
+                                            vn = (Value1C_number)vo.getproperty("ИндексЗначения");
+                                            if (vn is null)
+                                            {
+                                                // TODO : Требуется реализовать...
+                                                // error(L"Ошибка формата потока 178. Ошибка получения индекса значения в соответствии колонок и значений при разборе предопределенных элементов"
+                                                //     , L"Загружаемый тип", t->name
+                                                //     , L"Путь ДС", tn->path()
+                                                //     , L"Свойство", prop->name
+                                                //     , L"Путь", spath);
+                                                ok = false;
+                                                break;
+                                            }
+                                            ui = vn.v_number;
+                                            uok = true;
+                                        }
+                                    }
+                                    if (nok && uok) break;
+                                }
+                            }
+                            if (ok)
+                            {
+                                readPredefinedValues((Value1C_metaobj)v, ni, ui, vStrings, spath);
+                            }
+                        }
+
+                        #endregion
+
+                        break;
+                    case ExternalFileFormat.eff_text:
+                    case ExternalFileFormat.eff_tabdoc:
+                    case ExternalFileFormat.eff_binary:
+                    case ExternalFileFormat.eff_activedoc:
+                    case ExternalFileFormat.eff_htmldoc:
+                    case ExternalFileFormat.eff_textdoc:
+                    case ExternalFileFormat.eff_geo:
+                    case ExternalFileFormat.eff_kd:
+                    case ExternalFileFormat.eff_mkd:
+                    case ExternalFileFormat.eff_graf:
+                    case ExternalFileFormat.eff_xml:
+                    case ExternalFileFormat.eff_wsdl:
+                    case ExternalFileFormat.eff_picture:
+                        cf = stor.readfile(npath);
+                        if (cf != null)
+                        {
+                            vb = new Value1C_binary(v);
+                            vb.type = nt;
+                            vb.v_binformat = ext.format;
+                            vb.v_binary = new MemoryStream();
+                            cf.str.CopyTo(vb.v_binary);
+                            stor.close(cf);
+                        }
+                        else
+                        {
+                            if (ext.optional)
+                                break;
+                            // TODO : Требуется реализовать...
+                            // error(L"Ошибка формата потока 145. Не найден внешний файл"
+                            //     , L"Загружаемый тип", t->name
+                            //     , L"Путь", storpresent + npath);
+                            vb = new Value1C_binary(v);
+                            vb.type = nt;
+                        }
+                        v.v_objprop[ext.prop] = vb;
+                        break;
+                    default:
+                        // error(L"Ошибка формата потока 143. Неизвестное значение формата внешнего файла"
+                        //     , L"Загружаемый тип", t->name
+                        //     , L"Формат", ext->format
+                        //     , L"Путь", storpresent + npath);
+                        break;
+                }
+                if (cfc != null)
+                    stor.close(cfc);
+            }
+
+            #endregion
+
         }
 
         public void inituninitvalues()
@@ -1749,6 +3324,7 @@ namespace MetaRead
                 return (MetaObject.smap.TryGetValue(n.ToUpper(), out MetaObject val2)) ? val2 : null;
             }
         }
+
 
         /// <summary>
         /// // Получить объект метаданных по УИД
