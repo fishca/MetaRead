@@ -153,6 +153,21 @@ namespace MetaRead
 
         }
 
+        public int setversion(int v)
+        {
+            fversion = v;
+            fversionisset = true;
+            return v;
+        }
+
+        public int getversion()
+        {
+            if (fversionisset)
+                return fversion;
+            //error(L"Ошибка формата потока 117. Ошибка получения значения переменной ВерсияКласса. Значение не установлено.");
+            return -1;
+        }
+
         public Class Cl
         {
             get { return fcl; }
@@ -160,8 +175,8 @@ namespace MetaRead
 
         public int Version
         {
-            get { return fversion; }
-            set { fversion = value; }
+            get { return getversion(); }
+            set { fversion = setversion(value); }
         }
 
     }
