@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using static MetaRead.Structures;
+using static MetaRead.APIcfBase;
+using static MetaRead.Constants;
 
 namespace MetaRead
 {
@@ -93,7 +95,8 @@ namespace MetaRead
             char[] tempfile = new char[MAX_PATH];
             int i;
             V8Table t;
-            table_blob_file addr; // TODO: возможно это должен быть МАССИВ !!!!!!!!!!!!!!!!!!!!!!!!
+            //table_blob_file addr; // TODO: возможно это должен быть МАССИВ !!!!!!!!!!!!!!!!!!!!!!!!
+            table_blob_file[] addr; // TODO: возможно это должен быть МАССИВ !!!!!!!!!!!!!!!!!!!!!!!!
             uint maxpartno;
 
             if (stream != null)
@@ -132,7 +135,7 @@ namespace MetaRead
             }
             else
             {
-                if (packed == table_file_packed.tfp_yes)
+                if (packed == table_file_packed.yes)
                 {
                     if (maxpartno > 0)
                     {
@@ -151,15 +154,125 @@ namespace MetaRead
                     ts = stream;
 
                 for (i = 0; i <= maxpartno; ++i)
-                    t.ReadBlob(ts, addr[i].blob_start, addr[i].blob_length, false);
-
+                    t.ReadBlob(ts, addr[i].Blob_start, addr[i].Blob_length, false);
+            }
+            if (packed == table_file_packed.yes)
+            {
+                ts.Seek(0, SeekOrigin.Begin);
+                MemoryTributary out_stream = new MemoryTributary();
+                Inflate((MemoryTributary)ts, out out_stream);
+                out_stream.CopyTo(stream);
+                if (rstream is null)
+                {
+                    ts.Dispose();
+                    System.IO.File.Delete(tn);
+                }
             }
 
+            stream.Seek(0, SeekOrigin.Begin);
             return true;
         }
-        public bool ropen() { return true; } // raw open
-        public void close() {  }
-        public bool isPacked() { return true; }
+
+        /// <summary>
+        /// raw open
+        /// </summary>
+        /// <returns></returns>
+        public bool ropen()
+        {
+            int i;
+            V8Table t;
+            table_blob_file[] addr;
+            uint maxpartno;
+            string tn;
+
+            if (rstream != null)
+            {
+                rstream.Seek(0, SeekOrigin.Begin);
+                return true;
+            }
+
+            t = file.T;
+            addr = file.addr;
+            maxpartno = file.maxpartno;
+            if (packed == table_file_packed.unknown)
+                packed = isPacked() ? table_file_packed.yes : table_file_packed.no;
+            if (packed == table_file_packed.no && stream != null)
+            {
+                rstream = stream;
+                rstream.Seek(0, SeekOrigin.Begin);
+                return true;
+            }
+
+            if (maxpartno > 0)
+            {
+                tn = Path.GetTempFileName();
+                rstream = new FileStream(tn, FileMode.CreateNew);
+                rfname = tn;
+            }
+            else
+            {
+                rstream = new MemoryStream();
+            }
+
+            for (i = 0; i <= maxpartno; ++i)
+                t.ReadBlob(rstream, addr[i].Blob_start, addr[i].Blob_length, false);
+
+            rstream.Seek(0, SeekOrigin.Begin);
+
+            return true;
+        } 
+
+        public void close()
+        {
+            cat = null;
+            if (stream != rstream)
+            {
+                stream.Dispose();
+                rstream.Dispose();
+            }
+            else
+                stream.Dispose();
+            stream = null;
+            rstream = null;
+            if (!string.IsNullOrEmpty(fname))
+                System.IO.File.Delete(fname);
+            if (!string.IsNullOrEmpty(rfname))
+                System.IO.File.Delete(rfname);
+            fname = "";
+            rfname = "";
+        }
+
+        public bool isPacked()
+        {
+            int i;
+            string ext;
+
+            if (name.CompareTo("DynamicallyUpdated") == 0)
+                return false;
+            if (name.CompareTo("SprScndInfo") == 0)
+                return false;
+            if (name.CompareTo("DBNamesVersion") == 0)
+                return false;
+            if (name.CompareTo("siVersions") == 0)
+                return false;
+            if (name.ToUpper().IndexOf("FO_VERSION") != -1)
+                return false;
+            if (name[1] == '{')
+                return false;
+
+            string delimiters = "\\/.,";
+
+            i = name.LastIndexOfAny(delimiters.ToCharArray());
+            if (i != -1)
+            {
+                ext = name.Substring(i + 1, name.Length - i).ToUpper();
+                if (ext.CompareTo("INF") == 0)
+                    return false;
+                if (ext.CompareTo("PFL") == 0)
+                    return false;
+            }
+            return true;
+        }
     }
     
     /// <summary>
