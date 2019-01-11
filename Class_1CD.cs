@@ -76,7 +76,7 @@ namespace MetaRead
         public bool ReadOnly
         {
             get { return Get_readonly(); }
-            set { _ReadOnly = value;     }
+            set { _ReadOnly = value; }
         }
 
         public static bool RecoveryMode
@@ -267,7 +267,7 @@ namespace MetaRead
                 pagesize = Page0.pagesize;
             }
 
-            
+
 
 
         }
@@ -289,9 +289,9 @@ namespace MetaRead
             Page0.ver3 = br.ReadByte();
             Page0.ver4 = br.ReadByte();
 
-            Page0.length     = br.ReadUInt32();
+            Page0.length = br.ReadUInt32();
             Page0.firstblock = br.ReadUInt32();
-            Page0.pagesize   = br.ReadUInt32();
+            Page0.pagesize = br.ReadUInt32();
 
         }
 
@@ -299,7 +299,7 @@ namespace MetaRead
         public static Tree Get_treeFromV8file(V8File f)
         {
             //TBytesStream* sb;
-            
+
             Encoding enc;
             Byte[] bytes = new Byte[0x1000];
             Int32 offset;
@@ -329,7 +329,7 @@ namespace MetaRead
             */
             return null;
         }
-        
+
         /// <summary>
         /// Проверка открытия файла базы 1CD
         /// </summary>
@@ -408,20 +408,20 @@ namespace MetaRead
 
         public void Find_supplier_configs()
         {
-            /*
-             	std::map<String,table_file*>::iterator p;
+            var fl = Get_files_configsave().files();
+            foreach (var item_fl in fl)
+            {
+                if (item_fl.Key.Length == 73)
+                    Add_supplier_config(item_fl.Value);
+            }
 
-    	        for(p = get_files_configsave()->files().begin(); p != get_files_configsave()->files().end(); ++p)
-	            {
-		            if(p->first.GetLength() == 73) add_supplier_config(p->second);
-	            }
-	            for(p = get_files_config()->files().begin(); p != get_files_config()->files().end(); ++p)
-	            {
-	            	if(p->first.GetLength() == 73) add_supplier_config(p->second);
-	            }
-	            supplier_configs_defined = true;
-            
-             */
+            var flc = Get_files_config().files();
+            foreach (var item_flc in flc)
+            {
+                if (item_flc.Key.Length == 73)
+                    Add_supplier_config(item_flc.Value);
+            }
+            supplier_configs_defined = true;
         }
 
         public bool Save_supplier_configs(UInt32 numcon, String filename)
@@ -446,30 +446,32 @@ namespace MetaRead
             {
                 _fs = new FileStream(filename, FileMode.OpenOrCreate);
             }
-            catch 
-	{
+            catch
+            {
                 return false;
             }
 
+            MemoryTributary out_fs = new MemoryTributary();
             try
             {
-                //Inflate((MemoryTributary)f.stream, out (MemoryTributary)_fs);
+                Inflate((MemoryTributary)f.Stream, out out_fs);
+                out_fs.CopyTo(_fs);
             }
             catch
-	{
+            {
                 /*
                 msreg_m.AddError("Ошибка распаковки файла конфигурации поставщика",
                     "Имя файла", _filename);
                     */
-                
+
                 _fs.Dispose(); ;
                 return false;
             }
 
             _fs.Dispose();
-            
+
             return true;
-            }
+        }
 
         public bool Save_depot_config(String _filename, UInt32 ver = 0)
         {
@@ -478,11 +480,11 @@ namespace MetaRead
 
         public bool Save_part_depot_config(String _filename, Int32 ver_begin, Int32 ver_end) { return true; }
 
-	    public Int32 Get_ver_depot_config(Int32 ver) { return 100; } // Получение номера версии конфигурации (0 - последняя, -1 - предпоследняя и т.д.)
+        public Int32 Get_ver_depot_config(Int32 ver) { return 100; } // Получение номера версии конфигурации (0 - последняя, -1 - предпоследняя и т.д.)
 
         public bool Save_config_ext(String _filename, String uid, String hashname)
         {
-            
+
             bool res;
 
             ConfigStorageTableConfigCasSave cs = new ConfigStorageTableConfigCasSave(Get_files_configcas(), Get_files_configcassave(), new Guid(uid), hashname);
@@ -652,7 +654,7 @@ namespace MetaRead
 
         private TableFiles Get_files_configcassave()
         {
-            if (_files_configcassave != null) 
+            if (_files_configcassave != null)
             {
                 _files_configcassave = new TableFiles(Table_configcassave);
             }
@@ -663,7 +665,7 @@ namespace MetaRead
 
         public byte[] Getblock(UInt32 block_number)
         {
-            
+
             if (Data1CD == null)
                 return null;
             if (block_number >= length)
@@ -722,7 +724,7 @@ namespace MetaRead
         public UInt32 Get_free_block()
         {
             return free_blocks.Get_free_block();
-        } 
+        }
 
         private void Add_supplier_config(TableFile file) { }
 
@@ -750,26 +752,26 @@ namespace MetaRead
         {
             switch (pmr.Type)
             {
-                case PageType.lost:          return ("потерянная страница");
-                case PageType.root:          return ("корневая страница базы");
-                case PageType.freeroot:      return ("корневая страница таблицы свободных блоков");
-                case PageType.freealloc:     return ("страница размещения таблицы свободных блоков номер ") + pmr.Number;
-                case PageType.free:          return ("свободная страница номер ")                           + pmr.Number;
-                case PageType.rootfileroot:  return ("корневая страница корневого файла");                  
-                case PageType.rootfilealloc: return ("страница размещения корневого файла номер ")          + pmr.Number;
-                case PageType.rootfile:      return ("страница данных корневого файла номер ")              + pmr.Number;
-                case PageType.descrroot:     return ("корневая страница файла descr таблицы ")              + tables[pmr.Tab].Getname();
-                case PageType.descralloc:    return ("страница размещения файла descr таблицы ")            + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
-                case PageType.descr:         return ("страница данных файла descr таблицы ")                + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
-                case PageType.dataroot:      return ("корневая страница файла data таблицы ")               + tables[pmr.Tab].Getname();
-                case PageType.dataalloc:     return ("страница размещения файла data таблицы ")             + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
-                case PageType.data:          return ("страница данных файла data таблицы ")                 + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
-                case PageType.indexroot:     return ("корневая страница файла index таблицы ")              + tables[pmr.Tab].Getname();
-                case PageType.indexalloc:    return ("страница размещения файла index таблицы ")            + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
-                case PageType.index:         return ("страница данных файла index таблицы ")                + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
-                case PageType.blobroot:      return ("корневая страница файла blob таблицы ")               + tables[pmr.Tab].Getname();
-                case PageType.bloballoc:     return ("страница размещения файла blob таблицы ")             + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
-                case PageType.blob:          return ("страница данных файла blob таблицы ")                 + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
+                case PageType.lost: return ("потерянная страница");
+                case PageType.root: return ("корневая страница базы");
+                case PageType.freeroot: return ("корневая страница таблицы свободных блоков");
+                case PageType.freealloc: return ("страница размещения таблицы свободных блоков номер ") + pmr.Number;
+                case PageType.free: return ("свободная страница номер ") + pmr.Number;
+                case PageType.rootfileroot: return ("корневая страница корневого файла");
+                case PageType.rootfilealloc: return ("страница размещения корневого файла номер ") + pmr.Number;
+                case PageType.rootfile: return ("страница данных корневого файла номер ") + pmr.Number;
+                case PageType.descrroot: return ("корневая страница файла descr таблицы ") + tables[pmr.Tab].Getname();
+                case PageType.descralloc: return ("страница размещения файла descr таблицы ") + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
+                case PageType.descr: return ("страница данных файла descr таблицы ") + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
+                case PageType.dataroot: return ("корневая страница файла data таблицы ") + tables[pmr.Tab].Getname();
+                case PageType.dataalloc: return ("страница размещения файла data таблицы ") + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
+                case PageType.data: return ("страница данных файла data таблицы ") + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
+                case PageType.indexroot: return ("корневая страница файла index таблицы ") + tables[pmr.Tab].Getname();
+                case PageType.indexalloc: return ("страница размещения файла index таблицы ") + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
+                case PageType.index: return ("страница данных файла index таблицы ") + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
+                case PageType.blobroot: return ("корневая страница файла blob таблицы ") + tables[pmr.Tab].Getname();
+                case PageType.bloballoc: return ("страница размещения файла blob таблицы ") + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
+                case PageType.blob: return ("страница данных файла blob таблицы ") + tables[pmr.Tab].Getname() + " номер " + pmr.Number;
 
                 default:
                     return ("??? неизвестный тип страницы ???");

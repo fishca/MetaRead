@@ -456,8 +456,8 @@ namespace MetaRead
         {
             private V8Table t;
             private String name; // Имя, как оно хранится в таблице
-            UInt32 maxpartno;
-            table_blob_file addr;
+            public UInt32 maxpartno;
+            public table_blob_file addr;
             private DateTime ft_create;
             private DateTime ft_modify;
 

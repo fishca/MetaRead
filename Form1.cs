@@ -25,62 +25,69 @@ namespace MetaRead
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //MetaBase metaBase = new MetaBase("Справочник", "Reference");
-            //Text = metaBase.GetName(true);
+            string name_cf = "1Cv8_Test_export.cf";
+            string folder_cf = "D:\\work\\awa15-metaread-e7fe7d987355\\awa15-metaread-e7fe7d987355\\1C";
 
-            V8Header_Struct v8Header_Struct = new V8Header_Struct();
-
-            v8Header_Struct.Time_Create = new DateTime(2018, 5, 9, 10, 10, 10);
-            v8Header_Struct.Time_Modify = new DateTime(2018, 5, 10, 10, 10, 10);
-            v8Header_Struct.Zero = 999;
-
-            // создаем объект BinaryFormatter
-            //BinaryFormatter formatter = new BinaryFormatter();
-
-            // получаем поток, куда будем записывать сериализованный объект
-            //using (FileStream fs = new FileStream("D:\\work\\git_MetaRead\\bin\\Debug\\test.dat", FileMode.OpenOrCreate))
-            //{
-            //    formatter.Serialize(fs, v8Header_Struct);
-
-            //Console.WriteLine("Объект сериализован");
-            //}
-
-            using (FileStream fs = new FileStream("D:\\work\\git_MetaRead\\bin\\Debug\\test.dat", FileMode.OpenOrCreate))
-            {
-                using (BinaryReader reader = new BinaryReader(fs, Encoding.ASCII))
-                {
-                    long tc = reader.ReadInt64();
-                    long tm = reader.ReadInt64();
-
-                    DateTime dateTime_tc = DateTime.FromBinary(tc);
-                    DateTime dateTime_tm = DateTime.FromBinary(tm);
-
-                    int zero = reader.ReadInt32();
-
-                }
-                //using (BinaryWriter writer = new BinaryWriter(fs,Encoding.ASCII))
-                //{
-                //    // записываем в файл значение каждого поля структуры
-                //    long tc = v8Header_Struct.Time_Create.ToBinary();
-                //    long tm = v8Header_Struct.Time_Modify.ToBinary();
-                //    writer.Write(tc);
-                //    writer.Write(tm);
-                //    writer.Write(v8Header_Struct.Zero);
-
-                //}
-            }
-
-            textBox1.Text += ("Новая текстовая строка"+Environment.NewLine);
-            // Example usage
-            Logger logger = LogManager.GetLogger("Example");
-            logger.Trace("trace log message");
-            logger.Debug("debug log message");
-            logger.Info("info log message");
-            logger.Warn("warn log message");
-            logger.Error("error log message");
-            logger.Fatal("fatal log message");
+            ConfigStorage Storage = new ConfigStorageCFFile(folder_cf + "\\" + name_cf);
+            var Container = new MetaContainer(Storage);
 
 
+            #region Old_Code
+            //              //MetaBase metaBase = new MetaBase("Справочник", "Reference");
+            //              //Text = metaBase.GetName(true);
+            //              
+            //              V8Header_Struct v8Header_Struct = new V8Header_Struct();
+            //              
+            //              v8Header_Struct.Time_Create = new DateTime(2018, 5, 9, 10, 10, 10);
+            //              v8Header_Struct.Time_Modify = new DateTime(2018, 5, 10, 10, 10, 10);
+            //              v8Header_Struct.Zero = 999;
+            //              
+            //              // создаем объект BinaryFormatter
+            //              //BinaryFormatter formatter = new BinaryFormatter();
+            //              
+            //              // получаем поток, куда будем записывать сериализованный объект
+            //              //using (FileStream fs = new FileStream("D:\\work\\git_MetaRead\\bin\\Debug\\test.dat", FileMode.OpenOrCreate))
+            //              //{
+            //              //    formatter.Serialize(fs, v8Header_Struct);
+            //              
+            //              //Console.WriteLine("Объект сериализован");
+            //              //}
+            //              
+            //              using (FileStream fs = new FileStream("D:\\work\\git_MetaRead\\bin\\Debug\\test.dat", FileMode.OpenOrCreate))
+            //              {
+            //                  using (BinaryReader reader = new BinaryReader(fs, Encoding.ASCII))
+            //                  {
+            //                      long tc = reader.ReadInt64();
+            //                      long tm = reader.ReadInt64();
+            //              
+            //                      DateTime dateTime_tc = DateTime.FromBinary(tc);
+            //                      DateTime dateTime_tm = DateTime.FromBinary(tm);
+            //              
+            //                      int zero = reader.ReadInt32();
+            //              
+            //                  }
+            //                  //using (BinaryWriter writer = new BinaryWriter(fs,Encoding.ASCII))
+            //                  //{
+            //                  //    // записываем в файл значение каждого поля структуры
+            //                  //    long tc = v8Header_Struct.Time_Create.ToBinary();
+            //                  //    long tm = v8Header_Struct.Time_Modify.ToBinary();
+            //                  //    writer.Write(tc);
+            //                  //    writer.Write(tm);
+            //                  //    writer.Write(v8Header_Struct.Zero);
+            //              
+            //                  //}
+            //              }
+            //              
+            //              textBox1.Text += ("Новая текстовая строка"+Environment.NewLine);
+            //              // Example usage
+            //              Logger logger = LogManager.GetLogger("Example");
+            //              logger.Trace("trace log message");
+            //              logger.Debug("debug log message");
+            //              logger.Info("info log message");
+            //              logger.Warn("warn log message");
+            //              logger.Error("error log message");
+            //              logger.Fatal("fatal log message");
+            #endregion
         }
 
         private void Form1_Load(object sender, EventArgs e)
