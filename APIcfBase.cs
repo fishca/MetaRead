@@ -977,6 +977,43 @@ namespace MetaRead
             return true;
         }
 
+        public static void LoadValidValues(Tree tr, List<VarValidValue> validvalues, bool haveglobal = false)
+        {
+            Tree tt;
+            int i, count;
+            VarValidValue vvv = new VarValidValue();
+            String s;
+
+            tt = tr.Get_First();
+            //count = tt.Get_Value().ToIntDef(0);
+            count = Convert.ToInt32(tt.Get_Value());
+            for (i = 0; i < count; ++i)
+            {
+                tt = tt.Get_Next();
+                vvv.value = Convert.ToInt32(tt.Get_Value());
+                tt = tt.Get_Next();
+                s = tt.Get_Value();
+                if (string.IsNullOrEmpty(s))
+                    vvv.ver1C = Version1C.v1C_min;
+                else
+                {
+                    vvv.ver1C = stringtover1C(s);
+                    if (vvv.ver1C == Version1C.v1C_min)
+                    {
+                        //error(L"Ошибка загрузки статических типов. Некорректное значение версии 1C в допустимых значениях переменной дерева сериализации"
+                        //    //, L"Переменная", fname
+                        //    , L"Значение", s);
+                    }
+                }
+                if (haveglobal)
+                {
+                    tt = tt.Get_Next();
+                    vvv.globalvalue = Convert.ToInt32(tt.Get_Value());
+                }
+                validvalues.Add(vvv);
+            }
+
+        }
 
     }
 }

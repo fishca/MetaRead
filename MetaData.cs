@@ -281,6 +281,12 @@ namespace MetaRead
         public int value;
         public Version1C ver1C;
         public int globalvalue;
+        public VarValidValue(int v, Version1C ver, int gl)
+        {
+            value = v;
+            ver1C = ver;
+            globalvalue = gl;
+        }
     }
 
 
