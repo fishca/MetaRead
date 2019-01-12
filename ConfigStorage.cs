@@ -300,14 +300,68 @@ namespace MetaRead
     public class ConfigStorageDirectory : ConfigStorage
     {
 
-        private String fdir;
+        private string fdir;
 
-        public ConfigStorageDirectory(String _dir) { }
-        public override ConfigFile readfile(String path) { return new ConfigFile(); }
-        public override bool writefile(String path, Stream str) { return true; }
-        public override String presentation() { return " "; }
-        public override void close(ConfigFile cf)  { }
-        public override bool fileexists(String path) { return true; }
+        public ConfigStorageDirectory(string _dir)
+        {
+            fdir = _dir;
+            if (fdir.LastIndexOf('\\') != fdir.Length - 1)
+                fdir += '\\';
+        }
+
+        public override ConfigFile readfile(string path)
+        {
+            ConfigFile cf;
+            string filename;
+            
+            filename = fdir + new StringBuilder(path).Replace('/', '\\').ToString();
+
+            if (File.Exists(filename))
+            {
+                cf = new ConfigFile();
+                try
+                {
+                    cf.str = new FileStream(filename, FileMode.CreateNew);
+                    cf.addin = null;
+                    return cf;
+                }
+                catch (Exception)
+                {
+
+                    return null;
+                    //throw;
+                }
+            }
+            else
+                return null;
+        }
+
+        public override bool writefile(string path, Stream str)
+        {
+            string filename = fdir + new StringBuilder(path).Replace('/', '\\').ToString();
+
+            FileStream f = new FileStream(filename, FileMode.CreateNew);
+            str.CopyTo(f);
+            f.Dispose();
+
+            return true;
+        }
+
+        public override string presentation()
+        {
+            return fdir.Substring(1, fdir.Length - 1);
+        }
+
+        public override void close(ConfigFile cf)
+        {
+            cf.str.Dispose();
+        }
+
+        public override bool fileexists(string path)
+        {
+            string filename = fdir + new StringBuilder(path).Replace('/', '\\').ToString();
+            return File.Exists(filename);
+        }
 
     }
 
