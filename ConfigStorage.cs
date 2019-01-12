@@ -38,6 +38,11 @@ namespace MetaRead
         private Stream stream;  // stream (нераспакованный поток)
         private Stream rstream; // raw stream (нераспакованный поток)
 
+        /// <summary>
+        /// static wchar_t temppath[MAX_PATH];
+        /// </summary>
+        public string temppath;
+
         private V8Catalog cat;
 
         private table_file_packed packed;
@@ -84,6 +89,7 @@ namespace MetaRead
             Cat = null;
             Packed = table_file_packed.unknown;
             Dynno = -3;
+            temppath = "";
         }
 
         public bool open()

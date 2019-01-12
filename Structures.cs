@@ -452,12 +452,12 @@ namespace MetaRead
         /// <summary>
         /// Структура файла таблицы контейнера файлов
         /// </summary>
-        public struct TableFile
+        public class TableFile
         {
             private V8Table t;
             private String name; // Имя, как оно хранится в таблице
             public UInt32 maxpartno;
-            public table_blob_file[] addr;
+            public table_blob_file[] addr = null;
             private DateTime ft_create;
             private DateTime ft_modify;
 
@@ -493,6 +493,12 @@ namespace MetaRead
                 maxpartno = _maxpartno;
             }
             */
+            public TableFile(V8Table _t, string _name, UInt32 _maxpartno)
+            {
+                t = _t;
+                name = _name;
+                maxpartno = _maxpartno;
+            }
 
         }
 

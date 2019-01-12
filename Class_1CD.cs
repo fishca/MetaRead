@@ -408,14 +408,14 @@ namespace MetaRead
 
         public void Find_supplier_configs()
         {
-            var fl = Get_files_configsave().files();
+            var fl = Get_files_configsave().files;
             foreach (var item_fl in fl)
             {
                 if (item_fl.Key.Length == 73)
                     Add_supplier_config(item_fl.Value);
             }
 
-            var flc = Get_files_config().files();
+            var flc = Get_files_config().files;
             foreach (var item_flc in flc)
             {
                 if (item_flc.Key.Length == 73)
