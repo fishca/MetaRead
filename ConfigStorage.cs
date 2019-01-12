@@ -50,7 +50,7 @@ namespace MetaRead
         /// 
         /// Для пропускаемых файлов -3.
         /// </summary>
-        private int dynno; 
+        private int dynno;
 
         public TableFile File { get { return file; } set { file = value; } }
 
@@ -77,13 +77,13 @@ namespace MetaRead
         /// <param name="_name"></param>
         public Container_file(TableFile _f, string _name)
         {
-            File    = _f;
-            Name    = _name;
-            Stream  = null;
+            File = _f;
+            Name = _name;
+            Stream = null;
             Rstream = null;
-            Cat     = null;
-            Packed  = table_file_packed.unknown;
-            Dynno   = -3;
+            Cat = null;
+            Packed = table_file_packed.unknown;
+            Dynno = -3;
         }
 
         public bool open()
@@ -220,7 +220,7 @@ namespace MetaRead
             rstream.Seek(0, SeekOrigin.Begin);
 
             return true;
-        } 
+        }
 
         public void close()
         {
@@ -274,7 +274,7 @@ namespace MetaRead
             return true;
         }
     }
-    
+
     /// <summary>
     /// Базовый класс адаптеров контейнеров конфигурации
     /// </summary>
@@ -284,7 +284,7 @@ namespace MetaRead
         public ConfigStorage() { }
 
         // Если файл не существует, возвращается NULL
-        public virtual ConfigFile readfile(String path) 
+        public virtual ConfigFile readfile(String path)
         {
             return new ConfigFile();
         }
@@ -313,7 +313,7 @@ namespace MetaRead
         {
             ConfigFile cf;
             string filename;
-            
+
             filename = fdir + new StringBuilder(path).Replace('/', '\\').ToString();
 
             if (File.Exists(filename))
@@ -368,19 +368,111 @@ namespace MetaRead
     /// <summary>
     /// Класс адаптера контейнера конфигурации - cf (epf, erf, cfe) файл
     /// </summary>
-    class ConfigStorageCFFile : ConfigStorage
+    public class ConfigStorageCFFile : ConfigStorage
     {
-    
-	    private String filename;
+
+        private string filename;
         private V8Catalog cat;
 
-        public ConfigStorageCFFile(String fname) { }
+        public ConfigStorageCFFile(string fname)
+        {
+            filename = fname;
+            cat = new V8Catalog(filename);
+        }
 
-        public override ConfigFile readfile(String path) { return new ConfigFile(); }
-        public override bool writefile(String path, Stream str) { return true; }
-        public override String presentation() { return " "; }
-        public override void close(ConfigFile cf) { }
-    	public override bool fileexists(String path) { return true; }
+        public override ConfigFile readfile(string path)
+        {
+            V8Catalog c;
+            V8File f;
+            int i;
+
+            ConfigFile cf;
+
+            if (!cat.IsOpen())
+                return null;
+
+            string fname = new StringBuilder(path).Replace('/', '\\').ToString();
+            c = cat;
+            for (i = fname.IndexOf("\\"); i != -1; i = fname.IndexOf("\\"))
+            {
+                f = c.GetFile(fname.Substring(1, i - 1));
+                if (f is null)
+                    return null;
+                c = f.GetCatalog();
+                if (c is null)
+                    return null;
+                fname = fname.Substring(i + 1, fname.Length - i);
+            }
+            f = c.GetFile(fname);
+            if (f is null)
+                return null;
+            if (f.Open())
+                return null;
+            cf = new ConfigFile();
+            cf.str = f.GetData();
+            cf.str.Seek(0, SeekOrigin.Begin);
+            cf.addin = f;
+
+            return cf;
+        }
+
+        public override bool writefile(string path, Stream str)
+        {
+            V8Catalog c;
+            V8File f;
+            int i;
+
+            if (!cat.IsOpen())
+                return false;
+
+            string fname = new StringBuilder(path).Replace('/', '\\').ToString();
+            c = cat;
+            for (i = fname.IndexOf("\\"); i != -1; i = fname.IndexOf("\\"))
+            {
+                c = c.CreateCatalog(fname.Substring(1, i - 1));
+                fname = fname.Substring(i + 1, fname.Length - 1);
+            }
+            f = c.CreateFile(fname);
+            f.Write(str);
+
+            return true;
+        }
+
+        public override string presentation()
+        {
+            return filename;
+        }
+
+        public override void close(ConfigFile cf)
+        {
+            V8File f;
+            f = (V8File)cf.addin;
+            f.Close();
+        }
+
+        public override bool fileexists(string path)
+        {
+            // По сути, проверяется существование только каталога (файла верхнего уровня)
+            // Это неправильно для формата 8.0 с файлом каталогом metadata. Но метод fileexists используется только для внешних файлов,
+            // поэтому такой проверки достаточно
+
+            V8File f;
+            int i;
+
+            if (!cat.IsOpen())
+                return false;
+
+            string fname = new StringBuilder(path).Replace('/', '\\').ToString();
+            i = fname.IndexOf("\\");
+            if (i != -1)
+            {
+                fname = fname.Substring(1, i - 1);
+            }
+            f = cat.GetFile(fname);
+            if (f is null)
+                return false;
+            return true;
+        }
 
     }
 
@@ -390,7 +482,7 @@ namespace MetaRead
     public class ConfigStorageTable : ConfigStorage
     {
 
-        public ConfigStorageTable(Tools1CD _base = null) : base(){}
+        public ConfigStorageTable(Tools1CD _base = null) : base() { }
 
         public override ConfigFile readfile(String path) { return new ConfigFile(); }
         public override bool writefile(String path, Stream str) { return true; }
@@ -409,7 +501,7 @@ namespace MetaRead
 
         protected bool ready = false;
 
-	    private Tools1CD base_; // установлена, если база принадлежит адаптеру конфигурации
+        private Tools1CD base_; // установлена, если база принадлежит адаптеру конфигурации
     }
     /// <summary>
     /// Класс адаптера таблицы - контейнера конфигурации CONFIG (конфигурации базы данных)
@@ -455,7 +547,7 @@ namespace MetaRead
         public ConfigStorageTableConfigCasSave(TableFiles tabc, TableFiles tabcs, Guid uid, String configver, Tools1CD _base = null) { }
         public override String presentation() { return " "; }
 
-        private	String present;
+        private String present;
     }
 
 
