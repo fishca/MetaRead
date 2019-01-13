@@ -488,20 +488,171 @@ namespace MetaRead
     public class ConfigStorageTable : ConfigStorage
     {
 
-        public ConfigStorageTable(Tools1CD _base = null) : base() { }
+        public ConfigStorageTable(Tools1CD _base = null) : base()
+        {
+            this.base_ = _base;
+        }
 
-        public override ConfigFile readfile(String path) { return new ConfigFile(); }
-        public override bool writefile(String path, Stream str) { return true; }
-        public override void close(ConfigFile cf) { }
+        public override ConfigFile readfile(String path)
+        {
+            Container_file tf = null;
+            V8Catalog c;
+            V8File f;
+            int i;
+            string fname;
+            string r_name;
+            ConfigFile cf;
+            ConfigStorageTable_addin cfa;
+
+            if (!ready)
+                return null;
+
+            fname = new StringBuilder(path).Replace('/', '\\').ToString();
+            i = fname.IndexOf("\\");
+            if (i != -1)
+            {
+                r_name = fname.Substring(1, i - 1);
+                fname = fname.Substring(i + 1, fname.Length - i);
+            }
+            else
+            {
+                r_name = fname;
+                fname = "";
+            }
+
+            tf = (files.TryGetValue(r_name.ToUpper(), out Container_file val)) ? val : null;
+            tf.open();
+
+            if (!string.IsNullOrEmpty(fname))
+            {
+                if (tf.Cat is null)
+                {
+                    tf.Cat = new V8Catalog(tf.Stream, false, true);
+                }
+                c = tf.Cat;
+                for (i = fname.IndexOf("\\"); i != -1; i = fname.IndexOf("\\"))
+                {
+                    f = c.GetFile(fname.Substring(1, i - 1));
+                    if (f is null)
+                        return null;
+                    c = f.GetCatalog();
+                    if (c is null)
+                        return null;
+                    fname = fname.Substring(i + 1, fname.Length - i);
+                }
+                f = c.GetFile(fname);
+                if (f is null)
+                    return null;
+                if (!f.Open())
+                    return null;
+                cf = new ConfigFile();
+                cfa = new ConfigStorageTable_addin();
+                cfa.variant = ConfigStorageTableAddinVariant.cstav_v8file;
+                cfa.f = f;
+                cf.str = f.GetData();
+                cf.str.Seek(0, SeekOrigin.Begin);
+                cf.addin = cfa;
+            }
+            else
+            {
+                cf = new ConfigFile();
+                cfa = new ConfigStorageTable_addin();
+                cfa.variant = ConfigStorageTableAddinVariant.cstav_container_file;
+                cfa.tf = tf;
+                cf.str = tf.Stream;
+                cf.str.Seek(0, SeekOrigin.Begin);
+                cf.addin = cfa;
+            }
+            return cf;
+        }
+
+        public override bool writefile(String path, Stream str)
+        {
+            return false; // Запись в таблицы пока не поддерживается
+        }
+
+        public override void close(ConfigFile cf)
+        {
+            ConfigStorageTable_addin cfa;
+
+            cfa = (ConfigStorageTable_addin)cf.addin;
+            if (cfa.variant == ConfigStorageTableAddinVariant.cstav_container_file)
+            {
+                cfa.tf.close();
+            }
+            else if (cfa.variant == ConfigStorageTableAddinVariant.cstav_v8file)
+            {
+                cfa.f.Close();
+            }
+        }
+
         /// <summary>
         /// сохранение конфигурации в файл
         /// </summary>
         /// <param name="_filename"></param>
         /// <returns></returns>
-	    public bool save_config(String _filename) { return true; }
-        public bool getready() { return ready; }
-        public override bool fileexists(String path) { return true; }
+        public bool save_config(String _filename)
+        {
+            V8Catalog c;
+            V8File f;
 
+            Container_file tf;
+            int i, j, prevj, size;
+
+            if (!ready)
+                return false;
+
+            size = files.Count;
+            prevj = 101;
+
+            if (File.Exists(_filename))
+                File.Delete(_filename);
+            c = new V8Catalog(_filename, false);
+
+            i = 1;
+            foreach (var item_files in files)
+            {
+                j = i * 100 / size;
+                if (j != prevj)
+                {
+                    prevj = j;
+                }
+                tf = item_files.Value;
+                if (!tf.ropen())
+                {
+                    f = c.CreateFile(tf.Name);
+                    //f.SetTimeCreate(tf.File.Ft_create);
+                    //f.SetTimeModify(tf.File.Ft_modify);
+                    f.WriteAndClose(tf.Rstream);
+                    tf.close();
+                }
+                ++i;
+            }
+            return true;
+        }
+
+        public bool getready()
+        {
+            return ready;
+        }
+
+        public override bool fileexists(String path)
+        {
+            // По сути, проверяется существование только каталога (файла записи верхнего уровня)
+            // Это неправильно для формата 8.0 с файлом каталогом metadata. Но метод fileexists используется только для внешних файлов, поэтому такой проверки достаточно
+
+            int i;
+            string fname;
+            if (!ready)
+                return false;
+            fname = new StringBuilder(path).Replace('/', '\\').ToString();
+            i = fname.IndexOf("\\");
+            if (i != -1)
+            {
+                fname = fname.Substring(1, i - 1);
+            }
+            return files.TryGetValue(fname.ToUpper(), out Container_file val) ? true : false;
+        }
 
         protected SortedDictionary<String, Container_file> files;
 
@@ -509,6 +660,7 @@ namespace MetaRead
 
         private Tools1CD base_; // установлена, если база принадлежит адаптеру конфигурации
     }
+    
     /// <summary>
     /// Класс адаптера таблицы - контейнера конфигурации CONFIG (конфигурации базы данных)
     /// </summary>

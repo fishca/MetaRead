@@ -8,8 +8,9 @@ using static MetaRead.APIcfBase;
 
 namespace MetaRead
 {
-    //---------------------------------------------------------------------------
-    // Классы
+    /// <summary>
+    /// Класс Class
+    /// </summary>
     public class Class : MetaBase
     {
         public Guid fuid;
@@ -138,8 +139,9 @@ namespace MetaRead
 
     }
 
-    //---------------------------------------------------------------------------
-    // Экземпляр класса
+    /// <summary>
+    /// Экземпляр класса
+    /// </summary>
     public class ClassItem
     {
         public Class fcl;
@@ -150,7 +152,6 @@ namespace MetaRead
         {
             fcl = _cl;
             fversionisset = fverset;
-
         }
 
         public int setversion(int v)

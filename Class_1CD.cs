@@ -17,9 +17,9 @@ namespace MetaRead
     public class SupplierConfig
     {
         private TableFile file;
-        private String name;     // имя конфигурация поставщика
-        private String supplier; // синоним конфигурация поставщика
-        private String version;  // версия конфигурация поставщика
+        private string name;     // имя конфигурация поставщика
+        private string supplier; // синоним конфигурация поставщика
+        private string version;  // версия конфигурация поставщика
 
         public TableFile File
         {

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 namespace MetaRead
@@ -22,8 +18,8 @@ namespace MetaRead
 
         public struct UnpackIndexRecord
         {
-            UInt32 _record_number; // номер (индекс) записи в таблице записей
-                                   //unsigned char _index[1]; // значение индекса записи. Реальная длина значения определяется полем length класса index
+            private UInt32 _record_number; // номер (индекс) записи в таблице записей
+                                           //unsigned char _index[1]; // значение индекса записи. Реальная длина значения определяется полем length класса index
             private byte[] index;
 
             public byte[] Index { get { return index; } set { index = value; } }
@@ -545,6 +541,12 @@ namespace MetaRead
             public DateTime Ft_modify { get { return ft_modify; } set { ft_modify = value; } }
         }
 
+        public struct ConfigStorageTable_addin
+        {
+            public ConfigStorageTableAddinVariant variant;
+            public Container_file tf;
+            public V8File f;
+        }
 
         #endregion
 
@@ -565,16 +567,16 @@ namespace MetaRead
 
         public enum NodeType
         {
-            nd_empty      = 0, // пусто
-            nd_string     = 1, // строка
-            nd_number     = 2, // число
+            nd_empty = 0, // пусто
+            nd_string = 1, // строка
+            nd_number = 2, // число
             nd_number_exp = 3, // число с показателем степени
-            nd_guid       = 4, // уникальный идентификатор
-            nd_list       = 5, // список
-            nd_binary     = 6, // двоичные данные (с префиксом #base64:)
-            nd_binary2    = 7, // двоичные данные формата 8.2 (без префикса)
-            nd_link       = 8, // ссылка
-            nd_binary_d   = 9, // двоичные данные (с префиксом #data:)
+            nd_guid = 4, // уникальный идентификатор
+            nd_list = 5, // список
+            nd_binary = 6, // двоичные данные (с префиксом #base64:)
+            nd_binary2 = 7, // двоичные данные формата 8.2 (без префикса)
+            nd_link = 8, // ссылка
+            nd_binary_d = 9, // двоичные данные (с префиксом #data:)
             nd_unknown         // неизвестный тип
         }
 
@@ -602,8 +604,8 @@ namespace MetaRead
         public enum V8ObjType
         {
             unknown = 0, // тип неизвестен
-            data80  = 1, // файл данных формата 8.0 (до 8.2.14 включительно)
-            free80  = 2, // файл свободных страниц формата 8.0 (до 8.2.14 включительно)
+            data80 = 1, // файл данных формата 8.0 (до 8.2.14 включительно)
+            free80 = 2, // файл свободных страниц формата 8.0 (до 8.2.14 включительно)
             data838 = 3, // файл данных формата 8.3.8
             free838 = 4  // файл свободных страниц формата 8.3.8
         }
@@ -714,6 +716,11 @@ namespace MetaRead
             yes
         }
 
+        public enum ConfigStorageTableAddinVariant
+        {
+            cstav_container_file,
+            cstav_v8file
+        }
 
         #endregion
 
