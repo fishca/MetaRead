@@ -1034,6 +1034,7 @@ namespace MetaRead
                 b = (byte)hexdecode[c];
                 s += b;
             }
+            return s;
         }
     }
 }

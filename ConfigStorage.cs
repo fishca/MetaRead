@@ -1274,8 +1274,199 @@ namespace MetaRead
     /// </summary>
     public class ConfigStorageTableConfigCasSave : ConfigStorageTable
     {
-        public ConfigStorageTableConfigCasSave(TableFiles tabc, TableFiles tabcs, Guid uid, String configver, Tools1CD _base = null) { }
-        public override String presentation() { return " "; }
+        public ConfigStorageTableConfigCasSave(TableFiles tabc, TableFiles tabcs, Guid uid, String configver, Tools1CD _base = null)
+        {
+            int m;
+            String s, name, hashname;
+            TableFile _configinfo;
+            Container_file configinfo;
+            Tree tt;
+            Tree ct;
+            TableFile tf;
+            Container_file pcf;
+            MemoryStream stream;
+            string g;
+            int gl;
+            //std::map<String, table_file*>::iterator ptf;
+
+
+            ready = tabc.getready();
+            if (!ready)
+                return;
+            ready = tabcs.getready();
+            if (!ready)
+                return;
+
+            configinfo = null;
+            present = tabcs.gettable().Getbase().Getfilename() + "\\CONFIGCASSAVE";
+
+            //g = GUID_to_string(uid) + L"__";
+            g = uid.ToString() + "__";
+            gl = g.Length;
+
+            foreach (var item_files in tabcs.files)
+            {
+                if (item_files.Key.Substring(1, gl).CompareTo(g) == 0)
+                {
+                    tf = item_files.Value;
+                    pcf = new Container_file(tf, tf.Name.Substring(gl + 1, tf.Name.Length - gl));
+                    if (pcf.Name.CompareTo("configinfo") == 0)
+                        configinfo = pcf;
+                    files[pcf.Name.ToUpper()] = pcf;
+
+                }
+            }
+
+            if (configinfo is null)
+            {
+                if (files.Count == 0)
+                {
+                    //error(L"Ошибка поиска файла"
+                    //    , L"Путь", present
+                    //    , L"Имя", g + L"configinfo"
+                    //    , L"Имя файла", L"configinfo");
+                    return;
+                }
+
+                s = tabc.gettable().Getbase().Getfilename() + "\\CONFIGCAS\\" + configver;
+                _configinfo = tabc.getfile(configver);
+                if (_configinfo is null)
+                {
+                    // error(L"Ошибка поиска файла"
+                    //     , L"Путь", s
+                    //     , L"Имя", configver
+                    //     , L"Имя файла", L"configinfo");
+                    return;
+                }
+
+                configinfo = new Container_file(_configinfo, "configinfo");
+                files["CONFIGINFO"] = configinfo;
+            }
+            else
+                s = present + "\\" + gl + "configinfo";
+
+            configinfo.open();
+            tt = Tree.Parse_1Cstream(configinfo.stream, "", s);
+            if (tt is null)
+            {
+                // error(L"Ошибка разбора файла configinfo"
+                //     , L"Путь", s);
+                // delete tt;
+                return;
+            }
+            ct = tt.Get_First();
+            if (ct is null)
+            {
+                // error(L"Ошибка разбора файла configinfo"
+                //     , L"Путь", s);
+                // delete tt;
+                return;
+            }
+            ct = ct.Get_Next();
+            if (ct is null)
+            {
+                // error(L"Ошибка разбора файла configinfo"
+                //     , L"Путь", s);
+                // delete tt;
+                return;
+            }
+            ct = ct.Get_Next();
+            if (ct is null)
+            {
+                // error(L"Ошибка разбора файла configinfo"
+                //     , L"Путь", s);
+                // delete tt;
+                return;
+            }
+            ct = ct.Get_First();
+            if (ct is null)
+            {
+                // error(L"Ошибка разбора файла configinfo"
+                //     , L"Путь", s);
+                // delete tt;
+                return;
+            }
+
+            stream = new MemoryStream();
+            for (m = Convert.ToInt32(ct.Get_Value()); m != 0 ; --m)
+            {
+                ct = ct.Get_Next();
+                if (ct is null)
+                {
+                    //error(L"Ошибка разбора файла configinfo"
+                    //    , L"Путь", s);
+                    //delete tt;
+                    stream.Dispose();
+                    return;
+                }
+                if (ct.Get_Type() != Node_Type.nd_string)
+                {
+                    // error(L"Ошибка разбора файла configinfo"
+                    //     , L"Путь", s);
+                    // delete tt;
+                    stream.Dispose();
+                    return;
+                }
+                name = ct.Get_Value();
+
+                ct = ct.Get_Next();
+
+                if (files.TryGetValue(name.ToUpper(), out Container_file val))
+                {
+                    continue;
+                }
+
+                if (ct is null)
+                {
+                    //error(L"Ошибка разбора файла configinfo"
+                    //    , L"Путь", s);
+                    //delete tt;
+                    stream.Dispose();
+                    return;
+                }
+                if (ct.Get_Type() != Node_Type.nd_binary2)
+                {
+                    //error(L"Ошибка разбора файла configinfo"
+                    //    , L"Путь", s);
+                    //delete tt;
+                    stream.Dispose();
+                    return;
+                }
+                stream.Seek(0, SeekOrigin.Begin);
+
+                //base64_decode(ct->get_value(), stream);
+
+                byte[] data = Convert.FromBase64String(ct.Get_Value());
+                string decodedString = Encoding.UTF8.GetString(data);
+                stream.Write(data, 0, data.Length);
+
+                stream.Seek(0, SeekOrigin.Begin);
+                hashname = hexstring(stream);
+
+                tf = tabc.getfile(hashname);
+                if (tf != null)
+                {
+                    pcf = new Container_file(tf, name);
+                    files[name.ToUpper()] = pcf;
+                }
+                else
+                {
+                    // error(L"Ошибка поиска файла"
+                    //     , L"Путь", s
+                    //     , L"Имя", hashname
+                    //     , L"Имя файла", name);
+                    // delete tt;
+                    stream.Dispose();
+                    return;
+                }
+            }
+            stream.Dispose();
+        }
+
+        public override String presentation()
+        {
+            return present;
+        }
 
         private String present;
     }
