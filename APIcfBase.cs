@@ -1015,5 +1015,25 @@ namespace MetaRead
 
         }
 
+        public static string hexstring(Stream str)
+        {
+            int i;
+            string s = "";
+            string hexdecode = "0123456789abcdef";
+
+            byte c;
+            byte b;
+
+            byte[] d = null;
+            while (str.Read(d, 0, 1) != 0)
+            {
+                c = (byte)(d[0] >> 4);
+                b = (byte)hexdecode[c];
+                s += b;
+                c = (byte)(d[0] & 0xf);
+                b = (byte)hexdecode[c];
+                s += b;
+            }
+        }
     }
 }
