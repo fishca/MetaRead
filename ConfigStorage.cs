@@ -667,10 +667,179 @@ namespace MetaRead
     public class ConfigStorageTableConfig : ConfigStorageTable
     {
 
-        public ConfigStorageTableConfig(TableFiles tabf, Tools1CD _base = null) { }
-        public override String presentation() { return " "; }
+        public ConfigStorageTableConfig(TableFiles tabf, Tools1CD _base = null)
+        {
+            int m;
+            string s;
+            string name, ext;
+            string spoint = ".";
+            string sdynupdate = "_dynupdate_";
+            int lsdynupdate = sdynupdate.Length;
 
-        private String present;
+            TableFile tf;
+            //std::map<String, table_file*>::iterator pfilesmap;
+            //std::map<String, container_file*>::iterator pfiles;
+            TableFile _DynamicallyUpdated;
+            Container_file DynamicallyUpdated;
+            Tree tt;
+            Tree ct;
+            Guid[] dynup;
+            int ndynup = 0;
+            Guid g = EmptyUID;
+            V8Table tab;
+            int dynno;
+            Container_file pcf;
+
+            ready = tabf.getready();
+            if (!ready)
+                return;
+            present = tabf.gettable().Getbase().Getfilename() + "\\CONFIG";
+            tab = tabf.gettable();
+
+            _DynamicallyUpdated = tabf.getfile("DynamicallyUpdated");
+            dynup = null;
+
+            if (_DynamicallyUpdated != null)
+            {
+                DynamicallyUpdated = new Container_file(_DynamicallyUpdated, _DynamicallyUpdated.Name);
+                DynamicallyUpdated.open();
+                s = tab.Getbase().Getfilename() + "\\" + tab.Getname() + "\\" + DynamicallyUpdated.Name;
+                //tt = parse_1Cstream()
+                tt = Tree.Parse_1Cstream(DynamicallyUpdated.Stream, "", s);
+                if (tt is null)
+                {
+                    // error(L"Ошибка разбора файла DynamicallyUpdated"
+                    //     , L"Путь", s);
+
+                }
+                else
+                {
+                    ct = tt.Get_First();
+                    if (ct is null)
+                    {
+                        // error(L"Ошибка разбора файла DynamicallyUpdated"
+                        //     , L"Путь", s);
+                    }
+                    else
+                    {
+                        ct = tt.Get_First();
+                        if (ct is null)
+                        {
+                            // error(L"Ошибка разбора файла DynamicallyUpdated"
+                            //     , L"Путь", s);
+                        }
+                        else
+                        {
+                            ndynup = Convert.ToInt32(ct.Get_Value());
+                            if (ndynup > 0)
+                            {
+                                dynup = new Guid[ndynup];
+                                for (m = 0; m < ndynup; ++m)
+                                {
+                                    ct = ct.Get_Next();
+                                    string_to_GUID(ct.Get_Value(), ref dynup[m]);
+                                }
+                            }
+                            else
+                            {
+                                ndynup = 0;
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            int index = 0;
+
+            foreach (var item_files in tabf.files)
+            {
+                tf = item_files.Value;
+                if (tf == _DynamicallyUpdated)
+                    continue;
+                if (tf.addr[index].Blob_length == 0)
+                    continue;
+                s = tf.Name;
+
+                m = s.LastIndexOfAny(spoint.ToCharArray());
+
+                if (m != -1)
+                {
+                    name = s.Substring(1, m - 1);
+                    ext = s.Substring(m + 1, s.Length - m);
+                }
+                else
+                {
+                    name = s;
+                    ext = "";
+                }
+
+                if (ext.CompareTo("new") == 0)
+                {
+                    ext = "";
+                    dynno = -2;
+                }
+                else
+                {
+                    dynno = -1;
+                }
+
+
+                m = name.IndexOf(sdynupdate);
+                if (m != -1)
+                {
+                    s = name.Substring(m + lsdynupdate, name.Length - m - lsdynupdate + 1);
+                    name = name.Substring(1, m - 1);
+                    string_to_GUID(s, ref g);
+                    if (dynup != null)
+                    {
+                        for (m = 0; m < ndynup; ++m)
+                        {
+                            if (g == dynup[m])
+                                break;
+                            if (m >= ndynup)
+                                dynno = -2;
+                            else
+                                dynno = m;
+                        }
+                    }
+                    else
+                    {
+                        dynno = -2;
+                    }
+                }
+                if (string.IsNullOrEmpty(ext))
+                {
+                    name = name + spoint + ext;
+                }
+                s = name.ToUpper();
+
+                if (files.TryGetValue(s, out Container_file val))
+                {
+                    pcf = val;
+                    if (pcf.Dynno < dynno)
+                    {
+                        pcf.File = tf;
+                        pcf.Dynno = dynno;
+                    }
+                }
+                else
+                {
+                    pcf = new Container_file(tf, name);
+                    files[s] = pcf;
+                    pcf.Dynno = dynno;
+                }
+                ++index;
+            }
+
+        }
+
+        public override String presentation()
+        {
+            return present;
+        }
+
+        private string present;
     }
 
     /// <summary>
