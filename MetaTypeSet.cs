@@ -70,7 +70,7 @@ namespace MetaRead
         {
             if (String.IsNullOrEmpty(n))
                 return null;
-            //TryGetValue("tif", out value)
+            
             if (!mapname.TryGetValue(n, out MetaType val))
             {
                 if ((staticTypes != null) && (staticTypes != this))

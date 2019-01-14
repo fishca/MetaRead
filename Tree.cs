@@ -246,13 +246,16 @@ namespace MetaRead
             return Node_Type.nd_unknown;
         }
 
+        //public static Tree Parse_1Ctext()
+
         public static Tree Parse_1Cstream(Stream str, string err, string path)
         {
             StringBuilder __curvalue__ = new StringBuilder("");
 
             string curvalue = "";
 
-            _state state = _state.s_nonstring;
+            //_state state = _state.s_nonstring;
+            _state state = _state.s_value;
 
             int i = 0;
 
@@ -266,10 +269,12 @@ namespace MetaRead
 
             Tree t = ret;
 
-            StreamReader reader = new StreamReader(str, true);
+            //StreamReader reader = new StreamReader(str, true);
+            StreamReader reader = new StreamReader(str, Encoding.ASCII, true);
 
             for (i = 1, _sym = reader.Read(); _sym >= 0; i++, _sym = reader.Read())
             {
+                
                 sym = (Char)_sym;
                 //if(i % 0x100000 == 0) if(err) err->Status(String(i/0x100000) + L" MB");
                 switch (state)
@@ -293,7 +298,8 @@ namespace MetaRead
                                 if (t.Get_First() != null)
                                     t.AddChild("", Node_Type.nd_empty);
                                 t = t.Get_Parent();
-                                if (t != null)
+                                //if (t != null)
+                                if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
                                     ret = null;
@@ -325,7 +331,8 @@ namespace MetaRead
                                 break;
                             case '}':
                                 t = t.Get_Parent();
-                                if (t != null)
+                                //if (t != null)
+                                if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
                                     ret = null;
@@ -376,7 +383,8 @@ namespace MetaRead
                                     break;
                                 case '}':
                                     t = t.Get_Parent();
-                                    if (t != null)
+                                    //if (t != null)
+                                    if (t is null)
                                     {
                                         // Ошибка формата потока. Лишняя закрывающая скобка }.
                                         ret = null;
@@ -414,7 +422,8 @@ namespace MetaRead
                                 }
                                 t.AddChild(curvalue, nt);
                                 t = t.Get_Parent();
-                                if (t != null)
+                                //if (t != null)
+                                if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
                                     ret = null;

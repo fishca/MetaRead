@@ -251,16 +251,24 @@ namespace MetaRead
 
                 if (!System.IO.File.Exists(name))
                 {
-                    FileStream data1 = new FileStream(name, FileMode.Create);
-                    data1.Write(StringToByteArray(_EMPTY_CATALOG_TEMPLATE), 0, CATALOG_HEADER_LEN2);
+                    // FileStream data1 = new FileStream(name, FileMode.Create);
+                    // data1.Write(StringToByteArray(_EMPTY_CATALOG_TEMPLATE), 0, CATALOG_HEADER_LEN2);
+                    // //data1 = null;
+                    // data1.Dispose();
+                    Data = new FileStream(name, FileMode.Create);
+                    Data.Write(StringToByteArray(_EMPTY_CATALOG_TEMPLATE), 0, CATALOG_HEADER_LEN2);
                     //data1 = null;
-                    data1.Dispose();
+                    if (Data != null)
+                        Data.Dispose();
+
                 }
-                Data = new FileStream(name, FileMode.Append);
+                //Data = new FileStream(name, FileMode.Append);
+                Data = new FileStream(name, FileMode.Open);
             }
 
             File = null;
-            if (IsCatalog()) Initialize();
+            if (IsCatalog())
+                Initialize();
             else
             {
                 First = null;
@@ -278,8 +286,10 @@ namespace MetaRead
                 leave_data = false;
             }
 
-            CFu.Dispose();
-            Data.Dispose();
+            if (CFu != null)
+                CFu.Dispose();
+            if (Data != null)
+                Data.Dispose();
         }
 
         public V8Catalog(String name, bool _zipped) // создать каталог из физического файла (cf, epf, erf, hbk, cfu)
@@ -290,13 +300,14 @@ namespace MetaRead
 
             if (!System.IO.File.Exists(name))
             {
-                FileStream data = new FileStream(name, FileMode.Create);
-                data.Write(StringToByteArray(_EMPTY_CATALOG_TEMPLATE), 0, CATALOG_HEADER_LEN2);
-                data.Dispose();
+                Data = new FileStream(name, FileMode.Create);
+                Data.Write(StringToByteArray(_EMPTY_CATALOG_TEMPLATE), 0, CATALOG_HEADER_LEN2);
+                Data.Dispose();
             }
-            Data = new FileStream(name, FileMode.Append);
+            Data = new FileStream(name, FileMode.Open);
             File = null;
-            if (IsCatalog()) Initialize();
+            if (IsCatalog())
+                Initialize();
             else
             {
                 First = null;
@@ -313,8 +324,8 @@ namespace MetaRead
                 flushed = false;
                 leave_data = false;
             }
-
-            Data.Dispose();
+            
+            Data?.Dispose();
 
         }
 

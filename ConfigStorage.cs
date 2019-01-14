@@ -394,6 +394,7 @@ namespace MetaRead
 
             ConfigFile cf;
 
+            // TODO: Времянка
             if (!cat.IsOpen())
                 return null;
 

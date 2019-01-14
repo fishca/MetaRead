@@ -14,15 +14,15 @@ namespace MetaRead
     {
         [FieldOffset(0)]
         public bool dv_bool;
-        [FieldOffset(0)]
+        [FieldOffset(100)]
         public int dv_number;
-        [FieldOffset(0)]
+        [FieldOffset(200)]
         public string dv_string;
-        [FieldOffset(0)]
+        [FieldOffset(300)]
         public char[] dv_date;
-        [FieldOffset(0)]
+        [FieldOffset(400)]
         public MetaType dv_type;
-        [FieldOffset(0)]
+        [FieldOffset(500)]
         public MetaValue dv_enum;
     }
 

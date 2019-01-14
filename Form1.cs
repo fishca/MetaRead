@@ -92,6 +92,7 @@ namespace MetaRead
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            #region Logs
             var config = new NLog.Config.LoggingConfiguration();
 
             var logfile = new NLog.Targets.FileTarget("logfile") { FileName = "log_file.txt" };
@@ -101,6 +102,23 @@ namespace MetaRead
             config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
 
             NLog.LogManager.Configuration = config;
+            #endregion
+
+            // Stream rstr;
+            // string s = Application.ExecutablePath;
+            // 
+            // string path = Path.GetDirectoryName(s);
+            // string path_log = path + "\\" + "MetaTree.txt";
+            // if (File.Exists(path_log))
+            //     rstr = new FileStream(path_log, FileMode.OpenOrCreate);
+            // else
+            //     rstr = new MemoryStream();
+            // 
+            // //MemoryStream rstr = new MemoryStream();
+            // MetaTypeSet.StaticTypesLoad(rstr);
+            // 
+            // rstr.Dispose();
+
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -112,6 +130,25 @@ namespace MetaRead
 
             Logger logger = LogManager.GetLogger("Example");
             logger.Info("result = " + result);
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Stream rstr;
+            string s = Application.ExecutablePath;
+
+            string path = Path.GetDirectoryName(s);
+            string path_log = path + "\\" + "MetaTree.txt";
+            if (File.Exists(path_log))
+                rstr = new FileStream(path_log, FileMode.OpenOrCreate);
+            else
+                rstr = new MemoryStream();
+
+            //MemoryStream rstr = new MemoryStream();
+            MetaTypeSet.StaticTypesLoad(rstr);
+
+            rstr.Dispose();
 
         }
     }

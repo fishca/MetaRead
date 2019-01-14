@@ -13,12 +13,12 @@ namespace MetaRead
     /// </summary>
     public class Class : MetaBase
     {
-        public Guid fuid;
-        public List<VarValidValue> fvervalidvalues;
-        public SortedDictionary<ClassParameter, int> fparamvalues;
-        public static SortedDictionary<Guid, Class> map;
-        public List<MetaStandartAttribute> fstandartattributes; // Стандартные реквизиты
-        public List<MetaStandartTabularSection> fstandarttabularsections; // Стандартные табличные части
+        public Guid fuid = EmptyUID;
+        public List<VarValidValue> fvervalidvalues = new List<VarValidValue>();
+        public SortedDictionary<ClassParameter, int> fparamvalues = new SortedDictionary<ClassParameter, int>();
+        public static SortedDictionary<Guid, Class> map = new SortedDictionary<Guid, Class>();
+        public List<MetaStandartAttribute> fstandartattributes = new List<MetaStandartAttribute>(); // Стандартные реквизиты
+        public List<MetaStandartTabularSection> fstandarttabularsections = new List<MetaStandartTabularSection>(); // Стандартные табличные части
 
         /// <summary>
         /// Конструктор класса

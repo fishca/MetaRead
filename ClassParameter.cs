@@ -11,11 +11,15 @@ namespace MetaRead
     public class ClassParameter
     {
         public String fname;
-        public static SortedDictionary<String, ClassParameter> map;
+        public static SortedDictionary<String, ClassParameter> map = new SortedDictionary<string, ClassParameter>();
 
         public ClassParameter(Tree tr)
         {
-
+            Tree tt = tr.Get_First();
+            fname = tt.Get_Value();
+            //map = new SortedDictionary<string, ClassParameter>();
+            map[fname] = this;
+            
         }
 
         public String Name
@@ -28,7 +32,7 @@ namespace MetaRead
 
         public static ClassParameter GetParam(String paramname)
         {
-            return null;
+            return (map.TryGetValue(paramname, out ClassParameter val)) ? val : null;
         }
     }
 }
