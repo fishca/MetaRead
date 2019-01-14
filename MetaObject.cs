@@ -15,8 +15,8 @@ namespace MetaRead
         public Guid fuid;
         public Value1C_metaobj fvalue;
 
-        public static SortedDictionary<Guid, MetaObject> map;
-        public static SortedDictionary<String, MetaObject> smap;
+        public static SortedDictionary<Guid, MetaObject> map = new SortedDictionary<Guid, MetaObject>();
+        public static SortedDictionary<String, MetaObject> smap = new SortedDictionary<string, MetaObject>();
 
         public MetaObject(Guid _uid, Value1C_metaobj _value)
         {

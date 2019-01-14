@@ -11,7 +11,7 @@ namespace MetaRead
     /// <summary>
     /// Класс Class
     /// </summary>
-    public class Class : MetaBase
+    public class Class : MetaBase, IComparer<ClassParameter>, IComparable<ClassParameter>
     {
         public Guid fuid = EmptyUID;
         public List<VarValidValue> fvervalidvalues = new List<VarValidValue>();
@@ -19,6 +19,18 @@ namespace MetaRead
         public static SortedDictionary<Guid, Class> map = new SortedDictionary<Guid, Class>();
         public List<MetaStandartAttribute> fstandartattributes = new List<MetaStandartAttribute>(); // Стандартные реквизиты
         public List<MetaStandartTabularSection> fstandarttabularsections = new List<MetaStandartTabularSection>(); // Стандартные табличные части
+
+        public int Compare(ClassParameter x, ClassParameter y)
+        {
+            string x_str = x.ToString();
+            string y_str = y.ToString();
+            return x_str.CompareTo(y_str);
+        }
+
+        public int CompareTo(ClassParameter y)
+        {
+            return this.CompareTo(y);
+        }
 
         /// <summary>
         /// Конструктор класса

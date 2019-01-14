@@ -28,7 +28,7 @@ namespace MetaRead
             //fserializationtree = null;
         }
 
-        public MetaTypeSet typeSet; // набор типов, которому принадлежит этот тип
+        public MetaTypeSet typeSet = new MetaTypeSet(); // набор типов, которому принадлежит этот тип
         public Guid fuid;                  // УИД типа
         public bool fhasuid;               // Признак наличия УИД
         public string fmetaname;
@@ -46,20 +46,20 @@ namespace MetaRead
         //std::map<Key, Value> → SortedDictionary<TKey, TValue>
         //std::unordered_map<Key, Value> → Dictionary<TKey, TValue>
 
-        public List<MetaProperty> fproperties; // Свойства
+        public List<MetaProperty> fproperties = new List<MetaProperty>(); // Свойства
 
-        public SortedDictionary<String, MetaProperty> fproperties_by_name; // Соответствие имен (русских и английских) свойствам
+        public SortedDictionary<String, MetaProperty> fproperties_by_name = new SortedDictionary<string, MetaProperty>(); // Соответствие имен (русских и английских) свойствам
 
-        public List<MetaValue> fvalues;  // Предопределенные значения типа
+        public List<MetaValue> fvalues = new List<MetaValue>();  // Предопределенные значения типа
 
-        public SortedDictionary<int, MetaValue> fvalues_by_value; // Соответствие числовых значений предопределенным значениям
+        public SortedDictionary<int, MetaValue> fvalues_by_value = new SortedDictionary<int, MetaValue>(); // Соответствие числовых значений предопределенным значениям
 
-        public SortedDictionary<String, MetaValue> fvalues_by_name; // Соответствие имен (русских и английских) предопределенным значениям
+        public SortedDictionary<String, MetaValue> fvalues_by_name = new SortedDictionary<string, MetaValue>(); // Соответствие имен (русских и английских) предопределенным значениям
 
-        public List<MetaType> fcollectiontypes; // Типы элементов коллекции
-        public List<String> fscollectiontypes; // Имена типов элементов коллекции
+        public List<MetaType> fcollectiontypes = new List<MetaType>(); // Типы элементов коллекции
+        public List<String> fscollectiontypes = new List<string>(); // Имена типов элементов коллекции
 
-        public List<MetaGeneratedType> fgeneratedtypes; // Генерируемые типы
+        public List<MetaGeneratedType> fgeneratedtypes = new List<MetaGeneratedType>(); // Генерируемые типы
 
         public bool fmeta; // Признак объекта метаданных
 
@@ -68,9 +68,9 @@ namespace MetaRead
         public Class fdefaultclass;
 
         // Дерево сериализации
-        public List<SerializationTreeVar> fserializationvars;
+        public List<SerializationTreeVar> fserializationvars = new List<SerializationTreeVar>();
         public SerializationTreeNode fserializationtree; // Если NULL - дерева сериализации нет
-        public List<ExternalFile> fexternalfiles;
+        public List<ExternalFile> fexternalfiles = new List<ExternalFile>();
 
         public MetaType(MetaTypeSet _typeSet, string _name, string _ename, string _metaname, string _emetaname, string _uid) : base(_name, _ename)
         {
@@ -167,8 +167,16 @@ namespace MetaRead
                 t = t.Get_Next();
                 MetaValue mv = new MetaValue(this, t);
                 fvalues.Add(mv);
-                fvalues_by_name[mv.Name.ToUpper()] = mv;
-                fvalues_by_name[mv.EName.ToUpper()] = mv;
+                if (mv.Name is null)
+                    fvalues_by_name["".ToUpper()] = mv;
+                else
+                    fvalues_by_name[mv.Name.ToUpper()] = mv;
+
+                if (mv.EName is null)
+                    fvalues_by_name["".ToUpper()] = mv;
+                else
+                    fvalues_by_name[mv.EName.ToUpper()] = mv;
+
                 fvalues_by_value[mv.Value] = mv;
             }
 
@@ -185,8 +193,11 @@ namespace MetaRead
                 t = t.Get_Next();
                 gt = new MetaGeneratedType(t);
                 fgeneratedtypes.Add(gt);
-                if (gt.Name.CompareTo("Ссылка") == 0)
+                if (gt.Name != null && gt.Name.CompareTo("Ссылка") == 0)
+                {
+                    //if (gt.Name.CompareTo("Ссылка") == 0)
                     gentypeRef = gt;
+                }
             }
 
             //fserializationtree = null;

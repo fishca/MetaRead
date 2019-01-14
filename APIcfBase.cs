@@ -131,24 +131,24 @@ namespace MetaRead
     public struct UTreeNode3
     {
         [FieldOffset(0)] public int num1;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
-        [FieldOffset(0)] public Guid uid1;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
-        [FieldOffset(0)] public MetaValue val1;                           // значение (type == stt_cond И typeval1 = stv_value)
-        [FieldOffset(0)] public MetaProperty prop1;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
-        [FieldOffset(0)] public ContainerVer vercon1;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
-        [FieldOffset(0)] public Version1C ver1C1;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
-        [FieldOffset(0)] public ClassParameter classpar1;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
+        [FieldOffset(100)] public Guid uid1;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
+        [FieldOffset(200)] public MetaValue val1;                           // значение (type == stt_cond И typeval1 = stv_value)
+        [FieldOffset(300)] public MetaProperty prop1;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
+        [FieldOffset(400)] public ContainerVer vercon1;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
+        [FieldOffset(500)] public Version1C ver1C1;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
+        [FieldOffset(600)] public ClassParameter classpar1;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
     }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct UTreeNode4
     {
         [FieldOffset(0)] public int num2;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
-        [FieldOffset(0)] public Guid uid2;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
-        [FieldOffset(0)] public MetaValue val2;                           // значение (type == stt_cond И typeval1 = stv_value)
-        [FieldOffset(0)] public MetaProperty prop2;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
-        [FieldOffset(0)] public ContainerVer vercon2;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
-        [FieldOffset(0)] public Version1C ver1C2;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
-        [FieldOffset(0)] public ClassParameter classpar2;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
+        [FieldOffset(100)] public Guid uid2;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
+        [FieldOffset(200)] public MetaValue val2;                           // значение (type == stt_cond И typeval1 = stv_value)
+        [FieldOffset(300)] public MetaProperty prop2;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
+        [FieldOffset(400)] public ContainerVer vercon2;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
+        [FieldOffset(500)] public Version1C ver1C2;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
+        [FieldOffset(600)] public ClassParameter classpar2;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
     }
 
 
@@ -804,6 +804,8 @@ namespace MetaRead
 
         public static bool string_to_GUID(string str, ref Guid guid)
         {
+            if (str == "")
+                return false;
             guid = new Guid(str);
             return true;
         }

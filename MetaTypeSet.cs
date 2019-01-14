@@ -12,9 +12,9 @@ namespace MetaRead
     // Набор типов метаданных (статических или генерируемых)
     public class MetaTypeSet
     {
-        public SortedDictionary<String, MetaType> mapname; // соответствие имен (русских и английских) типам
-        public SortedDictionary<Guid, MetaType> mapuid;    // соответствие идентификаторов типам
-        public List<MetaType> alltype;                     // массив всех типов
+        public SortedDictionary<String, MetaType> mapname = new SortedDictionary<string, MetaType>(); // соответствие имен (русских и английских) типам
+        public SortedDictionary<Guid, MetaType> mapuid = new SortedDictionary<Guid, MetaType>();      // соответствие идентификаторов типам
+        public List<MetaType> alltype = new List<MetaType>();                                         // массив всех типов
 
 
         public static MetaTypeSet staticTypes; // Cтатические типы
@@ -180,8 +180,10 @@ namespace MetaRead
                 t = tt.Get_First();
                 mtype = staticTypes.GetTypeByName(t.Get_Value());
                 t = t.Get_Next();
-                prop = mtype.GetProperty(t.Get_Value());
+                prop = mtype?.GetProperty(t.Get_Value());
                 t = t.Get_Next();
+                if (prop is null)
+                    continue;
                 prop.defaultvaluetype = (DefaultValueType)Convert.ToInt32(t.Get_Value());
                 t = t.Get_Next();
                 switch (prop.defaultvaluetype)
@@ -261,7 +263,7 @@ namespace MetaRead
                 tt = tt.Get_Next();
                 t = tt.Get_First();
                 mtype = staticTypes.GetTypeByName(t.Get_Value());
-                mtype.setSerializationTree(t.Get_Next());
+                mtype?.setSerializationTree(t.Get_Next());
             }
 
             tr = null;
@@ -284,10 +286,10 @@ namespace MetaRead
             mt_standart_attribute       = staticTypes.GetTypeByName("СтандартныйРеквизит");
             mt_standart_tabular_section = staticTypes.GetTypeByName("СтандартнаяТабличнаяЧасть");
             mtype                       = staticTypes.GetTypeByName("КвалификаторыДаты");
-            mp_datefractions            = mtype.GetProperty("ЧастиДаты");
+            mp_datefractions            = mtype?.GetProperty("ЧастиДаты");
             mt_datefractions            = staticTypes.GetTypeByName("ЧастиДаты");
-            mv_datefractionsdate        = mt_datefractions.GetValue("Дата");
-            mv_datefractionstime        = mt_datefractions.GetValue("Время");
+            mv_datefractionsdate        = mt_datefractions?.GetValue("Дата");
+            mv_datefractionstime        = mt_datefractions?.GetValue("Время");
             mt_tabularsection           = staticTypes.GetTypeByName("ОбъектМетаданных: ТабличнаяЧасть");
             mt_attribute                = staticTypes.GetTypeByName("ОбъектМетаданных: Реквизит");
             mt_metaobjref               = staticTypes.GetTypeByName("ОбъектМетаданныхСсылка");
@@ -295,8 +297,11 @@ namespace MetaRead
             mt_tabsection               = staticTypes.GetTypeByName("ТабличнаяЧасть");
             mt_metaref                  = staticTypes.GetTypeByName("МетаСсылка");
 
-            for (j = 0; j < MetaStandartTabularSection.list.Count; ++j)
-                MetaStandartTabularSection.list[(int)j]._class = Class.GetClass(MetaStandartTabularSection.list[(int)j].class_uid);
+            if (MetaStandartTabularSection.list != null)
+            {
+                for (j = 0; j < MetaStandartTabularSection.list.Count; ++j)
+                    MetaStandartTabularSection.list[(int)j]._class = Class.GetClass(MetaStandartTabularSection.list[(int)j].class_uid);
+            }
         }
 
         public int Number()

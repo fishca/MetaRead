@@ -30,8 +30,8 @@ namespace MetaRead
     // 
     public class MetaProperty : MetaBase
     {
-        public List<MetaType> ftypes;
-        public List<String> fstypes;
+        public List<MetaType> ftypes = new List<MetaType>();
+        public List<String> fstypes = new List<string>();
         public MetaType owner;
         public bool fpredefined;
         public ExportType fexporttype;

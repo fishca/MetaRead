@@ -8,10 +8,15 @@ namespace MetaRead
 {
     //---------------------------------------------------------------------------
     // Параметры классов
-    public class ClassParameter
+    public class ClassParameter : IComparable<ClassParameter>
     {
         public String fname;
         public static SortedDictionary<String, ClassParameter> map = new SortedDictionary<string, ClassParameter>();
+
+        public int CompareTo(ClassParameter y)
+        {
+            return this.ToString().CompareTo(y.ToString());
+        }
 
         public ClassParameter(Tree tr)
         {
