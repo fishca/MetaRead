@@ -468,9 +468,9 @@ namespace MetaRead
             if (start < 0 || start == 0x7fffffff || start > stream_from.Length)
                 return stream_to;
 
-            stream_from.Seek(0, SeekOrigin.Begin);
-            //stream_from.Read(temp_buf, 0, stBlockHeader.size());
-            //stream_from.Read()
+            // спозиционироваться надо на start
+            
+            stream_from.Seek(start, SeekOrigin.Begin);
             block_header = ReadBlockHeaderFromData(stream_from);
 
             len = block_header.get_data_size();
@@ -514,7 +514,9 @@ namespace MetaRead
                 //curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
                 //start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
                 readlen = Math.Min(len - pos, curlen);
-                stream_from.CopyTo(stream_to, readlen);
+                if (readlen != 0)
+                    stream_from.CopyTo(stream_to, readlen);
+                
                 pos += readlen;
             }
             return stream_to;
@@ -543,11 +545,14 @@ namespace MetaRead
             return ch;
         }
 
-        public static stBlockHeader ReadBlockHeaderFromData(Stream Data)
+        public static stBlockHeader ReadBlockHeaderFromData(Stream Data, int offset = 0)
         {
             stBlockHeader bh = new stBlockHeader();
             BinaryReader reader = new BinaryReader(Data, Encoding.ASCII);
-            byte[] ttt = reader.ReadBytes(16);
+
+            //byte[] ttt = reader.ReadBytes(offset);
+            if (offset != 0)
+                Data.Seek(offset, SeekOrigin.Begin);
 
             bh.EOL_0D             = (char)reader.ReadByte();
             bh.EOL_0A             = (char)reader.ReadByte();

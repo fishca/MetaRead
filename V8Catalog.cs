@@ -18,7 +18,7 @@ namespace MetaRead
         public V8File Last;  // последний файл в каталоге
         
         //public std::map<String, v8file*> files; // Соответствие имен и файлов
-        public SortedDictionary<String, V8File> Files; // Соответствие имен и файлов
+        public SortedDictionary<String, V8File> Files = new SortedDictionary<string, V8File>(); // Соответствие имен и файлов
 
         public int start_empty;       // начало первого пустого блока
         public int page_size;         // размер страницы по умолчанию
@@ -55,12 +55,10 @@ namespace MetaRead
 
             Data.Seek(0, SeekOrigin.Begin);
 
-            //Data.Read(&_ch, 16);
             _ch = ReadFromData(Data);
-            //Data.SetLength(16);
-            //byte[] tmp = new byte[16];
-            //Data.Read(tmp, 0, 16);
-            //Data.Position = 16;
+
+            // т.к. читаем не с помощью метода чтения потока Data, позицию необходимо менять вручную
+            Data.Seek(16, SeekOrigin.Begin); 
 
             start_empty = _ch.Start_Empty;
             page_size   = _ch.Page_Size;
@@ -79,7 +77,8 @@ namespace MetaRead
                     _countfiles = (int)_fat.Length / 12;
                     for (int i = 0; i < _countfiles; i++)
                     {
-                        _fi = ReadFatItemFromData(Data);
+                        //_fi = ReadFatItemFromData(Data);
+                        _fi = ReadFatItemFromData(_fat);
 
                         Read_Block(Data, _fi.Header_Start, _file_header);
 
@@ -87,9 +86,16 @@ namespace MetaRead
 
                         byte[] _temp_buf = new byte[_file_header.Length];
 
+                        //_file_header->Read(_temp_buf, _file_header->Size);
+                        _file_header.Read(_temp_buf, 0, (int)_file_header.Length);
+
                         // TODO: Надо пристально проверять что здесь происходит
-                        // _name = (wchar_t*)(_temp_buf + 20);
-                        _name = GetString(_temp_buf)[20].ToString();
+                        // _name = (wchar_t*)(_temp_buf + 20);  - это ГУИД из 36 символов
+                        //_name = GetString(_temp_buf)[20].ToString();
+                        byte[] _tmp_uid = new byte[72];
+                        Array.Copy(_temp_buf, 20, _tmp_uid, 0, 72);
+                        _name = GetString(_tmp_uid);
+
                         // TODO: Надо пристально проверять что здесь происходит
                         //_file = new v8file(this, _name, _prev, _fi.data_start, _fi.header_start, (__int64*)_temp_buf, (__int64*)(_temp_buf + 8));
                         _file = new V8File(this, _name, _prev, _fi.Data_Start, _fi.Header_Start, new DateTime(), new DateTime());

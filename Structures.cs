@@ -587,7 +587,10 @@ namespace MetaRead
 
                 foreach (var sym in data_size_hex)
                 {
-                    hex += sym;
+                    if (sym == '\0')
+                        hex += "0";
+                    else
+                        hex += sym;
                 }
 
                 //hex += data_size_hex;
@@ -605,7 +608,10 @@ namespace MetaRead
                 string hex = "0x";
                 foreach (var sym in page_size_hex)
                 {
-                    hex += sym;
+                    if (sym == '\0')
+                        hex += "0";
+                    else
+                        hex += sym;
                 }
 
                 return Convert.ToInt32(hex, 16);
@@ -621,9 +627,12 @@ namespace MetaRead
             {
                 string hex = "0x";
 
-                foreach (var sym in page_size_hex)
+                foreach (var sym in next_page_addr_hex)
                 {
-                    hex += sym;
+                    if (sym == '\0')
+                        hex += "0";
+                    else
+                        hex += sym;
                 }
 
                 return Convert.ToInt32(hex, 16);
