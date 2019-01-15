@@ -290,8 +290,27 @@ namespace MetaRead
         public static string GetString(byte[] bytes)
         {
             char[] chars = new char[bytes.Length / sizeof(char)];
+            //char[] chars = new char[bytes.Length];
             System.Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
             return new string(chars);
+        }
+
+        public static string GetHexString(byte[] bytes)
+        {
+            string tmp = "";
+            foreach (var item_bytes in bytes)
+            {
+                tmp += Convert.ToString(item_bytes, 16);
+            }
+            return tmp;
+        }
+
+        public static int GetIntFromArray(byte[] bytes, bool rev = true)
+        {
+            if (rev)
+                Array.Reverse(bytes);
+
+            return Convert.ToInt32(GetHexString(bytes), 16);
         }
 
         public static int hex_to_int(string hexstr)
@@ -339,7 +358,8 @@ namespace MetaRead
 
             int sym;
 
-            for (int i = 0; i < 8; i++)
+            //for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 8; ++i)
             {
                 //sym = hexstr[i];
                 sym = syym[i];
@@ -365,12 +385,80 @@ namespace MetaRead
             ;
         }
 
+        public enum BlockHeader : Int32
+        {
+            doc_len   = 2,
+            block_len = 11,
+            nextblock = 20
+        }
+
+        #region Оригинал процедуры
+        //////          //---------------------------------------------------------------------------
+        //////          // читает блок из потока каталога stream_from, собирая его по страницам
+        //////          TStream* read_block(TStream* stream_from, int start, TStream* stream_to = nullptr)
+        //////          {
+        //////              stBlockHeader block_header;
+        //////          
+        //////              if (!stream_to)
+        //////              {
+        //////                  stream_to = new TMemoryStream;
+        //////              }
+        //////          
+        //////              stream_to->Seek(0, soFromBeginning);
+        //////              stream_to->SetSize(0);
+        //////          
+        //////              if (start < 0
+        //////                      || start == LAST_BLOCK
+        //////                      || start > stream_from->GetSize())
+        //////              {
+        //////                  return stream_to;
+        //////              }
+        //////          
+        //////              stream_from->Seek(start, soFromBeginning);
+        //////              stream_from->Read(&block_header, stBlockHeader::size());
+        //////          
+        //////              int32_t len = block_header.get_data_size();
+        //////          
+        //////              if (len == 0)
+        //////              {
+        //////                  return stream_to;
+        //////              }
+        //////          
+        //////              int32_t curlen = block_header.get_page_size();
+        //////              start = block_header.get_next_page_addr();
+        //////          
+        //////              int32_t readlen = std::min(len, curlen);
+        //////              stream_to->CopyFrom(stream_from, readlen);
+        //////          
+        //////              int32_t pos = readlen;
+        //////          
+        //////              while (start != LAST_BLOCK)
+        //////              {
+        //////                  stream_from->Seek(start, soFromBeginning);
+        //////                  stream_from->Read(&block_header, block_header.size());
+        //////          
+        //////                  curlen = block_header.get_page_size();
+        //////          
+        //////                  start = block_header.get_next_page_addr();
+        //////          
+        //////                  readlen = std::min(len - pos, curlen);
+        //////                  stream_to->CopyFrom(stream_from, readlen);
+        //////                  pos += readlen;
+        //////              }
+        //////          
+        //////              return stream_to;
+        //////          
+        //////          }
+        #endregion
+
         // читает блок из потока каталога stream_from, собирая его по страницам
         public static Stream Read_Block(Stream stream_from, int start, Stream stream_to = null)
         {
             //char temp_buf[32]; - оригинал
             byte[] temp_buf = new byte[32];
 
+            stBlockHeader block_header = new stBlockHeader();
+            
             int len, curlen, pos, readlen;
 
             if (stream_to == null)
@@ -381,17 +469,22 @@ namespace MetaRead
                 return stream_to;
 
             stream_from.Seek(0, SeekOrigin.Begin);
-            stream_from.Read(temp_buf, 0, 31);
+            //stream_from.Read(temp_buf, 0, stBlockHeader.size());
+            //stream_from.Read()
+            block_header = ReadBlockHeaderFromData(stream_from);
 
-            len = hex_to_int(GetString(temp_buf).Substring(0, 2));
+            len = block_header.get_data_size();
+
             if (len == 0)
                 return stream_to;
 
             //curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
-            curlen = hex_to_int(GetString(temp_buf).Substring(11, 11)); // скорее всего должно быть так
+            //curlen = hex_to_int(GetString(temp_buf).Substring(11, 11)); // скорее всего должно быть так
+            curlen = block_header.get_page_size();
 
             //start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
-            start = hex_to_int(GetString(temp_buf).Substring(20, 20));  // скорее всего должно быть так
+            //start = hex_to_int(GetString(temp_buf).Substring(20, 20));  // скорее всего должно быть так
+            start = block_header.get_next_page_addr();
 
             readlen = Math.Min(len, curlen);
             stream_from.CopyTo(stream_to, readlen);
@@ -399,11 +492,27 @@ namespace MetaRead
             pos = readlen;
             while (start != 0x7fffffff)
             {
-                stream_from.Seek(start, SeekOrigin.Begin);
-                stream_from.Read(temp_buf, 0, 31);
 
-                curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
-                start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
+                //////                  stream_from->Seek(start, soFromBeginning);
+                //////                  stream_from->Read(&block_header, block_header.size());
+                //////          
+                //////                  curlen = block_header.get_page_size();
+                //////          
+                //////                  start = block_header.get_next_page_addr();
+                //////          
+                //////                  readlen = std::min(len - pos, curlen);
+                //////                  stream_to->CopyFrom(stream_from, readlen);
+                //////                  pos += readlen;
+
+                stream_from.Seek(start, SeekOrigin.Begin);
+                //stream_from.Read(temp_buf, 0, stBlockHeader.size());
+
+                block_header = ReadBlockHeaderFromData(stream_from);
+                curlen = block_header.get_page_size();
+                start = block_header.get_next_page_addr();
+
+                //curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
+                //start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
                 readlen = Math.Min(len - pos, curlen);
                 stream_from.CopyTo(stream_to, readlen);
                 pos += readlen;
@@ -415,28 +524,61 @@ namespace MetaRead
         {
             Catalog_Header ch = new Catalog_Header();
 
-            using (BinaryReader reader = new BinaryReader(Data, Encoding.ASCII))
-            {
-                
-                ch.Start_Empty = reader.ReadInt32();
-                ch.Page_Size   = reader.ReadInt32();
-                ch.Version     = reader.ReadInt32();
-                ch.Zero        = reader.ReadInt32();
+            // using (BinaryReader reader = new BinaryReader(Data, Encoding.ASCII))
+            // {
+            //     
+            //     ch.Start_Empty = reader.ReadInt32();
+            //     ch.Page_Size   = reader.ReadInt32();
+            //     ch.Version     = reader.ReadInt32();
+            //     ch.Zero        = reader.ReadInt32();
+            // 
+            // }
+            BinaryReader reader = new BinaryReader(Data, Encoding.ASCII);
 
-            }
+            ch.Start_Empty = reader.ReadInt32();
+            ch.Page_Size   = reader.ReadInt32();
+            ch.Version     = reader.ReadInt32();
+            ch.Zero        = reader.ReadInt32();
+
             return ch;
+        }
+
+        public static stBlockHeader ReadBlockHeaderFromData(Stream Data)
+        {
+            stBlockHeader bh = new stBlockHeader();
+            BinaryReader reader = new BinaryReader(Data, Encoding.ASCII);
+            byte[] ttt = reader.ReadBytes(16);
+
+            bh.EOL_0D             = (char)reader.ReadByte();
+            bh.EOL_0A             = (char)reader.ReadByte();
+            bh.data_size_hex      = reader.ReadChars(8);
+            bh.space1             = (char)reader.ReadByte();
+            bh.page_size_hex      = reader.ReadChars(8);
+            bh.space2             = (char)reader.ReadByte();
+            bh.next_page_addr_hex = reader.ReadChars(8);
+            bh.space3             = (char)reader.ReadByte();
+            bh.EOL2_0D            = (char)reader.ReadByte();
+            bh.EOL2_0A            = (char)reader.ReadByte();
+
+            return bh;
         }
 
         public static FAT_Item ReadFatItemFromData(Stream Data)
         {
             FAT_Item ch = new FAT_Item();
 
-            using (BinaryReader reader = new BinaryReader(Data, Encoding.ASCII))
-            {
-                ch.Header_Start = reader.ReadInt32();
-                ch.Data_Start   = reader.ReadInt32();
-                ch.ff           = reader.ReadInt32();
-            }
+            // using (BinaryReader reader = new BinaryReader(Data, Encoding.ASCII))
+            // {
+            //     ch.Header_Start = reader.ReadInt32();
+            //     ch.Data_Start   = reader.ReadInt32();
+            //     ch.ff           = reader.ReadInt32();
+            // }
+            BinaryReader reader = new BinaryReader(Data, Encoding.ASCII);
+
+            ch.Header_Start = reader.ReadInt32();
+            ch.Data_Start   = reader.ReadInt32();
+            ch.ff           = reader.ReadInt32();
+
             return ch;
         }
 
@@ -444,12 +586,18 @@ namespace MetaRead
         {
             MemoryStream memoryStream = new MemoryStream();
 
-            using (BinaryWriter writer = new BinaryWriter(memoryStream, Encoding.ASCII))
-            {
-                writer.Write(fi.Header_Start);
-                writer.Write(fi.Data_Start);
-                writer.Write(fi.ff);
-            }
+            //using (BinaryWriter writer = new BinaryWriter(memoryStream, Encoding.ASCII))
+            //{
+            //    writer.Write(fi.Header_Start);
+            //    writer.Write(fi.Data_Start);
+            //    writer.Write(fi.ff);
+            //}
+            BinaryWriter writer = new BinaryWriter(memoryStream, Encoding.ASCII);
+
+            writer.Write(fi.Header_Start);
+            writer.Write(fi.Data_Start);
+            writer.Write(fi.ff);
+
             return memoryStream;
         }
 

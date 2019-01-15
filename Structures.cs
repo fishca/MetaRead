@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using static MetaRead.APIcfBase;
 
 namespace MetaRead
 {
@@ -546,6 +547,111 @@ namespace MetaRead
             public ConfigStorageTableAddinVariant variant;
             public Container_file tf;
             public V8File f;
+        }
+
+        public class stBlockHeader
+        {
+            public static int size()
+            {
+                // EOL_0D + EOL_0A + data_size_hex + space1 + page_size_hex + space2 + next_page_addr_hex + space3 + EOL2_0D + EOL2_0A
+                // Размер в байтах = 31
+                return 1 + 1 + 8 + 1 + 8 + 1 + 8 + 1 + 1 + 1;
+            }
+
+            public stBlockHeader()
+            {
+                EOL_0D =  (char)0xD;
+                EOL_0A =  (char)0xA;
+                space1 =  (char)0x20; // ' ';
+                space2 =  (char)0x20; // ' ';
+                space3 =  (char)0x20; // ' ';
+                EOL2_0D = (char)0xD;
+                EOL2_0A = (char)0xA;
+            }
+
+            public static stBlockHeader create(int block_data_size, int page_size, int next_page_addr)
+            {
+                stBlockHeader blockHeader = new stBlockHeader();
+
+                blockHeader.set_data_size(block_data_size);
+                blockHeader.set_page_size(page_size);
+                blockHeader.set_next_page_addr(next_page_addr);
+
+                return blockHeader;
+
+            }
+
+            public int get_data_size()
+            {
+                string hex = "0x";
+
+                foreach (var sym in data_size_hex)
+                {
+                    hex += sym;
+                }
+
+                //hex += data_size_hex;
+                return Convert.ToInt32(hex, 16);
+            }
+
+            public void set_data_size(int value)
+            {
+                string hex = int_to_hex(value);
+                Array.Copy(hex.ToCharArray(), data_size_hex, 8);
+            }
+
+            public int get_page_size()
+            {
+                string hex = "0x";
+                foreach (var sym in page_size_hex)
+                {
+                    hex += sym;
+                }
+
+                return Convert.ToInt32(hex, 16);
+            }
+
+            public void set_page_size(int value)
+            {
+                string hex = int_to_hex(value);
+                Array.Copy(hex.ToCharArray(), page_size_hex, 8);
+            }
+
+            public int get_next_page_addr()
+            {
+                string hex = "0x";
+
+                foreach (var sym in page_size_hex)
+                {
+                    hex += sym;
+                }
+
+                return Convert.ToInt32(hex, 16);
+            }
+
+            public void set_next_page_addr(int value)
+            {
+                string hex = int_to_hex(value);
+                Array.Copy(hex.ToCharArray(), next_page_addr_hex, 8);
+            }
+
+            public bool is_correct()
+            {
+                return EOL_0D == (char)0x0d && EOL_0A == (char)0x0a && space1 == (char)0x20 &&
+                       space2 == (char)0x20 && space3 == (char)0x20 && EOL2_0D == (char)0x0d && EOL2_0A == (char)0x0a;
+            }
+
+            public char EOL_0D;
+            public char EOL_0A;
+            public char[] data_size_hex = new char[8];
+            public char space1;
+            public char[] page_size_hex = new char[8];
+            public char space2;
+            public char[] next_page_addr_hex = new char[8];
+            public char space3;
+            public char EOL2_0D;
+            public char EOL2_0A;
+
         }
 
         #endregion

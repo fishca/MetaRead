@@ -57,6 +57,10 @@ namespace MetaRead
 
             //Data.Read(&_ch, 16);
             _ch = ReadFromData(Data);
+            //Data.SetLength(16);
+            //byte[] tmp = new byte[16];
+            //Data.Read(tmp, 0, 16);
+            //Data.Position = 16;
 
             start_empty = _ch.Start_Empty;
             page_size   = _ch.Page_Size;
@@ -371,9 +375,10 @@ namespace MetaRead
         public bool IsCatalog()
         {
             Int64 _filelen;
-            Int32 _startempty = (-1);
+            Int32 _startempty = -1;
             //char _t[BLOCK_HEADER_LEN];
             Byte[] _t = new Byte[BLOCK_HEADER_LEN];
+            byte[] for_byte = new byte[4];
 
             if (iscatalogdefined)
             {
@@ -405,6 +410,10 @@ namespace MetaRead
 
             Data.Seek(0, SeekOrigin.Begin);
             //data->Read(&_startempty, 4); TODO: ХЗ что с этим делать
+            Data.Read(for_byte, 0, 4);
+
+            _startempty = GetIntFromArray(for_byte);
+
             if (_startempty != LAST_BLOCK)
             {
                 if (_startempty + 31 >= _filelen)

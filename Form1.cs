@@ -21,6 +21,23 @@ namespace MetaRead
         public Form1()
         {
             InitializeComponent();
+            MetaTypeSet.EventError += MetaTypeSet_EventError; // подписываемся на событие EventError. Если оно произойдет, то запустить метод (Analyze_EventError).   
+            Tree.EventError += Tree_EventError;
+        }
+
+        private void Tree_EventError(object sender, EventArgs e)
+        {
+            textBox1.Text += string.Format("{0}", Tree.MsgError) + Environment.NewLine;
+        }
+
+        private void MetaTypeSet_EventError(object sender, EventArgs e)
+        {
+            textBox1.Text += string.Format("{0}", MetaTypeSet.MsgError) + Environment.NewLine;
+        }
+
+        public void Error(string str)
+        {
+            textBox1.Text += str + Environment.NewLine;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -146,6 +163,7 @@ namespace MetaRead
                 rstr = new MemoryStream();
 
             //MemoryStream rstr = new MemoryStream();
+            //this.textBox1.Text += "sdfsdfsdf"+Environment.NewLine;
             MetaTypeSet.StaticTypesLoad(rstr);
 
             rstr.Dispose();

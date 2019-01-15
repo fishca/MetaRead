@@ -11,6 +11,14 @@ namespace MetaRead
 
     public class Tree
     {
+        public static event EventHandler EventError;
+        public static string MsgError { get; set; }
+        public static void ShowMessage(string _MsgError)
+        {
+            MsgError = _MsgError;
+            EventError?.Invoke(null, null);  // запускаем подписчиков на событие        
+        }
+
         public string Value;
 
         public Node_Type type;
@@ -246,15 +254,12 @@ namespace MetaRead
             return Node_Type.nd_unknown;
         }
 
-        //public static Tree Parse_1Ctext()
-
         public static Tree Parse_1Cstream(Stream str, string err, string path)
         {
             StringBuilder __curvalue__ = new StringBuilder("");
 
             string curvalue = "";
 
-            //_state state = _state.s_nonstring;
             _state state = _state.s_value;
 
             int i = 0;
@@ -270,7 +275,7 @@ namespace MetaRead
             Tree t = ret;
 
             //StreamReader reader = new StreamReader(str, true);
-            StreamReader reader = new StreamReader(str, Encoding.ASCII, true);
+            StreamReader reader = new StreamReader(str, Encoding.ASCII, true); // т.к. файл в кодировке win1251
 
             for (i = 1, _sym = reader.Read(); _sym >= 0; i++, _sym = reader.Read())
             {
@@ -302,6 +307,7 @@ namespace MetaRead
                                 if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }");
                                     ret = null;
                                     return null;
                                 }
@@ -335,6 +341,7 @@ namespace MetaRead
                                 if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }");
                                     ret = null;
                                     return null;
                                 }
@@ -342,13 +349,11 @@ namespace MetaRead
                                 break;
                             default:
                                 // Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.
+                                ShowMessage("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.");
                                 __curvalue__.Clear();
                                 __curvalue__.Append(sym);
                                 ret = null;
                                 return null;
-                                
-
-
                         }
                         break;
                     case _state.s_string:
@@ -387,6 +392,7 @@ namespace MetaRead
                                     if (t is null)
                                     {
                                         // Ошибка формата потока. Лишняя закрывающая скобка }.
+                                        ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }.");
                                         ret = null;
                                         return null;
                                     }
@@ -394,6 +400,7 @@ namespace MetaRead
                                     break;
                                 default:
                                     // Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.
+                                    ShowMessage("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.");
                                     ret = null;
                                     return null;
 
@@ -409,6 +416,7 @@ namespace MetaRead
                                 if (nt == Node_Type.nd_unknown)
                                 {
                                     // Ошибка формата потока. Неизвестный тип значения.
+                                    ShowMessage("Ошибка формата потока. Неизвестный тип значения.");
                                 }
                                 t.AddChild(curvalue, nt);
                                 state = _state.s_value;
@@ -419,6 +427,7 @@ namespace MetaRead
                                 if (nt == Node_Type.nd_unknown)
                                 {
                                     // Ошибка формата потока. Неизвестный тип значения.
+                                    ShowMessage("Ошибка формата потока. Неизвестный тип значения.");
                                 }
                                 t.AddChild(curvalue, nt);
                                 t = t.Get_Parent();
@@ -426,6 +435,7 @@ namespace MetaRead
                                 if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }.");
                                     ret = null;
                                     return null;
                                 }
@@ -440,7 +450,7 @@ namespace MetaRead
                         if (1 != 1)
                         {
                             // Ошибка формата потока. Неизвестный режим разбора.
-                            
+                            ShowMessage("Ошибка формата потока. Неизвестный режим разбора.");
                         }
                         ret = null;
                         return null;
@@ -454,6 +464,7 @@ namespace MetaRead
                 if (nt == Node_Type.nd_unknown)
                 {
                     // Ошибка формата потока. Неизвестный тип значения.
+                    ShowMessage("Ошибка формата потока. Неизвестный тип значения.");
                 }
                 t.AddChild(curvalue, nt);
             }
@@ -469,6 +480,7 @@ namespace MetaRead
             if (t != ret)
             {
                 // Ошибка формата потока. Не хватает закрывающих скобок } в конце текста разбора. 
+                ShowMessage("Ошибка формата потока. Не хватает закрывающих скобок } в конце текста разбора. ");
                 ret = null;
                 return null;
             }
@@ -536,7 +548,7 @@ namespace MetaRead
                                     //if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.", "Позиция", i, "Путь", path);
                                     //delete ret;
                                     //String msreg = $"Ошибка формата потока. Лишняя закрывающая скобка. Позиция: { i }, Путь: {path}";
-                                    Console.WriteLine($"Ошибка формата потока. Лишняя закрывающая скобка. В позиции: { i }, Путь: {path}");
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }. Позиция " + i + ", Путь " + path);
                                     ret = null;
                                     return null;
                                 }
@@ -577,7 +589,7 @@ namespace MetaRead
                                          "Позиция", i,
                                          "Путь", path);
                                     */
-                                    Console.WriteLine($"Ошибка формата потока. Лишняя закрывающая скобка. В позиции: { i }, Путь: {path}");
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }. Позиция " + i + ", Путь " + path);
                                     ret = null;
                                     return null;
                                 }
@@ -589,7 +601,7 @@ namespace MetaRead
                                      "Код символа", tohex(sym),
                                      "Путь", path);
                                 */
-                                Console.WriteLine($"Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя. Символ: { sym }, код символа: {sym} Путь: {path}");
+                                ShowMessage("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя. Символ " + sym + ", Код символа " + sym.ToString() + ", Путь " + path);
                                 ret = null;
                                 return null;
                         }
@@ -631,7 +643,7 @@ namespace MetaRead
                                              "Позиция", i,
                                              "Путь", path);
                                         */
-                                        Console.WriteLine($"Ошибка формата потока. Лишняя закрывающая скобка. Позиция: { i }, путь: {path}");
+                                        ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }. Позиция " + i.ToString() + ", Путь " + path);
                                         ret = null;
                                         return null;
                                     }
@@ -644,7 +656,7 @@ namespace MetaRead
                                          "Код символа", tohex(sym),
                                          "Путь", path);
                                     */
-                                    Console.WriteLine($"Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя. Символ: { sym }, путь: {path}");
+                                    ShowMessage("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя. Символ " + sym + ", Код символа " + sym.ToString() + ", Путь " + path);
                                     ret = null;
                                     return null;
                             }
@@ -663,7 +675,7 @@ namespace MetaRead
                                       "Значение", curvalue,
                                       "Путь", path);
                                       */
-                                    Console.WriteLine($"Ошибка формата потока. Неизвестный тип значения. Значение: { curvalue }, путь: {path}");
+                                    ShowMessage("Ошибка формата потока. Неизвестный тип значения. Значение " + curvalue + ", Путь " + path);
                                 }
                                 t.AddChild(curvalue, nt);
                                 state = _state.s_value;
@@ -676,7 +688,7 @@ namespace MetaRead
                                 if (nt == Node_Type.nd_unknown)
                                 {
                                     //if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный тип значения.", "Значение", curvalue, "Путь", path);
-                                    Console.WriteLine($"Ошибка формата потока. Неизвестный тип значения. Значение: { curvalue }, путь: {path}");
+                                    ShowMessage("Ошибка формата потока. Неизвестный тип значения. Значение " + curvalue + ", Путь " + path);
                                 }
                                 t.AddChild(curvalue, nt);
                                 t = t.Get_Parent();
@@ -687,7 +699,7 @@ namespace MetaRead
                                          "Позиция", i,
                                          "Путь", path);
                                     */
-                                    Console.WriteLine($"Ошибка формата потока. Лишняя закрывающая скобка. Позиция: { i }, путь: {path}");
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка. Позиция " + i.ToString() + ", Путь " + path);
                                     ret = null;
                                     return null;
                                 }
@@ -704,7 +716,7 @@ namespace MetaRead
                              "Режим разбора", tohex(state),
                              "Путь", path);
                              */
-                        Console.WriteLine($"Ошибка формата потока. Неизвестный режим разбора. Режим разбора: { state }, путь: {path}");
+                        ShowMessage("Ошибка формата потока. Неизвестный режим разбора. Режим разбора " + state.ToString() + ", Путь " + path);
                         ret = null;
                         return null;
                 }
@@ -722,7 +734,7 @@ namespace MetaRead
                       "Значение", curvalue,
                       "Путь", path);
                       */
-                    Console.WriteLine($"Ошибка формата потока. Неизвестный тип значения. Значение: { curvalue }, путь: {path}");
+                    ShowMessage("Ошибка формата потока. Неизвестный тип значения. Значение: " + curvalue + ", Путь " + path);
                 }
                 t.AddChild(curvalue, nt);
             }
@@ -737,7 +749,7 @@ namespace MetaRead
                      "Режим разбора", tohex(state),
                      "Путь", path);
                 */
-                Console.WriteLine($"Ошибка формата потока. Незавершенное значение. Режим разбора: { state }, путь: {path}");
+                ShowMessage("Ошибка формата потока. Незавершенное значение. Режим разбора: " + state.ToString() + ", Путь " + path);
                 ret = null;
                 return null;
             }
@@ -748,7 +760,7 @@ namespace MetaRead
                 if (msreg) msreg->AddError("Ошибка формата потока. Не хватает закрывающих скобок } в конце текста разбора.",
                      "Путь", path);
                     */
-                Console.WriteLine($"Ошибка формата потока. Не хватает закрывающих скобок в конце текста разбора, путь: {path}");
+                ShowMessage("Ошибка формата потока. Не хватает закрывающих скобок в конце текста разбора, путь " + path);
                 ret = null;
                 return null;
             }

@@ -12,6 +12,14 @@ namespace MetaRead
     // Набор типов метаданных (статических или генерируемых)
     public class MetaTypeSet
     {
+        public static event EventHandler EventError;
+        public static string MsgError { get; set; }
+        public static void ShowMessage(string _MsgError)
+        {
+            MsgError = _MsgError;
+            EventError?.Invoke(null, null);  // запускаем подписчиков на событие        
+        }
+
         public SortedDictionary<String, MetaType> mapname = new SortedDictionary<string, MetaType>(); // соответствие имен (русских и английских) типам
         public SortedDictionary<Guid, MetaType> mapuid = new SortedDictionary<Guid, MetaType>();      // соответствие идентификаторов типам
         public List<MetaType> alltype = new List<MetaType>();                                         // массив всех типов
@@ -140,6 +148,8 @@ namespace MetaRead
 
             if (staticTypes != null)
                 staticTypes = null;
+            
+            ShowMessage("Начало загрузки статических типов");
 
             staticTypes = new MetaTypeSet();
             tr = Tree.Parse_1Cstream(str, "", "static types");
@@ -236,6 +246,7 @@ namespace MetaRead
                     // error(L"Ошибка загрузки статических типов. Ошибка преобразования УИД в предопределенном объекте метаданных"
                     //         , L"Имя", sn
                     //         , L"УИД", t->get_value());
+                    ShowMessage("Ошибка загрузки статических типов. Ошибка преобразования УИД в предопределенном объекте метаданных. Имя " + sn + ", УИД " + t.Get_Value());
                     continue;
                 }
                 metaobj = new MetaObject(uid, null, sn, sen);
@@ -302,6 +313,8 @@ namespace MetaRead
                 for (j = 0; j < MetaStandartTabularSection.list.Count; ++j)
                     MetaStandartTabularSection.list[(int)j]._class = Class.GetClass(MetaStandartTabularSection.list[(int)j].class_uid);
             }
+            
+            ShowMessage("Окончание загрузки статических типов");
         }
 
         public int Number()
