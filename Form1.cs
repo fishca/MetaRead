@@ -114,6 +114,7 @@ namespace MetaRead
 
             var logfile = new NLog.Targets.FileTarget("logfile") { FileName = "log_file.txt" };
             var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
+            
 
             config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
             config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
