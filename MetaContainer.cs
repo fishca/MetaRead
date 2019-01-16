@@ -174,11 +174,11 @@ namespace MetaRead
         // Бывшая глобальная переменная, пока сюда
         //__declspec(thread) std::vector<UninitValue1C>* puninitvalues = NULL;
         // 
-        public static List<UninitValue1C> puninitvalues;
+        public static List<UninitValue1C> puninitvalues = new List<UninitValue1C>();
 
-        public SortedDictionary<Guid, MetaObject> fmetamap;          // Соответствие УИД объектам метаданных
-        public SortedDictionary<string, MetaObject> fsmetamap;         // Соответствие полного имени объектам метаданных (на двух языках)
-        public SortedDictionary<Guid, PredefinedValue> fpredefinedvalues; // Соответствие УИД предопределенным элементам
+        public SortedDictionary<Guid, MetaObject> fmetamap = new SortedDictionary<Guid, MetaObject>();          // Соответствие УИД объектам метаданных
+        public SortedDictionary<string, MetaObject> fsmetamap = new SortedDictionary<string, MetaObject>();         // Соответствие полного имени объектам метаданных (на двух языках)
+        public SortedDictionary<Guid, PredefinedValue> fpredefinedvalues = new SortedDictionary<Guid, PredefinedValue>(); // Соответствие УИД предопределенным элементам
 
         public ContainerVer containerver;
         public Version1C ver1C;

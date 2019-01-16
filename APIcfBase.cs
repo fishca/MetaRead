@@ -105,26 +105,26 @@ namespace MetaRead
     public struct UTreeNode1
     {
         [FieldOffset(0)] public int num1;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
-        [FieldOffset(0)] public Guid uid1;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
-        [FieldOffset(0)] public MetaValue val1;                           // значение (type == stt_cond И typeval1 = stv_value)
-        [FieldOffset(0)] public MetaProperty prop1;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
-        [FieldOffset(0)] public MetaGeneratedType gentype;                // генерируемый тип (type == stt_gentype)
-        [FieldOffset(0)] public ContainerVer vercon1;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
-        [FieldOffset(0)] public Version1C ver1C1;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
-        [FieldOffset(0)] public SerializationTreeClassType classtype;     // вид коллекции классов ((type == stt_classcol) 
-        [FieldOffset(0)] public ClassParameter classpar1;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
+        [FieldOffset(100)] public Guid uid1;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
+        [FieldOffset(200)] public MetaValue val1;                           // значение (type == stt_cond И typeval1 = stv_value)
+        [FieldOffset(300)] public MetaProperty prop1;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
+        [FieldOffset(400)] public MetaGeneratedType gentype;                // генерируемый тип (type == stt_gentype)
+        [FieldOffset(500)] public ContainerVer vercon1;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
+        [FieldOffset(600)] public Version1C ver1C1;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
+        [FieldOffset(700)] public SerializationTreeClassType classtype;     // вид коллекции классов ((type == stt_classcol) 
+        [FieldOffset(800)] public ClassParameter classpar1;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
     }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct UTreeNode2
     {
         [FieldOffset(0)] public int num2;                                 // ((type == stt_const ИЛИ type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_number)   
-        [FieldOffset(0)] public Guid uid2;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
-        [FieldOffset(0)] public MetaValue val2;                           // значение (type == stt_cond И typeval1 = stv_value)
-        [FieldOffset(0)] public MetaProperty prop2;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
-        [FieldOffset(0)] public ContainerVer vercon2;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
-        [FieldOffset(0)] public Version1C ver1C2;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
-        [FieldOffset(0)] public ClassParameter classpar2;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
+        [FieldOffset(100)] public Guid uid2;                                // (((type == stt_const ИЛИ type == stt_cond) И typeval1 = stv_uid) ИЛИ type == stt_class ИЛИ type == stt_idel) 
+        [FieldOffset(200)] public MetaValue val2;                           // значение (type == stt_cond И typeval1 = stv_value)
+        [FieldOffset(300)] public MetaProperty prop2;                       // свойство (type == stt_prop ИЛИ ((type == stt_cond ИЛИ type == stt_elcol) И typeval1 = stv_prop))
+        [FieldOffset(400)] public ContainerVer vercon2;                     // версия контейнера (type == stt_cond И typeval1 = stv_vercon)
+        [FieldOffset(500)] public Version1C ver1C2;                         // версия 1С (type == stt_cond И typeval1 = stv_ver1С)
+        [FieldOffset(600)] public ClassParameter classpar2;                 // параметр класса (type == stt_cond И typeval1 = stv_classpar)
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -462,11 +462,18 @@ namespace MetaRead
             int len, curlen, pos, readlen;
 
             if (stream_to == null)
+            {
                 stream_to = new MemoryStream();
+            }
+
             stream_to.Seek(0, SeekOrigin.Begin);
+            stream_to.SetLength(0);
 
             if (start < 0 || start == 0x7fffffff || start > stream_from.Length)
+            {
                 return stream_to;
+            }
+                
 
             // спозиционироваться надо на start
             
@@ -478,41 +485,26 @@ namespace MetaRead
             if (len == 0)
                 return stream_to;
 
-            //curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
-            //curlen = hex_to_int(GetString(temp_buf).Substring(11, 11)); // скорее всего должно быть так
             curlen = block_header.get_page_size();
 
-            //start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
-            //start = hex_to_int(GetString(temp_buf).Substring(20, 20));  // скорее всего должно быть так
             start = block_header.get_next_page_addr();
 
             readlen = Math.Min(len, curlen);
+            byte[] tmp_buf = new byte[readlen];
+
+            ((MemoryStream)stream_to).Capacity = readlen;
             stream_from.CopyTo(stream_to, readlen);
 
             pos = readlen;
             while (start != 0x7fffffff)
             {
 
-                //////                  stream_from->Seek(start, soFromBeginning);
-                //////                  stream_from->Read(&block_header, block_header.size());
-                //////          
-                //////                  curlen = block_header.get_page_size();
-                //////          
-                //////                  start = block_header.get_next_page_addr();
-                //////          
-                //////                  readlen = std::min(len - pos, curlen);
-                //////                  stream_to->CopyFrom(stream_from, readlen);
-                //////                  pos += readlen;
-
                 stream_from.Seek(start, SeekOrigin.Begin);
-                //stream_from.Read(temp_buf, 0, stBlockHeader.size());
 
                 block_header = ReadBlockHeaderFromData(stream_from);
                 curlen = block_header.get_page_size();
                 start = block_header.get_next_page_addr();
 
-                //curlen = hex_to_int(GetString(temp_buf).Substring(0, 11));
-                //start  = hex_to_int(GetString(temp_buf).Substring(0, 20));
                 readlen = Math.Min(len - pos, curlen);
                 if (readlen != 0)
                     stream_from.CopyTo(stream_to, readlen);

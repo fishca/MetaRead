@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.IO.Compression;
 using static MetaRead.APIcfBase;
 
 namespace MetaRead
@@ -58,7 +59,7 @@ namespace MetaRead
             _ch = ReadFromData(Data);
 
             // т.к. читаем не с помощью метода чтения потока Data, позицию необходимо менять вручную
-            Data.Seek(16, SeekOrigin.Begin); 
+            //Data.Seek(16, SeekOrigin.Begin); 
 
             start_empty = _ch.Start_Empty;
             page_size   = _ch.Page_Size;
@@ -74,7 +75,12 @@ namespace MetaRead
                 {
                     _fat = Read_Block(Data, 16);
                     _fat.Seek(0, SeekOrigin.Begin);
+                    
                     _countfiles = (int)_fat.Length / 12;
+
+                    _countfiles = ((MemoryStream)_fat).Capacity / 0x100 / 12;
+                    //_countfiles = (int)_fat.Length / 12;
+
                     for (int i = 0; i < _countfiles; i++)
                     {
                         //_fi = ReadFatItemFromData(Data);
@@ -96,6 +102,21 @@ namespace MetaRead
                         Array.Copy(_temp_buf, 20, _tmp_uid, 0, 72);
                         _name = GetString(_tmp_uid);
 
+                        if (_name.IndexOf("root") != -1)
+                            _name = "root";
+                        if (_name.IndexOf("version") != -1)
+                        {
+                            if (_name.IndexOf("versions") != -1)
+                            {
+                                _name = "versions";
+                            }
+                            else
+                            {
+                                _name = "version";
+                            }
+                        }
+
+
                         // TODO: Надо пристально проверять что здесь происходит
                         //_file = new v8file(this, _name, _prev, _fi.data_start, _fi.header_start, (__int64*)_temp_buf, (__int64*)(_temp_buf + 8));
                         _file = new V8File(this, _name, _prev, _fi.Data_Start, _fi.Header_Start, new DateTime(), new DateTime());
@@ -103,8 +124,8 @@ namespace MetaRead
                             First = _file;
                         _prev = _file;
                     }
-                    _file_header.Close();
-                    _fat.Close();
+                    //_file_header.Close();
+                    //_fat.Close();
                 }
             }
             catch (Exception)
@@ -183,7 +204,39 @@ namespace MetaRead
         { return 0; }
 
         public Stream ReadDataBlock(int start)
-        { return null; }
+        {
+            Stream stream;
+            Stream stream3;
+            DeflateStream deflateStream;
+
+
+
+            MemoryTributary stream2;
+
+            MemoryTributary stream_src = new MemoryTributary();
+
+            if (start is 0)
+                return new MemoryStream();
+
+            stream = Read_Block(Data, start);
+            //stream.CopyTo(stream_src);
+            if (zipped)
+            {
+                stream2 = new MemoryTributary();
+                stream3 = new MemoryStream();
+                stream.Seek(0, SeekOrigin.Begin);
+                deflateStream = new DeflateStream(stream, CompressionMode.Decompress);
+                deflateStream.CopyTo(stream3);
+
+                //Inflate(stream_src, out stream2);
+
+                stream.Dispose();
+            }
+            else
+                stream3 = stream;
+
+            return stream3;
+        }
 
         public int GetNextBlock(int start)
         { return 0; }
@@ -296,10 +349,10 @@ namespace MetaRead
                 leave_data = false;
             }
 
-            if (CFu != null)
-                CFu.Dispose();
-            if (Data != null)
-                Data.Dispose();
+            // if (CFu != null)
+            //     CFu.Dispose();
+            // if (Data != null)
+            //     Data.Dispose();
         }
 
         public V8Catalog(String name, bool _zipped) // создать каталог из физического файла (cf, epf, erf, hbk, cfu)
@@ -459,7 +512,7 @@ namespace MetaRead
 
             foreach (KeyValuePair<String, V8File> kvp in Files)
             {
-                if (kvp.Key.Equals(FileName))
+                if (kvp.Key.Equals(FileName.ToUpper()))
                 {
                     ret = kvp.Value;
                     break;

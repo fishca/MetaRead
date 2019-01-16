@@ -413,7 +413,7 @@ namespace MetaRead
             f = c.GetFile(fname);
             if (f is null)
                 return null;
-            if (f.Open())
+            if (!f.Open())
                 return null;
             cf = new ConfigFile();
             cf.str = f.GetData();

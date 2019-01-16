@@ -593,8 +593,14 @@ namespace MetaRead
                         hex += sym;
                 }
 
-                //hex += data_size_hex;
-                return Convert.ToInt32(hex, 16);
+                try
+                {
+                    return Convert.ToInt32(hex, 16);
+                }
+                catch (Exception)
+                {
+                    return 0;
+                }
             }
 
             public void set_data_size(int value)
@@ -613,8 +619,14 @@ namespace MetaRead
                     else
                         hex += sym;
                 }
-
-                return Convert.ToInt32(hex, 16);
+                try
+                {
+                    return Convert.ToInt32(hex, 16);
+                }
+                catch (Exception)
+                {
+                    return 0;
+                }
             }
 
             public void set_page_size(int value)
@@ -634,8 +646,14 @@ namespace MetaRead
                     else
                         hex += sym;
                 }
-
-                return Convert.ToInt32(hex, 16);
+                try
+                {
+                    return Convert.ToInt32(hex, 16);
+                }
+                catch (Exception)
+                {
+                    return 0;
+                }
             }
 
             public void set_next_page_addr(int value)
