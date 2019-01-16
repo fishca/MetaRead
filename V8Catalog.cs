@@ -73,12 +73,14 @@ namespace MetaRead
             {
                 if (Data.Length > 16)
                 {
-                    _fat = Read_Block(Data, 16);
+                    int rlen = 0;
+                    _fat = Read_Block(Data, 16, ref rlen);
                     _fat.Seek(0, SeekOrigin.Begin);
-                    
-                    _countfiles = (int)_fat.Length / 12;
 
-                    _countfiles = ((MemoryStream)_fat).Capacity / 0x100 / 12;
+                    //_countfiles = (int)_fat.Length / 12;
+                    _countfiles = rlen / 12;
+
+                    //_countfiles = ((MemoryStream)_fat).Capacity / 0x100 / 12;
                     //_countfiles = (int)_fat.Length / 12;
 
                     for (int i = 0; i < _countfiles; i++)
@@ -86,7 +88,7 @@ namespace MetaRead
                         //_fi = ReadFatItemFromData(Data);
                         _fi = ReadFatItemFromData(_fat);
 
-                        Read_Block(Data, _fi.Header_Start, _file_header);
+                        Read_Block(Data, _fi.Header_Start, ref rlen, _file_header);
 
                         _file_header.Seek(0, SeekOrigin.Begin);
 
@@ -218,7 +220,8 @@ namespace MetaRead
             if (start is 0)
                 return new MemoryStream();
 
-            stream = Read_Block(Data, start);
+            int rlen = 0;
+            stream = Read_Block(Data, start, ref rlen);
             //stream.CopyTo(stream_src);
             if (zipped)
             {

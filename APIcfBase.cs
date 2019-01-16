@@ -452,7 +452,7 @@ namespace MetaRead
         #endregion
 
         // читает блок из потока каталога stream_from, собирая его по страницам
-        public static Stream Read_Block(Stream stream_from, int start, Stream stream_to = null)
+        public static Stream Read_Block(Stream stream_from, int start, ref int rlen, Stream stream_to = null)
         {
             //char temp_buf[32]; - оригинал
             byte[] temp_buf = new byte[32];
@@ -492,7 +492,8 @@ namespace MetaRead
             readlen = Math.Min(len, curlen);
             byte[] tmp_buf = new byte[readlen];
 
-            ((MemoryStream)stream_to).Capacity = readlen;
+            //((MemoryStream)stream_to).Capacity = readlen;
+            rlen = readlen;
             stream_from.CopyTo(stream_to, readlen);
 
             pos = readlen;

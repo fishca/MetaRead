@@ -4162,7 +4162,7 @@ namespace MetaRead
             Class cl;
             bool flag;
             //std::vector<UninitValue1C>* _puninitvalues;
-            List<UninitValue1C> _puninitvalues = null; // этот список должен где-то заполняться........
+            List<UninitValue1C> _puninitvalues = new List<UninitValue1C>(); // этот список должен где-то заполняться........
 
             // TODO : Разобраться с заполнением данного списка "uninitvalues"
             //_puninitvalues = puninitvalues;
