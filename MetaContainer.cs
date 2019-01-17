@@ -163,8 +163,12 @@ namespace MetaRead
     /// </summary>
     public class MetaContainer
     {
+        #region Поля класса
         public Value1C_obj froot; // корневой объект контейнера
         public MetaTypeSet ftypes; // набор генерируемых типов
+
+        public ConfigStorage stor;
+        public string storpresent;
 
         // Бывшая глобальная переменная, пока сюда
         //__declspec(thread) std::vector<UninitValue1C>* puninitvalues = NULL;
@@ -184,6 +188,7 @@ namespace MetaRead
 
         //public List<UninitValue1C> uninitvalues;
 
+        public long export_work_count;   // количество заданий выгрузки
         public uint export_thread_count; // количество потоков экспорта
 
         // TODO: Надо додумывать....!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -193,6 +198,44 @@ namespace MetaRead
         public static Guid sig_standart_table_sec; // сигнатура стандартной табличной части
         public static Guid sig_ext_dimension;      // сигнатура стандартного реквизита Субконто
         public static Guid sig_ext_dimension_type; // сигнатура стандартного реквизита ВидСубконто
+        #endregion
+        
+        #region Свойства класса
+        public Value1C_obj root
+        {
+            get
+            {
+                return froot;
+            }
+
+        }
+
+        public MetaTypeSet types
+        {
+            get
+            {
+                return ftypes;
+            }
+
+        }
+
+        public SortedDictionary<Guid, MetaObject> metamap
+        {
+            get { return fmetamap; }
+        }
+
+        public SortedDictionary<string, MetaObject> smetamap
+        {
+            get { return fsmetamap; }
+        }
+
+        public SortedDictionary<Guid, PredefinedValue> predefinedvalues
+        {
+            get { return fpredefinedvalues; }
+        }
+        #endregion
+
+        #region Методы класса
 
         public Value1C readValue1C(Tree ptr, MetaType t, Value1C_obj valparent, Guid metauid, Value1C_stdtabsec metats, ClassItem clitem, string path, bool checkend = false)
         {
@@ -200,35 +243,38 @@ namespace MetaRead
             Tree tt;
             Tree ttt;
             Tree tx;
-            Value1C v;
+
+            Value1C v = null;
             Value1C vv;
-            Value1C_bool vb;
-            Value1C_string vs;
-            Value1C_number vn;
+
+            Value1C_bool       vb;
+            Value1C_string     vs;
+            Value1C_number     vn;
             Value1C_number_exp vne;
-            Value1C_date vd;
-            Value1C_type vt;
-            Value1C_uid vu;
-            Value1C_binary vbn;
-            Value1C_enum ve;
-            Value1C_stdattr vsa;
-            Value1C_stdtabsec vst;
-            Value1C_obj vo;
-            Value1C_refobj vro;
+            Value1C_date       vd;
+            Value1C_type       vt;
+            Value1C_uid        vu;
+            Value1C_binary     vbn;
+            Value1C_enum       ve;
+            Value1C_stdattr    vsa;
+            Value1C_stdtabsec  vst;
+            Value1C_obj        vo = null;
+            Value1C_refobj     vro;
+            Value1C_stdtabsec  _metats;
             String s;
+
             Guid uid, ouid;
+
             int i, k, n, j;
             string spath;
             StreamWriter sw;
             MetaProperty prop;
             bool b;
-            Value1C_stdtabsec _metats;
-            //HANDLE handle;
-            string sn;
+            
+            
+            string sn = "";
 
             spath = storpresent + path;
-            v = null;
-            vo = null;
 
             uid = new Guid();
 
@@ -241,36 +287,33 @@ namespace MetaRead
                 {
                     v = new Value1C_obj(valparent, this);
                     v.type = t;
+
                     if (t.Serialization_Ver == 0)
                     {
                         if (t.SerializationTree != null)
                         {
-                            // TODO : Необходима реализация
-                            // error(L"Ошибка формата потока 73. Ожидается значение."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь", spath);
-
+                            Form1.log.Error($"Ошибка формата потока 73. Ожидается значение. " +
+                                            $"Загружаемый тип {t.Name}, " +
+                                            $"Путь {spath}");
                         }
                         else
                         {
-                            // TODO : Необходима реализация
-                            // error(L"Ошибка формата потока 17. Не определен алгоритм загрузки типа."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь", spath);
+                            Form1.log.Error($"Ошибка формата потока 17. Не определен алгоритм загрузки типа. " +
+                                            $"Загружаемый тип {t.Name}, " +
+                                            $"Путь {spath}");
                         }
                     }
                     else if (t.Serialization_Ver > 1)
                     {
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 18. Ожидается значение."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Путь", spath);
+                        Form1.log.Error($"Ошибка формата потока 18. Ожидается значение. " +
+                                        $"Загружаемый тип {t.Name}, " +
+                                        $"Путь {spath}");
                     }
                 }
                 else
                 {
-                    // TODO : Необходима реализация
-                    // error(L"Ошибка формата потока 1. Ожидается значение.", L"Путь", spath);
+                    Form1.log.Error($"Ошибка формата потока 1. Ожидается значение. " +
+                                    $"Путь {spath}");
                 }
             }
             else if (t is null) // Тип не задан
@@ -335,55 +378,48 @@ namespace MetaRead
                                         }
                                         else
                                         {
-                                            // TODO : Необходима реализация
-                                            // error(L"Ошибка формата потока 2. Не найден тип по UID"
-                                            //     , L"UID", tr->get_value()
-                                            //     , L"Путь", spath + tr->path()
-                                            //     , L"Мета", valparent->fullpath(this, false));
+                                            Form1.log.Error($"Ошибка формата потока 2. Не найден тип по UID. " +
+                                                            $"UID {tr.Get_Value()}, " +
+                                                            $"Путь {spath + tr.Path()}" +
+                                                            $"Мета {valparent.fullpath(this)}");
                                         }
                                     }
                                     else
                                     {
-                                        // TODO : Необходима реализация
-                                        // error(L"Ошибка формата потока 4. Ожидается значение UID"
-                                        //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                                        //     , L"Значение", tr->get_value()
-                                        //     , L"Путь", spath + tr->path());
-
+                                        Form1.log.Error($"Ошибка формата потока 4. Ожидается значение UID. " +
+                                                        $"Тип значения {get_node_type_presentation(tr.Get_Type())}, " +
+                                                        $"Значение {tr.Get_Value()}, " +
+                                                        $"Путь {spath + tr.Path()}");
                                     }
                                 }
                             }
                             else
                             {
-                                // TODO : Необходима реализация
-                                // error(L"Ошибка формата потока 5. Отсутствует UID типа значения"
-                                //     , L"Путь", spath);
+                                Form1.log.Error($"Ошибка формата потока 5. Отсутствует UID типа значения. " +
+                                                $"Путь {spath}");
                             }
 
                         }
                         else
                         {
-                            // TODO : Необходима реализация
-                            // error(L"Ошибка формата потока 6. Неизвестный символ типа значения"
-                            //     , L"Символ значения", s
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error($"Ошибка формата потока 6. Неизвестный символ типа значения. " +
+                                            $"Символ значения {s}, " + 
+                                            $"Путь {spath + tr.Path()}");
                         }
                     }
                     else
                     {
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 7. Ожидается строковое представление типа значения"
-                        //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                        //     , L"Значение", tr->get_value()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error($"Ошибка формата потока 7. Ожидается строковое представление типа значения. " +
+                                        $"Тип значения {get_node_type_presentation(tr.Get_Type())}, " +
+                                        $"Значение {tr.Get_Value()}, " +
+                                        $"Путь {spath + tr.Path()}");
                     }
                 }
                 else
                 {
-                    // TODO : Необходима реализация
-                    // error(L"Ошибка формата потока 8. Ожидается значение типа список"
-                    //     , "Тип значения", get_node_type_presentation(tr->get_type())
-                    //     , L"Путь", spath + tr->path());
+                    Form1.log.Error($"Ошибка формата потока 8. Ожидается значение типа список. " +
+                                    $"Тип значения {get_node_type_presentation(tr.Get_Type())}, " +
+                                    $"Путь {spath + tr.Path()}");
                 }
             }
             else // Тип задан
@@ -417,11 +453,10 @@ namespace MetaRead
                         vs = new Value1C_string(valparent);
                         vs.v_string = "";
                         v = vs;
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 113. Ошибка получения строки. Тип значения не Строка"
-                        //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                        //     , L"Значение", tr->get_value()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error($"Ошибка формата потока 113. Ошибка получения строки. Тип значения не Строка. " +
+                                        $"Тип значения {get_node_type_presentation(tr.Get_Type())}, " +
+                                        $"Значение {tr.Get_Value()}, " +
+                                        $"Путь {spath + tr.Path()}");
                     }
                     ptr = tr.Get_Next();
                 }
@@ -445,23 +480,19 @@ namespace MetaRead
                         }
                         catch (Exception)
                         {
-                            // TODO : Необходима реализация
-                            // error(L"Ошибка формата потока 234. Ошибка получения числа с плавающей запятой."
-                            //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                            //     , L"Значение", tr->get_value()
-                            //     , L"Путь", spath + tr->path());
-
-                            //throw;
+                            Form1.log.Error($"Ошибка формата потока 234. Ошибка получения числа с плавающей запятой. " +
+                                            $"Тип значения {get_node_type_presentation(tr.Get_Type())}, " +
+                                            $"Значение {tr.Get_Value()}, " +
+                                            $"Путь {spath + tr.Path()}");
                         }
 
                     }
                     else
                     {
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 114. Ошибка получения числа. Тип значения не Число"
-                        //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                        //     , L"Значение", tr->get_value()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error($"Ошибка формата потока 114. Ошибка получения числа. Тип значения не Число. " +
+                                        $"Тип значения {get_node_type_presentation(tr.Get_Type())}, " +
+                                        $"Значение {tr.Get_Value()}, " +
+                                        $"Путь {spath + tr.Path()}");
                     }
                     ptr = tr.Get_Next();
                 }
@@ -472,18 +503,16 @@ namespace MetaRead
                     s = tr.Get_Value();
                     if (tr.Get_Type() != Node_Type.nd_number)
                     {
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 115. Ошибка получения значения Булево. Тип значения не Число"
-                        //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                        //     , L"Значение", s
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error($"Ошибка формата потока 115. Ошибка получения значения Булево. Тип значения не Число. " +
+                                        $"Тип значения {get_node_type_presentation(tr.Get_Type())}, " +
+                                        $"Значение {s}, " +
+                                        $"Путь {spath + tr.Path()}");
                     }
                     else if (s.CompareTo("0") != 0 && s.CompareTo("1") != 0)
                     {
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 204. Ошибка получения значения типа Булево."
-                        //     , L"Значение", s
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error($"Ошибка формата потока 204. Ошибка получения значения типа Булево. " +
+                                        $"Значение {s}, " +
+                                        $"Путь {spath + tr.Path()}");
                     }
                     vb.v_bool = s.CompareTo("0") != 0;
                     ptr = tr.Get_Next();
@@ -494,10 +523,9 @@ namespace MetaRead
                     v = vd;
                     if (!string1C_to_date(tr.Get_Value(), ref vd.v_date))
                     {
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 9. Ошибка разбора значения даты"
-                        //     , L"Значение", tr->get_value()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error($"Ошибка формата потока 9. Ошибка разбора значения даты. " +
+                                        $"Значение {tr.Get_Value()}, " +
+                                        $"Путь {spath + tr.Path()}");
                     }
                     ptr = tr.Get_Next();
                 }
@@ -525,17 +553,15 @@ namespace MetaRead
                         }
                         else
                         {
-                            // TODO : Необходима реализация
-                            // error(L"Ошибка формата потока 185. Ошибка преобразования UID"
-                            //     , L"UID", tr->get_value()
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error($"Ошибка формата потока 185. Ошибка преобразования UID. " +
+                                            $"UID {tr.Get_Value()}, " +
+                                            $"Путь {spath + tr.Path()}");
                         }
                     }
                     else
                     {
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 186. Ожидается значение UID"
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error($"Ошибка формата потока 186. Ожидается значение UID. " +
+                                        $"Путь {spath + tr.Path()}");
                     }
                     ptr = tr.Get_Next();
                 }
@@ -597,35 +623,30 @@ namespace MetaRead
                                     if (!string_to_GUID(tr.Get_Value(), ref uid))
                                     {
                                         uid = EmptyUID;
-                                        // TODO : Необходима реализация
-                                        // error(L"Ошибка формата потока 11. Ошибка преобразования UID"
-                                        //     , L"UID", tr->get_value()
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error($"Ошибка формата потока 11. Ошибка преобразования UID. " +
+                                                        $"UID {tr.Get_Value()}, " +
+                                                        $"Путь {spath + tr.Path()}");
                                     }
                                 }
                                 else
                                 {
-                                    // TODO : Необходима реализация
-                                    // error(L"Ошибка формата потока 12. Ожидается значение UID"
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error($"Ошибка формата потока 12. Ожидается значение UID. " +
+                                                    $"Путь {spath + tr.Path()}");
                                 }
                             }
                             else
                             {
-                                // TODO : Необходима реализация
-                                // error(L"Ошибка формата потока 10. Отсутствует значение"
-                                // , L"Загружаемый тип", t->name
-                                // , L"Путь", spath);
+                                Form1.log.Error($"Ошибка формата потока 10. Отсутствует значение. " +
+                                                $"Загружаемый тип {t.Name}" +
+                                                $"Путь {spath + tr.Path()}");
                             }
                         }
                         else
                         {
-                            // TODO : Необходима реализация
-                            // error(L"Ошибка формата потока 110. Неизвестный символ типа значения"
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Символ значения", s
-                            //     , L"Путь", spath + tr->path());
-
+                            Form1.log.Error($"Ошибка формата потока 110. Неизвестный символ типа значения. " +
+                                            $"Загружаемый тип {t.Name}" +
+                                            $"Символ значения {s}" +
+                                            $"Путь {spath + tr.Path()}");
                         }
                         if (uid != EmptyUID)
                         {
@@ -635,12 +656,11 @@ namespace MetaRead
                     }
                     else
                     {
-                        // TODO : Необходима реализация
-                        // error(L"Ошибка формата потока 109. Ожидается значение типа Строка"
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                        //     , L"Значение", tr->get_value()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error($"Ошибка формата потока 109. Ожидается значение типа Строка. " +
+                                        $"Загружаемый тип {t.Name}" +
+                                        $"Тип значения {get_node_type_presentation(tr.Get_Type())}" +
+                                        $"Значение {tr.Get_Value()}" +
+                                        $"Путь {spath + tr.Path()}");
                     }
                     ptr = tr.Get_Next();
                 }
@@ -655,10 +675,10 @@ namespace MetaRead
                             v = vo;
                             if (t.SerializationTree is null)
                             {
-                                // TODO : Надо реализовывать
-                                // error(L"Ошибка формата потока 13. Не определен алгоритм загрузки типа."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error($"Ошибка формата потока 13. Не определен алгоритм загрузки типа. " +
+                                                $"Загружаемый тип {t.Name}" +
+                                                $"Путь {spath + tr.Path()}");
+
                                 ptr = tr.Get_Next();
                                 break;
                             }
@@ -667,12 +687,11 @@ namespace MetaRead
                             break;
                         case 1: // Без значения. В реальности, должно было бы обработаться выше в блоке if(*ptr == NULL)
                                 //v->kind = kv_obj;
-                                // TODO : Надо реализовывать
-                                // error(L"Ошибка формата потока 19. Не ожидаемое значение."
-                                //      , L"Загружаемый тип", t->name
-                                //      , L"Тип значения", get_node_type_presentation(tr->get_type())
-                                //      , L"Значение", tr->get_value()
-                                //      , L"Путь", spath + tr->path());
+                            Form1.log.Error($"Ошибка формата потока 19. Не ожидаемое значение. " +
+                                            $"Загружаемый тип {t.Name}" +
+                                            $"Тип значения {get_node_type_presentation(tr.Get_Type())}" +
+                                            $"Значение {tr.Get_Value()}" +
+                                            $"Путь {spath + tr.Path()}");
                             ptr = tr;
                             break;
                         case 2:
@@ -692,22 +711,20 @@ namespace MetaRead
                                 }
                                 if (v is null)
                                 {
-                                    // TODO : Надо реализовывать
-                                    // error(L"Ошибка формата потока 15. Не найдено значение системного перечисления по числовому значению."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Значение", i
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error($"Ошибка формата потока 15. Не найдено значение системного перечисления по числовому значению. " +
+                                                    $"Загружаемый тип {t.Name}" +
+                                                    $"Значение {tr.Get_Value()}" +
+                                                    $"Путь {spath + tr.Path()}");
                                 }
                             }
                             else if (tr.Get_Type() == Node_Type.nd_guid)
                             {
                                 if (!string_to_GUID(tr.Get_Value(), ref uid))
                                 {
-                                    // TODO : Надо реализовывать
-                                    // error(L"Ошибка формата потока 20. Ошибка преобразвания UID."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Значение", tr->get_value()
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error($"Ошибка формата потока 20. Ошибка преобразвания UID. " +
+                                                    $"Загружаемый тип {t.Name}" +
+                                                    $"Значение {tr.Get_Value()}" +
+                                                    $"Путь {spath + tr.Path()}");
                                 }
                                 else
                                 {
@@ -724,21 +741,20 @@ namespace MetaRead
                                     }
                                     if (v is null)
                                     {
-                                        // TODO : Надо реализовывать
-                                        // error(L"Ошибка формата потока 21. Не найдено значение системного перечисления по UID."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Значение", tr->get_value()
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error($"Ошибка формата потока 21. Не найдено значение системного перечисления по UID. " +
+                                                        $"Загружаемый тип {t.Name}" +
+                                                        $"Значение {tr.Get_Value()}" +
+                                                        $"Путь {spath + tr.Path()}");
                                     }
 
                                 }
                             }
                             else
                             {
-                                // error(L"Ошибка формата потока 14. Ожидается значение типа Число или UID."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error($"Ошибка формата потока 14. Ожидается значение типа Число или UID. " +
+                                                $"Загружаемый тип {t.Name}" +
+                                                $"Тип значения {get_node_type_presentation(tr.Get_Type())}" +
+                                                $"Путь {spath + tr.Path()}");
                             }
                             ptr = tr.Get_Next();
                             break;
@@ -759,11 +775,10 @@ namespace MetaRead
                                 }
                                 if (v is null)
                                 {
-                                    // TODO : Надо реализовывать
-                                    // error(L"Ошибка формата потока 65. Не найдено значение системного перечисления по числовому значению."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Значение", i
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error($"Ошибка формата потока 65. Не найдено значение системного перечисления по числовому значению. " +
+                                                    $"Загружаемый тип {t.Name}" +
+                                                    $"Значение {i}" +
+                                                    $"Путь {spath + tr.Path()}");
                                 }
                             }
                             else if (tr.Get_Type() == Node_Type.nd_list)
@@ -772,38 +787,34 @@ namespace MetaRead
                                 ptr = tr.Get_Next();
                                 if (tt is null)
                                 {
-                                    // TODO : Надо реализовывать
-                                    // error(L"Ошибка формата потока 66. Ожидается UID типа системного перечисления."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error($"Ошибка формата потока 66. Ожидается UID типа системного перечисления. " +
+                                                    $"Загружаемый тип {t.Name}" +
+                                                    $"Путь {spath + tr.Path()}");
                                     break;
                                 }
                                 if (tt.Get_Type() != Node_Type.nd_guid)
                                 {
-                                    // TODO : Надо реализовывать
-                                    // error(L"Ошибка формата потока 67. Тип значения не UID, ожидается UID типа системного перечисления."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Тип значения", tt->get_type()
-                                    //     , L"Путь", spath + tt->path());
+                                    Form1.log.Error($"Ошибка формата потока 67. Тип значения не UID, ожидается UID типа системного перечисления. " +
+                                                    $"Загружаемый тип {t.Name}" +
+                                                    $"Тип значения {tt.Get_Type()}" +
+                                                    $"Путь {spath + tt.Path()}");
                                     break;
                                 }
                                 if (!string_to_GUID(tt.Get_Value(), ref uid))
                                 {
-                                    // TODO : Надо реализовывать
-                                    // error(L"Ошибка формата потока 68. Ошибка преобразвания UID."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Значение", tt->get_value()
-                                    //     , L"Путь", spath + tt->path());
+                                    Form1.log.Error($"Ошибка формата потока 68. Ошибка преобразвания UID. " +
+                                                    $"Загружаемый тип {t.Name}" +
+                                                    $"Значение {tt.Get_Value()}" +
+                                                    $"Путь {spath + tt.Path()}");
                                     break;
                                 }
                                 if (uid != t.uid)
                                 {
-                                    // TODO : Надо реализовывать
-                                    // error(L"Ошибка формата потока 69. UID типа не совпадает с UID загружаемого системного перечисления."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"UID типа", GUID_to_string(t->uid)
-                                    //     , L"Загружаемый UID", tt->get_value()
-                                    //     , L"Путь", spath + tt->path());
+                                    Form1.log.Error($"Ошибка формата потока 69. UID типа не совпадает с UID загружаемого системного перечисления. " +
+                                                    $"Загружаемый тип {t.Name}" +
+                                                    $"UID типа {t.uid.ToString()}" +
+                                                    $"Загружаемый UID {tt.Get_Value()}" +
+                                                    $"Путь {spath + tt.Path()}");
                                     break;
                                 }
                                 tt = tt.Get_Next();
@@ -3441,10 +3452,6 @@ namespace MetaRead
 
         }
 
-        public ConfigStorage stor;
-
-        public string storpresent;
-
         public static Tree gettree(ConfigStorage stor, string path, bool reporterror = true)
         {
             string fullpath = stor.presentation() + "\\" + path;
@@ -4767,6 +4774,142 @@ namespace MetaRead
 
         }
 
+
+        /// <summary>
+        /// // Получить объект метаданных по имени
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public MetaObject getMetaObject(string n)
+        {
+            if (fsmetamap.TryGetValue(n.ToUpper(), out MetaObject val1))
+            {
+                return val1;
+            }
+            else
+            {
+                return (MetaObject.smap.TryGetValue(n.ToUpper(), out MetaObject val2)) ? val2 : null;
+            }
+        }
+
+
+        /// <summary>
+        /// // Получить объект метаданных по УИД
+        /// </summary>
+        /// <param name="u"></param>
+        /// <returns></returns>
+        public MetaObject getMetaObject(Guid u)
+        {
+            if (fmetamap.TryGetValue(u, out MetaObject val1))
+            {
+                return val1;
+            }
+            else
+            {
+                return (MetaObject.map.TryGetValue(u, out MetaObject val2)) ? val2 : null;
+            }
+        }
+
+        /// <summary>
+        /// Получить предопределенный элемент по УИД
+        /// </summary>
+        /// <param name="u"></param>
+        /// <returns></returns>
+        public PredefinedValue getPreValue(Guid u)   
+        {
+            return fpredefinedvalues.TryGetValue(u, out PredefinedValue val) ? val : null;
+        }
+
+        public bool Export(string path, bool english = false, uint thread_count = 0)
+        {
+            #region cpp realization
+            // String npath;
+            // Value1C_obj_ExportThread* thr;
+            // unsigned int i;
+            // 
+            // npath = String(L"\\\\?\\") + path;
+            // if (!DirectoryExists(npath)) if (!CreateDir(npath)) return false;
+            // if (!froot) return false;
+            // 
+            // export_thread_count = thread_count;
+            // export_work_count = 0;
+            // if (export_thread_count)
+            // {
+            //     export_threads = new Value1C_obj_ExportThread*[export_thread_count];
+            //     for (i = 0; i < export_thread_count; ++i)
+            //     {
+            //         thr = new Value1C_obj_ExportThread(this);
+            //         export_threads[i] = thr;
+            //     }
+            // }
+            // 
+            // ExportThread(froot, npath, english);
+            // 
+            // if (export_thread_count)
+            // {
+            //     while (export_work_count)
+            //     {
+            //         CheckSynchronize(10);
+            //         //Sleep(0);
+            //     }
+            //     for (i = 0; i < export_thread_count; ++i)
+            //     {
+            //         thr = export_threads[i];
+            //         thr->finish = true;
+            //         thr->work->SetEvent();
+            //     }
+            //     for (i = 0; i < export_thread_count; ++i)
+            //     {
+            //         thr = export_threads[i];
+            //         thr->WaitFor();
+            //         delete thr;
+            //     }
+            //     delete[] export_threads;
+            // }
+            #endregion
+            // TODO: после понимания реализации ExportThread
+            return true;
+        }
+
+        public bool ExportThread(Value1C_obj v, string path, bool english)
+        {
+            #region cpp realization
+            // unsigned int i;
+            // Value1C_obj_ExportThread* thr;
+            // bool multithread;
+            // 
+            // if (export_thread_count)
+            // {
+            //     if (cur_export_thread) multithread = !cur_export_thread->singlethread;
+            //     else multithread = true;
+            // }
+            // else multithread = false;
+            // 
+            // 
+            // if (multithread)
+            // {
+            //     for (i = 0; i < export_thread_count; ++i)
+            //     {
+            //         thr = export_threads[i];
+            //         if (!InterlockedExchange(&thr->busy, 1))
+            //         {
+            //             thr->v = v;
+            //             thr->path = path;
+            //             thr->english = english;
+            //             InterlockedIncrement(&export_work_count);
+            //             thr->work->SetEvent();
+            //             return true;
+            //         }
+            //     }
+            // }
+            // return v->Export(path, NULL, 0, english);
+            #endregion
+            return true;
+        }
+
+        #endregion
+
+        #region Конструктор класса
         // Если _useExternal истина, _stor принадлежит MetaContainer и удаляется в деструкторе. 
         // Иначе _stor принадлежит вызывающей стороне, и может быть удален сразу после выполнения конструктора
         public MetaContainer(ConfigStorage _stor, bool _useExternal = false)
@@ -4792,7 +4935,7 @@ namespace MetaRead
 
             sig_standart_attribute = new Guid("03f171e8-326f-41c6-9fa5-932a0b12cddf");
             sig_standart_table_sec = new Guid("28db313d-dbc2-4b83-8c4a-d2aeee708062");
-            sig_ext_dimension      = new Guid("91162600-3161-4326-89a0-4a7cecd5092a");
+            sig_ext_dimension = new Guid("91162600-3161-4326-89a0-4a7cecd5092a");
             sig_ext_dimension_type = new Guid("b3b48b29-d652-47ab-9d21-7e06768c31b5");
 
             ftypes = new MetaTypeSet();
@@ -5008,174 +5151,6 @@ namespace MetaRead
                 stor = null;
             }
         }
-
-        /// <summary>
-        /// // Получить объект метаданных по имени
-        /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
-        public MetaObject getMetaObject(string n)
-        {
-            if (fsmetamap.TryGetValue(n.ToUpper(), out MetaObject val1))
-            {
-                return val1;
-            }
-            else
-            {
-                return (MetaObject.smap.TryGetValue(n.ToUpper(), out MetaObject val2)) ? val2 : null;
-            }
-        }
-
-
-        /// <summary>
-        /// // Получить объект метаданных по УИД
-        /// </summary>
-        /// <param name="u"></param>
-        /// <returns></returns>
-        public MetaObject getMetaObject(Guid u)
-        {
-            if (fmetamap.TryGetValue(u, out MetaObject val1))
-            {
-                return val1;
-            }
-            else
-            {
-                return (MetaObject.map.TryGetValue(u, out MetaObject val2)) ? val2 : null;
-            }
-        }
-
-        /// <summary>
-        /// Получить предопределенный элемент по УИД
-        /// </summary>
-        /// <param name="u"></param>
-        /// <returns></returns>
-        public PredefinedValue getPreValue(Guid u)   
-        {
-            return fpredefinedvalues.TryGetValue(u, out PredefinedValue val) ? val : null;
-        }
-
-
-        public bool Export(string path, bool english = false, uint thread_count = 0)
-        {
-            #region cpp realization
-            // String npath;
-            // Value1C_obj_ExportThread* thr;
-            // unsigned int i;
-            // 
-            // npath = String(L"\\\\?\\") + path;
-            // if (!DirectoryExists(npath)) if (!CreateDir(npath)) return false;
-            // if (!froot) return false;
-            // 
-            // export_thread_count = thread_count;
-            // export_work_count = 0;
-            // if (export_thread_count)
-            // {
-            //     export_threads = new Value1C_obj_ExportThread*[export_thread_count];
-            //     for (i = 0; i < export_thread_count; ++i)
-            //     {
-            //         thr = new Value1C_obj_ExportThread(this);
-            //         export_threads[i] = thr;
-            //     }
-            // }
-            // 
-            // ExportThread(froot, npath, english);
-            // 
-            // if (export_thread_count)
-            // {
-            //     while (export_work_count)
-            //     {
-            //         CheckSynchronize(10);
-            //         //Sleep(0);
-            //     }
-            //     for (i = 0; i < export_thread_count; ++i)
-            //     {
-            //         thr = export_threads[i];
-            //         thr->finish = true;
-            //         thr->work->SetEvent();
-            //     }
-            //     for (i = 0; i < export_thread_count; ++i)
-            //     {
-            //         thr = export_threads[i];
-            //         thr->WaitFor();
-            //         delete thr;
-            //     }
-            //     delete[] export_threads;
-            // }
-            #endregion
-            // TODO: после понимания реализации ExportThread
-            return true;
-        }
-
-        public bool ExportThread(Value1C_obj v, string path, bool english)
-        {
-            #region cpp realization
-            // unsigned int i;
-            // Value1C_obj_ExportThread* thr;
-            // bool multithread;
-            // 
-            // if (export_thread_count)
-            // {
-            //     if (cur_export_thread) multithread = !cur_export_thread->singlethread;
-            //     else multithread = true;
-            // }
-            // else multithread = false;
-            // 
-            // 
-            // if (multithread)
-            // {
-            //     for (i = 0; i < export_thread_count; ++i)
-            //     {
-            //         thr = export_threads[i];
-            //         if (!InterlockedExchange(&thr->busy, 1))
-            //         {
-            //             thr->v = v;
-            //             thr->path = path;
-            //             thr->english = english;
-            //             InterlockedIncrement(&export_work_count);
-            //             thr->work->SetEvent();
-            //             return true;
-            //         }
-            //     }
-            // }
-            // return v->Export(path, NULL, 0, english);
-            #endregion
-            return true;
-        }
-
-        public Value1C_obj root
-        {
-            get
-            {
-                return froot;
-            }
-
-        }
-
-        public MetaTypeSet types
-        {
-            get
-            {
-                return ftypes;
-            }
-
-        }
-
-        public SortedDictionary<Guid, MetaObject> metamap
-        {
-            get { return fmetamap; }
-        }
-
-        public SortedDictionary<string, MetaObject> smetamap
-        {
-            get { return fsmetamap; }
-        }
-
-        public SortedDictionary<Guid, PredefinedValue> predefinedvalues
-        {
-            get { return fpredefinedvalues; }
-        }
-
-        public long export_work_count; // количество заданий выгрузки
-
+        #endregion
     }
 }

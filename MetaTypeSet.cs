@@ -25,7 +25,7 @@ namespace MetaRead
 
         //public static Logger error;
 
-        public SortedDictionary<String, MetaType> mapname = new SortedDictionary<string, MetaType>(); // соответствие имен (русских и английских) типам
+        public SortedDictionary<string, MetaType> mapname = new SortedDictionary<string, MetaType>(); // соответствие имен (русских и английских) типам
         public SortedDictionary<Guid, MetaType> mapuid = new SortedDictionary<Guid, MetaType>();      // соответствие идентификаторов типам
         public List<MetaType> alltype = new List<MetaType>();                                         // массив всех типов
 
@@ -163,6 +163,10 @@ namespace MetaRead
             staticTypes = new MetaTypeSet();
 
             tr = Tree.Parse_1Cstream(str, "", "static types");
+            string tr_static_types = "";
+
+            tr.OutText(ref tr_static_types);
+
             tt = tr.Get_First().Get_First();
             
             // Параметры классов

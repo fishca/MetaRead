@@ -177,7 +177,7 @@ namespace MetaRead
             string s = Application.ExecutablePath;
 
             string path = Path.GetDirectoryName(s);
-            string path_log = path + "\\" + "MetaTree.txt";
+            string path_log = path + "\\" + "MetaTree1.txt";
             if (File.Exists(path_log))
                 rstr = new FileStream(path_log, FileMode.OpenOrCreate);
             else
