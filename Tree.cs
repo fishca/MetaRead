@@ -19,61 +19,73 @@ namespace MetaRead
             EventError?.Invoke(null, null);  // запускаем подписчиков на событие        
         }
 
-        public string Value;
+        public string Value;  // Значение в дереве
 
         public Node_Type type;
 
         public int num_subnode; // количество подчиненных
+
         public Tree parent;     // +1
+
         public Tree next;       // 0
         public Tree prev;       // 0
+
         public Tree first;      // -1
         public Tree last;       // -1
+
         public uint index;
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="_value"></param>
+        /// <param name="_type"></param>
+        /// <param name="_parent"></param>
         public Tree(string _value, Node_Type _type, Tree _parent)
         {
-            Value = _value;
-            type = _type;
+            Value  = _value;
+            type   = _type;
             parent = _parent;
 
             num_subnode = 0;
             index = 0;
+
             if (parent != null)
             {
                 parent.num_subnode++;
+
                 prev = parent.last;
+
                 if (prev != null)
                 {
                     prev.next = this;
                     index = prev.index + 1;
                 }
                 else
+                {
                     parent.first = this;
+                }
 
                 parent.last = this;
             }
             else
+            {
                 prev = null;
+            }
 
             next = null;
             first = null;
             last = null;
         }
 
-        public Tree AddChild(string _value, Node_Type _type)
+        public Tree AddChild(string _value = "", Node_Type _type = Node_Type.nd_empty)
         {
             return new Tree(_value, _type, this);
         }
 
-        public Tree AddChild()
-        {
-            return new Tree("", Node_Type.nd_empty, this);
-        }
-
         public Tree AddNode()
         {
-            return new Tree("", Node_Type.nd_empty, this.parent);
+            return new Tree("", Node_Type.nd_empty, parent);
         }
 
         public string Get_Value()
@@ -151,7 +163,7 @@ namespace MetaRead
             
         }
 
-        public void OutText(string text)
+        public void OutText(ref string text)
         {
             Node_Type lt = Node_Type.nd_unknown;
 
@@ -164,7 +176,7 @@ namespace MetaRead
                 Tree t = first;
                 while (t != null)
                 {
-                    t.OutText(text);
+                    t.OutText(ref text);
                     lt = t.type;
                     t = t.next;
                     if (t != null)

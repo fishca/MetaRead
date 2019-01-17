@@ -999,6 +999,26 @@ namespace MetaRead
             return "?Неизвестный тип значения 1С";
         }
 
+        public static string get_node_type_presentation(Node_Type type)
+        {
+            switch (type)
+            {
+                case Node_Type.nd_empty:      return "Пусто";
+                case Node_Type.nd_string:     return "Строка";
+                case Node_Type.nd_number:     return "Число";
+                case Node_Type.nd_number_exp: return "Число с показателем степени";
+                case Node_Type.nd_guid:       return "Уникальный идентификатор";
+                case Node_Type.nd_list:       return "Список";
+                case Node_Type.nd_binary:     return "Двоичные данные";
+                case Node_Type.nd_binary2:    return "Двоичные данные 8.2";
+                case Node_Type.nd_binary_d:   return "Двоичные данные data";
+                case Node_Type.nd_link:       return "Ссылка";
+                case Node_Type.nd_unknown:    return "<Неизвестный тип>";
+            }
+            return "<Неизвестный тип>";
+        }
+
+
 
         public static string date_to_string(DateTime dt)
         {

@@ -14,56 +14,51 @@ namespace MetaRead
         public Guid typeuid;  // УИД типа
         public Guid valueuid; // УИД значения
 
-        //public GeneratedType() { }
-
-
-
         public GeneratedType(Tree ptr, string path)
         {
             typeuid = new Guid(Constants.EMPTY_GUID);
             valueuid = new Guid(Constants.EMPTY_GUID);
             if (ptr is null)
             {
-                // error(L"Ошибка формата потока 44. Ожидается значение UID генерируемого типа", L"Путь", path);
+                Form1.log.Error($"Ошибка формата потока 44. Ожидается значение UID генерируемого типа. Путь {path}");
                 return;
             }
             if (ptr.Get_Type() == Node_Type.nd_guid)
             {
                 if (!string_to_GUID(ptr.Get_Value(), ref typeuid))
                 {
-                    // error(L"Ошибка формата потока 45. Ошибка преобразования UID генерируемого типа"
-                    //     , L"UID", (*ptr)->get_value()
-                    //     , L"Путь", path + (*ptr)->path());
-
+                    Form1.log.Error($"Ошибка формата потока 45. Ошибка преобразования UID генерируемого типа. " +
+                                    $"UID {ptr.Get_Value()}, " +
+                                    $"Путь {ptr.Path()}");
                 }
             }
             else
             {
-                // error(L"Ошибка формата потока 46. Тип значения не UID"
-                //     , L"Значение", (*ptr)->get_value()
-                //     , L"Путь", path + (*ptr)->path());
+                Form1.log.Error($"Ошибка формата потока 46. Тип значения не UID. " +
+                                $"Значение {ptr.Get_Value()}, " +
+                                $"Путь {ptr.Path()}");
             }
             ptr = ptr.Get_Next();
             if (ptr is null)
             {
-                // error(L"Ошибка формата потока 47. Ожидается значение UID генерируемого типа", L"Путь", path);
+                Form1.log.Error($"Ошибка формата потока 47. Ожидается значение UID генерируемого типа. " +
+                                $"Путь {path}");
                 return;
             }
             if (ptr.Get_Type() == Node_Type.nd_guid)
             {
                 if (!string_to_GUID(ptr.Get_Value(), ref typeuid))
                 {
-                    // error(L"Ошибка формата потока 48. Ошибка преобразования UID генерируемого типа"
-                    //     , L"UID", (*ptr)->get_value()
-                    //     , L"Путь", path + (*ptr)->path());
-
+                    Form1.log.Error($"Ошибка формата потока 48. Ошибка преобразования UID генерируемого типа. " +
+                                    $"UID {ptr.Get_Value()}, " +
+                                    $"Путь {path + ptr.Path()}");
                 }
             }
             else
             {
-                // error(L"Ошибка формата потока 49. Тип значения не UID"
-                //     , L"Значение", (*ptr)->get_value()
-                //     , L"Путь", path + (*ptr)->path());
+                Form1.log.Error($"Ошибка формата потока 49. Тип значения не UID. " +
+                                $"Значение {ptr.Get_Value()}, " +
+                                $"Путь {path + ptr.Path()}");
             }
             ptr = ptr.Get_Next();
         }
@@ -86,10 +81,7 @@ namespace MetaRead
         public string getfullname(bool english = false)
         {
             string s = "";
-            SortedDictionary<MetaGeneratedType, GeneratedType> ii;
-            MetaType t;
 
-            s = "";
             if (!(owner is null))
             {
                 if (owner.type != null)
@@ -99,13 +91,16 @@ namespace MetaRead
 
                         if (owner.v_objgentypes.TryGetValue(owner.type.gentypeRef, out GeneratedType val))
                         {
-                            // TODO : Нужна реализация MetaContainer !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-
+                            MetaType t = owner.owner.types.GetTypeByUID(val.typeuid);
+                            s = english ? t.EName : t.Name;
+                            s += ".";
                         }
                     }
                 }
             }
-            return "";
+            s += name;
+
+            return s;
         }
     }
 
@@ -1287,11 +1282,15 @@ namespace MetaRead
                 {
                     if (!string_to_GUID(tr.Get_Value(), ref uid))
                     {
-                        // error(L"Ошибка формата потока 83. Ошибка преобразования UID при загрузке ссылки на объект метаданных."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Путь ДС", tn->path()
-                        //     , L"Значение", tr->get_value()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 83. Ошибка преобразования UID при загрузке ссылки на объект метаданных. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Значение {2}, " +
+                                        "Путь {3}",
+                                        t.Name,
+                                        tn.path(),
+                                        tr.Get_Value(),
+                                        spath + tr.Path());
                     }
                     else if (uid != EmptyUID)
                     {
@@ -1301,12 +1300,17 @@ namespace MetaRead
                 }
                 else
                 {
-                    // error(L"Ошибка формата потока 84. Тип значения не UID при загрузке ссылки на объект метаданных."
-                    //     , L"Загружаемый тип", t->name
-                    //     , L"Путь ДС", tn->path()
-                    //     , L"Значение", tr->get_value()
-                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                    //     , L"Путь", spath + tr->path());
+                    Form1.log.Error("Ошибка формата потока 84. Тип значения не UID при загрузке ссылки на объект метаданных. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Путь ДС {1}, " +
+                                    "Значение {2}, " +
+                                    "Тип значения {3}, " +
+                                    "Путь {4}",
+                                    t.Name,
+                                    tn.path(),
+                                    tr.Get_Value(),
+                                    get_node_type_presentation(tr.Get_Type()),
+                                    spath + tr.Path());
                 }
                 //if(!tn->nomove) tr = tr->get_next();
                 tr = tr.Get_Next();
@@ -1320,23 +1324,32 @@ namespace MetaRead
                 {
                     if (!string_to_GUID(tr.Get_Value(), ref uid))
                     {
-                        // error(L"Ошибка формата потока 163. Ошибка преобразования UID при загрузке ссылки на предопределенный элемент."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Путь ДС", tn->path()
-                        //     , L"Значение", tr->get_value()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 163. Ошибка преобразования UID при загрузке ссылки на предопределенный элемент. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Значение {2}, " +
+                                        "Путь {3}",
+                                        t.Name,
+                                        tn.path(),
+                                        tr.Get_Value(),
+                                        spath + tr.Path());
                     }
                     else if (uid != EmptyUID)
                         PValues.puninitvalues.Add(new UninitValue1C(nv, spath + tr.Path(), uid));
                 }
                 else
                 {
-                    // error(L"Ошибка формата потока 164. Тип значения не UID при загрузке ссылки на предопределенный элемент."
-                    //     , L"Загружаемый тип", t->name
-                    //     , L"Путь ДС", tn->path()
-                    //     , L"Значение", tr->get_value()
-                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                    //     , L"Путь", spath + tr->path());
+                    Form1.log.Error("Ошибка формата потока 164. Тип значения не UID при загрузке ссылки на предопределенный элемент. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Путь ДС {1}, " +
+                                    "Значение {2}, " +
+                                    "Тип значения {3}, " +
+                                    "Путь {4}",
+                                    t.Name,
+                                    tn.path(),
+                                    tr.Get_Value(),
+                                    get_node_type_presentation(tr.Get_Type()),
+                                    spath + tr.Path());
                 }
                 //if(!tn->nomove) tr = tr->get_next();
                 tr = tr.Get_Next();
@@ -1350,33 +1363,46 @@ namespace MetaRead
                 {
                     if (!string_to_GUID(tr.Get_Value(), ref uid))
                     {
-                        // error(L"Ошибка формата потока 213. Ошибка преобразования UID при загрузке права."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Путь ДС", tn->path()
-                        //     , L"Значение", tr->get_value()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 213. Ошибка преобразования UID при загрузке права. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Значение {2}, " +
+                                        "Путь {3}",
+                                        t.Name,
+                                        tn.path(),
+                                        tr.Get_Value(),
+                                        spath + tr.Path());
                     }
                     else
                     {
                         vr.v_right = MetaRight.GetRight(uid);
                         if (vr.v_right is null)
                         {
-                            // error(L"Ошибка формата потока 215. Неизвестное право."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"UID права", tr->get_value()
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 215. Неизвестное право. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "UID права {2}, " +
+                                            "Путь {3}",
+                                            t.Name,
+                                            tn.path(),
+                                            tr.Get_Value(),
+                                            spath + tr.Path());
                         }
                     }
                 }
                 else
                 {
-                    // error(L"Ошибка формата потока 214. Тип значения не UID при загрузке права."
-                    //     , L"Загружаемый тип", t->name
-                    //     , L"Путь ДС", tn->path()
-                    //     , L"Значение", tr->get_value()
-                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                    //     , L"Путь", spath + tr->path());
+                    Form1.log.Error("Ошибка формата потока 214. Тип значения не UID при загрузке права. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Путь ДС {1}, " +
+                                    "Значение {2}, " +
+                                    "Тип значения {3}, " +
+                                    "Путь {4}",
+                                    t.Name,
+                                    tn.path(),
+                                    tr.Get_Value(),
+                                    get_node_type_presentation(tr.Get_Type()),
+                                    spath + tr.Path());
                 }
                 //if(!tn->nomove) tr = tr->get_next();
                 tr = tr.Get_Next();
@@ -1387,11 +1413,15 @@ namespace MetaRead
                 {
                     if (!string_to_GUID(tr.Get_Value(), ref uid))
                     {
-                        //error(L"Ошибка формата потока 85. Ошибка преобразования UID при загрузке имени файла."
-                        //    , L"Загружаемый тип", t->name
-                        //    , L"Путь ДС", tn->path()
-                        //    , L"Значение", tr->get_value()
-                        //    , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 85. Ошибка преобразования UID при загрузке имени файла. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Значение {2}, " +
+                                        "Путь {3}",
+                                        t.Name,
+                                        tn.path(),
+                                        tr.Get_Value(),
+                                        spath + tr.Path());
                         /////////////////////////////////////////nv = new Value1C(valparent);
                         /////////////////////////////////////////nv->type = nt;
                     }
@@ -1401,8 +1431,9 @@ namespace MetaRead
                         tt = gettree(stor, npath);
                         if (tt is null)
                         {
-                            //error(L"Ошибка формата потока 76. Пустой файл"
-                            //    , L"Путь", storpresent + npath);
+                            Form1.log.Error("Ошибка формата потока 76. Пустой файл. " +
+                                            "Путь {0}",
+                                            storpresent + npath);
                             /////////////////////////////////////////////////////nv = new Value1C(valparent);
                             /////////////////////////////////////////////////////nv->type = nt;
                         }
@@ -1415,16 +1446,21 @@ namespace MetaRead
                 }
                 else
                 {
-                    //error(L"Ошибка формата потока 86. Тип значения не UID при загрузке имени файла."
-                    //    , L"Загружаемый тип", t->name
-                    //    , L"Путь ДС", tn->path()
-                    //    , L"Значение", tr->get_value()
-                    //    , L"Тип значения", get_node_type_presentation(tr->get_type())
-                    //    , L"Путь", spath + tr->path());
+                    Form1.log.Error("Ошибка формата потока 86. Тип значения не UID при загрузке имени файла. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Путь ДС {1}, " +
+                                    "Значение {2}, " +
+                                    "Тип значения {3}, " +
+                                    "Путь {4}",
+                                    t.Name,
+                                    tn.path(),
+                                    tr.Get_Value(),
+                                    get_node_type_presentation(tr.Get_Type()),
+                                    spath + tr.Path());
                     ///////////////////////////////////////////nv = new Value1C(valparent);
                     ///////////////////////////////////////////nv->type = nt;
                 }
-                
+
                 tr = tr.Get_Next();
             }
             else if (nt == MetaTypeSet.mt_binarydata)
@@ -1446,12 +1482,17 @@ namespace MetaRead
                         }
                         else
                         {
-                            // error(L"Ошибка формата потока 146. Несовпадение вида сериализации двоичных данных. Ожидается строка base64 без префикса"
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Значение", tr->get_value()
-                            //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 146. Несовпадение вида сериализации двоичных данных. Ожидается строка base64 без префикса. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Значение {2}, " +
+                                            "Тип значения {3}, " +
+                                            "Путь {4}",
+                                            t.Name,
+                                            tn.path(),
+                                            tr.Get_Value(),
+                                            get_node_type_presentation(tr.Get_Type()),
+                                            spath + tr.Path());
                         }
                         break;
                     case BinarySerializationType.bst_base64:
@@ -1467,12 +1508,17 @@ namespace MetaRead
                         }
                         else
                         {
-                            // error(L"Ошибка формата потока 147. Несовпадение вида сериализации двоичных данных. Ожидается строка base64 c префиксом #base64:"
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Значение", tr->get_value()
-                            //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 147. Несовпадение вида сериализации двоичных данных. Ожидается строка base64 c префиксом #base64:. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Значение {2}, " +
+                                            "Тип значения {3}, " +
+                                            "Путь {4}",
+                                            t.Name,
+                                            tn.path(),
+                                            tr.Get_Value(),
+                                            get_node_type_presentation(tr.Get_Type()),
+                                            spath + tr.Path());
                         }
                         break;
                     case BinarySerializationType.bst_data:
@@ -1486,12 +1532,17 @@ namespace MetaRead
                         }
                         else
                         {
-                            //error(L"Ошибка формата потока 148. Несовпадение вида сериализации двоичных данных. Ожидается строка base64 c префиксом #data:"
-                            //    , L"Загружаемый тип", t->name
-                            //    , L"Путь ДС", tn->path()
-                            //    , L"Значение", tr->get_value()
-                            //    , L"Тип значения", get_node_type_presentation(tr->get_type())
-                            //    , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 148. Несовпадение вида сериализации двоичных данных. Ожидается строка base64 c префиксом #data:. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Значение {2}, " +
+                                            "Тип значения {3}, " +
+                                            "Путь {4}",
+                                            t.Name,
+                                            tn.path(),
+                                            tr.Get_Value(),
+                                            get_node_type_presentation(tr.Get_Type()),
+                                            spath + tr.Path());
                         }
                         break;
                     case BinarySerializationType.bst_base64_or_data:
@@ -1506,45 +1557,68 @@ namespace MetaRead
                         }
                         else
                         {
-                            // error(L"Ошибка формата потока 153. Несовпадение вида сериализации двоичных данных. Ожидается строка base64 c префиксом #base64: или #data:"
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Значение", tr->get_value()
-                            //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 153. Несовпадение вида сериализации двоичных данных. Ожидается строка base64 c префиксом #base64: или #data:. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Значение {2}, " +
+                                            "Тип значения {3}, " +
+                                            "Путь {4}",
+                                            t.Name,
+                                            tn.path(),
+                                            tr.Get_Value(),
+                                            get_node_type_presentation(tr.Get_Type()),
+                                            spath + tr.Path());
                         }
                         break;
                     case BinarySerializationType.bst_min:
-                        //error(L"Ошибка формата потока 149. Не указан вид сериализации двоичных данных."
-                        //    , L"Загружаемый тип", t->name
-                        //    , L"Путь ДС", tn->path()
-                        //    , L"Значение", tr->get_value()
-                        //    , L"Тип значения", get_node_type_presentation(tr->get_type())
-                        //    , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 149. Не указан вид сериализации двоичных данных. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Значение {2}, " +
+                                        "Тип значения {3}, " +
+                                        "Путь {4}",
+                                        t.Name,
+                                        tn.path(),
+                                        tr.Get_Value(),
+                                        get_node_type_presentation(tr.Get_Type()),
+                                        spath + tr.Path());
+                        break;
                     default:
-                        // error(L"Ошибка формата потока 150. Неизвестный вид сериализации двоичных данных."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Путь ДС", tn->path()
-                        //     , L"Вид сериализации", tn->binsertype
-                        //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 150. Неизвестный вид сериализации двоичных данных. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Вид сериализации {2}, " +
+                                        "Тип значения {3}, " +
+                                        "Путь {4}",
+                                        t.Name,
+                                        tn.path(),
+                                        tn.binsertype,
+                                        get_node_type_presentation(tr.Get_Type()),
+                                        spath + tr.Path());
                         break;
                 }
                 vb.v_binformat = tn.binformat;
                 if (tn.binformat == ExternalFileFormat.eff_min)
                 {
-                    // error(L"Ошибка формата потока 151. Не указан формат двоичных данных."
-                    //     , L"Загружаемый тип", t->name
-                    //     , L"Путь ДС", tn->path()
-                    //     , L"Путь", spath + tr->path());
+                    Form1.log.Error("Ошибка формата потока 151. Не указан формат двоичных данных. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Путь ДС {1}, " +
+                                    "Путь {2}",
+                                    t.Name,
+                                    tn.path(),
+                                    spath + tr.Path());
                 }
                 else if (tn.binformat >= ExternalFileFormat.eff_max)
                 {
-                    //error(L"Ошибка формата потока 152. Неизвестный формат двоичных данных."
-                    //    , L"Загружаемый тип", t->name
-                    //    , L"Путь ДС", tn->path()
-                    //    , L"Формат", tn->binformat
-                    //    , L"Путь", spath + tr->path());
+                    Form1.log.Error("Ошибка формата потока 152. Неизвестный формат двоичных данных. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Путь ДС {1}, " +
+                                    "Формат {2}, " +
+                                    "Путь {3}",
+                                    t.Name,
+                                    tn.path(),
+                                    tn.binformat,
+                                    spath + tr.Path());
                     vb.v_binformat = ExternalFileFormat.eff_min;
                 }
 
@@ -1568,7 +1642,7 @@ namespace MetaRead
             Value1C_obj vo;
             Value1C_string vs;
             Value1C_number vn;
-            Value1C vv;
+            Value1C vv = null;
             Value1C vvv;
             MetaType nt;
             int i, j;
@@ -1583,11 +1657,11 @@ namespace MetaRead
             Guid uv1 = EmptyUID;
             Guid uv2 = EmptyUID;
             bool cv, ok;
-            //std::map<MetaProperty*, Value1C*, MetaPropertyLess>::iterator ip;
+            
             MetaProperty prop;
             Class cl;
             ClassItem cli = null;
-            //std::map<String, int>::iterator icv;
+            
             string spath;
             MetaValue mv;
 
@@ -1606,8 +1680,8 @@ namespace MetaRead
                 {
                     if (tr != null)
                     {
-                        // error(L"Ошибка формата потока 63. Остались необработанные значения."
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 63. Остались необработанные значения. " +
+                                        "Путь {0}", spath + tr.Path());
                     }
                 }
                 return;
@@ -1622,10 +1696,10 @@ namespace MetaRead
                     case SerializationTreeNodeType.stt_const:
                         if (tr is null)
                         {
-                            // error(L"Ошибка формата потока 27. Отсутствует ожидаемое значение константы."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath);
+                            Form1.log.Error("Ошибка формата потока 27. Отсутствует ожидаемое значение константы. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}", t.Name, tn.path(), spath);
                             break;
                         }
 
@@ -1636,23 +1710,32 @@ namespace MetaRead
                                 {
                                     if (tr.Get_Value().CompareTo(tn.str1) != 0)
                                     {
-                                        // error(L"Ошибка формата потока 26. Значение не совпадает с константой дерева сериализации."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Значение", tr->get_value()
-                                        //     , L"Значение константы", tn->str1
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 26. Значение не совпадает с константой дерева сериализации. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Значение {2}, " +
+                                                        "Значение константы {3}, " +
+                                                        "Путь {4}", 
+                                                        t.Name,
+                                                        tn.path(),
+                                                        tr.Get_Value(),
+                                                        tn.str1,
+                                                        spath + tr.Path());
                                     }
-
                                 }
                                 else
                                 {
-                                    // error(L"Ошибка формата потока 25. Тип значения не совпадает с типом значения константы дерева сериализации."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                                    //     , L"Тип значения константы", tn->typeval1presentation()
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 25. Тип значения не совпадает с типом значения константы дерева сериализации. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Тип значения {2}, " +
+                                                    "Тип значения константы {3}, " +
+                                                    "Путь {4}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    get_node_type_presentation(tr.Get_Type()),
+                                                    tn.typeval1presentation(),
+                                                    spath + tr.Path() );
                                 }
                                 break;
                             case SerializationTreeValueType.stv_number:
@@ -1660,12 +1743,17 @@ namespace MetaRead
                                 {
                                     if (Convert.ToInt32(tr.Get_Value()) != tn.uTreeNode1.num1)
                                     {
-                                        // error(L"Ошибка формата потока 28. Значение не совпадает с константой дерева сериализации."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Значение", tr->get_value()
-                                        //     , L"Значение константы", tn->num1
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 28. Значение не совпадает с константой дерева сериализации. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Значение {2}, " +
+                                                        "Значение константы {3}, " +
+                                                        "Путь {4}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        tr.Get_Value(),
+                                                        tn.uTreeNode1.num1,
+                                                        spath + tr.Path());
                                     }
 
                                 }
@@ -1673,23 +1761,33 @@ namespace MetaRead
                                 {
                                     if (Convert.ToDouble(tr.Get_Value()) != (double)tn.uTreeNode1.num1)
                                     {
-                                        // error(L"Ошибка формата потока 235. Значение не совпадает с константой дерева сериализации."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Значение", tr->get_value()
-                                        //     , L"Значение константы", tn->num1
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 235. Значение не совпадает с константой дерева сериализации. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Значение {2}, " +
+                                                        "Значение константы {3}, " +
+                                                        "Путь {4}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        tr.Get_Value(),
+                                                        tn.uTreeNode1.num1,
+                                                        spath + tr.Path());
                                     }
 
                                 }
                                 else
                                 {
-                                    // error(L"Ошибка формата потока 29. Тип значения не совпадает с типом значения константы дерева сериализации."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                                    //     , L"Тип значения константы", tn->typeval1presentation()
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 29. Тип значения не совпадает с типом значения константы дерева сериализации. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Тип значения {2}, " +
+                                                    "Тип значения константы {3}, " +
+                                                    "Путь {4}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    get_node_type_presentation(tr.Get_Type()),
+                                                    tn.typeval1presentation(),
+                                                    spath + tr.Path());
                                 }
                                 break;
                             case SerializationTreeValueType.stv_uid:
@@ -1697,39 +1795,58 @@ namespace MetaRead
                                 {
                                     if (!string_to_GUID(tr.Get_Value(), ref uid))
                                     {
-                                        // error(L"Ошибка формата потока 30. Ошибка преобразования UID при загрузке константы."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Значение", tr->get_value()
-                                        //     , L"Значение константы", GUID_to_string(tn->uid1)
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 30. Ошибка преобразования UID при загрузке константы. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Значение {2}, " +
+                                                        "Значение константы {3}, " +
+                                                        "Путь {4}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        tr.Get_Value(),
+                                                        tn.uTreeNode1.uid1.ToString(),
+                                                        spath + tr.Path());
                                     }
                                     else if (uid != tn.uTreeNode1.uid1)
                                     {
-                                        // error(L"Ошибка формата потока 31. Значение не совпадает с константой дерева сериализации."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Значение", tr->get_value()
-                                        //     , L"Значение константы", GUID_to_string(tn->uid1)
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 31. Значение не совпадает с константой дерева сериализации. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Значение {2}, " +
+                                                        "Значение константы {3}, " +
+                                                        "Путь {4}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        tr.Get_Value(),
+                                                        tn.uTreeNode1.uid1.ToString(),
+                                                        spath + tr.Path());
                                     }
                                 }
                                 else
                                 {
-                                    // error(L"Ошибка формата потока 32. Тип значения не совпадает с типом значения константы дерева сериализации."
-                                    //     , L"Загружаемый тип", t->name
-                                    //         , L"Путь ДС", tn->path()
-                                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                                    //     , L"Тип значения константы", tn->typeval1presentation()
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 32. Тип значения не совпадает с типом значения константы дерева сериализации. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Тип значения {2}, " +
+                                                    "Тип значения константы {3}, " +
+                                                    "Путь {4}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    get_node_type_presentation(tr.Get_Type()),
+                                                    tn.typeval1presentation(),
+                                                    spath + tr.Path());
                                 }
                                 break;
                             default:
-                                // error(L"Ошибка формата потока 24. Недопустимыйый тип значения константы дерева сериализации."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Тип значения", tn->typeval1presentation()
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error("Ошибка формата потока 24. Недопустимыйый тип значения константы дерева сериализации. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Тип значения {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                tn.typeval1presentation(),
+                                                spath + tr.Path());
                                 break;
                         }
                         if (!tn.nomove)
@@ -1738,22 +1855,30 @@ namespace MetaRead
                     case SerializationTreeNodeType.stt_var:
                         if (tr is null)
                         {
-                            // error(L"Ошибка формата потока 94. Отсутствует ожидаемое значение переменной."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath);
+                            Form1.log.Error("Ошибка формата потока 94. Отсутствует ожидаемое значение переменной. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}",
+                                            t.Name,
+                                            tn.path(),
+                                            spath + tr.Path());
                             break;
                         }
                         if (tr.Get_Type() == Node_Type.nd_number)
                             setVarValue(tn.str1, t, v, varvalues, clitem, Convert.ToInt32(tr.Get_Value()), spath);
                         else
                         {
-                            // error(L"Ошибка формата потока 33. Тип переменной не Число."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Тип переменной", get_node_type_presentation(tr->get_type())
-                            //     , L"Имя переменной", tn->str1
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 33. Тип переменной не Число. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Тип переменной {2}, " +
+                                            "Имя переменной {3}, " +
+                                            "Путь {4}",
+                                            t.Name,
+                                            tn.path(),
+                                            get_node_type_presentation(tr.Get_Type()),
+                                            tn.str1,
+                                            spath + tr.Path());
                         }
                         if (!tn.nomove)
                             tr = tr.Get_Next();
@@ -1761,18 +1886,24 @@ namespace MetaRead
                     case SerializationTreeNodeType.stt_list:
                         if (tr is null)
                         {
-                            // error(L"Ошибка формата потока 95. Отсутствует ожидаемый список."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath);
+                            Form1.log.Error("Ошибка формата потока 95. Отсутствует ожидаемый список. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}",
+                                            t.Name,
+                                            tn.path(),
+                                            spath);
                             break;
                         }
                         if (tr.Get_Type() != Node_Type.nd_list)
                         {
-                            // error(L"Ошибка формата потока 35. Значение не является списком."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 35. Значение не является списком. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}",
+                                            t.Name,
+                                            tn.path(),
+                                            spath + tr.Path());
                         }
                         else
                         {
@@ -1786,11 +1917,14 @@ namespace MetaRead
                         if (tr is null)
                         {
                             if (!tn.nomove)
-                                // error(L"Ошибка формата потока 96. Отсутствует ожидаемое значение свойства."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Путь", spath);
-                                break;
+                                Form1.log.Error("Ошибка формата потока 96. Отсутствует ожидаемое значение свойства. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Путь {2}",
+                                                t.Name,
+                                                tn.path(),
+                                                spath);
+                            break;
                         }
                         if (tn.isref)
                             nt = MetaTypeSet.mt_metarefint; // Для ссылки на объект метаданных жестко задаем тип ОбъектМетаданныхСсылкаВнутр
@@ -1824,11 +1958,15 @@ namespace MetaRead
                                         uv1 = ((Value1C_metaobj)vv).v_metaobj.UID;
                                     else
                                     {
-                                        // error(L"Ошибка формата потока 199. Ошибка получения metauid из свойства. metauid еще не загружен."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Свойство", prop->name
-                                        //     , L"Путь", spath);
+                                        Form1.log.Error("Ошибка формата потока 199. Ошибка получения metauid из свойства. metauid еще не загружен. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Свойство {2}, " +
+                                                        "Путь {3}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        prop.Name,
+                                                        spath);
                                         uv1 = EmptyUID;
                                     }
                                 }
@@ -1851,32 +1989,45 @@ namespace MetaRead
                                         uv1 = ((Value1C_refobj)vvv).v_uid;
                                     else
                                     {
-                                        // error(L"Ошибка формата потока 231. Ошибка получения свойства Объект из значения типа МетаСсылка."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Свойство", prop->name
-                                        //     , L"Путь", spath);
+                                        Form1.log.Error("Ошибка формата потока 231. Ошибка получения свойства Объект из значения типа МетаСсылка. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Свойство {2}, " +
+                                                        "Путь {3}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        prop.Name,
+                                                        spath);
                                         uv1 = EmptyUID;
                                     }
                                 }
                                 else
                                 {
-                                    // error(L"Ошибка формата потока 103. Ошибка получения metauid из свойства. Свойство имеет недопустимый тип."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Свойство", prop->name
-                                    //     , L"Тип значения", KindOfValue1C_presantation(vv->kind)
-                                    //     , L"Путь", spath);
+                                    Form1.log.Error("Ошибка формата потока 103. Ошибка получения metauid из свойства. Свойство имеет недопустимый тип. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Свойство {2}, " +
+                                                    "Тип значения {3}, " +
+                                                    "Путь {4}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    prop.Name,
+                                                    KindOfValue1C_presantation(vv.kind),
+                                                    spath);
                                     uv1 = EmptyUID;
                                 }
                             }
                             else
                             {
-                                // error(L"Ошибка формата потока 102. Ошибка получения metauid из свойства. Свойство не определено"
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Свойство", prop->name
-                                //     , L"Путь", spath);
+                                Form1.log.Error("Ошибка формата потока 102. Ошибка получения metauid из свойства. Свойство не определено. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Свойство {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                prop.Name,
+                                                spath);
                                 uv1 = EmptyUID;
                             }
                         }
@@ -1891,20 +2042,29 @@ namespace MetaRead
                         {
                             if (nv.kind != KindOfValue1C.kv_obj)
                             {
-                                // error(L"Ошибка формата потока 195. Ошибка получения значения предопределенного элемента. Значение свойства не является объектом"
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Свойство", prop->name
-                                //     , L"Путь", spath);
+                                Form1.log.Error("Ошибка формата потока 195. Ошибка получения значения предопределенного элемента. Значение свойства не является объектом. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Свойство {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                prop.Name,
+                                                spath);
                             }
                             else if (v.kind != KindOfValue1C.kv_metaobj)
                             {
-                                // error(L"Ошибка формата потока 196. Ошибка получения значения предопределенного элемента. Значение, которому принадлежит свойство с признаком \"Предопределенные\" не является объектом метаданных"
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Свойство", prop->name
-                                //     , L"Путь", spath
-                                //     , L"Тип владельца", KindOfValue1C_presantation(v->kind));
+                                Form1.log.Error("Ошибка формата потока 196. Ошибка получения значения предопределенного элемента. Значение, которому принадлежит свойство с признаком \"Предопределенные\" не является объектом метаданных. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Свойство {2}, " +
+                                                "Путь {3}, " +
+                                                "Тип владельца {4}",
+                                                t.Name,
+                                                tn.path(),
+                                                prop.Name,
+                                                spath,
+                                                KindOfValue1C_presantation(v.kind));
                             }
                             else
                             {
@@ -1915,21 +2075,30 @@ namespace MetaRead
                                     vvm = (Value1C_metaobj)vo.v_objcol[ii];
                                     if (vvm is null)
                                     {
-                                        // error(L"Ошибка формата потока 187. Ошибка получения значения предопределенного элемента"
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Свойство", prop->name
-                                        //     , L"Путь", spath);
+                                        Form1.log.Error("Ошибка формата потока 187. Ошибка получения значения предопределенного элемента. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Свойство {2}, " +
+                                                        "Путь {3}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        prop.Name,
+                                                        spath);
                                         continue;
                                     }
                                     if (vvm.kind != KindOfValue1C.kv_metaobj)
                                     {
-                                        // error(L"Ошибка формата потока 188. Ошибка получения значения предопределенного элемента. Значение не является объектом метаданных"
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Свойство", prop->name
-                                        //     , L"Путь", spath
-                                        //     , L"Тип значения", KindOfValue1C_presantation(vvm->kind));
+                                        Form1.log.Error("Ошибка формата потока 188. Ошибка получения значения предопределенного элемента. Значение не является объектом метаданных. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Свойство {2}, " +
+                                                        "Путь {3}, " +
+                                                        "Тип значения {4}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        prop.Name,
+                                                        spath, 
+                                                        KindOfValue1C_presantation(v.kind));
                                         continue;
                                     }
                                     u = vvm.v_metaobj.UID;
@@ -1938,21 +2107,30 @@ namespace MetaRead
                                         nv = vvm.getproperty("Имя");
                                         if (nv is null)
                                         {
-                                            // error(L"Ошибка формата потока 189. Ошибка получения имени предопределенного элемента"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Свойство", prop->name
-                                            //     , L"Путь", spath);
+                                            Form1.log.Error("Ошибка формата потока 189. Ошибка получения имени предопределенного элемента. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Свойство {2}, " +
+                                                            "Путь {3}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            prop.Name,
+                                                            spath);
                                             continue;
                                         }
                                         if (nv.kind != KindOfValue1C.kv_string && nv.kind != KindOfValue1C.kv_binary)
                                         {
-                                            // error(L"Ошибка формата потока 190. Ошибка получения имени предопределенного элемента. Тип значения не Строка"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Свойство", prop->name
-                                            //     , L"Путь", spath
-                                            //     , L"Тип значения", KindOfValue1C_presantation(nv->kind));
+                                            Form1.log.Error("Ошибка формата потока 190. Ошибка получения имени предопределенного элемента. Тип значения не Строка. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Свойство {2}, " +
+                                                            "Путь {3}," +
+                                                            "Тип значения {4}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            prop.Name,
+                                                            spath,
+                                                            KindOfValue1C_presantation(nv.kind));
                                             continue;
                                         }
                                         n = nv.presentation();
@@ -1993,19 +2171,27 @@ namespace MetaRead
                                     vn = (Value1C_number)v.getproperty(tn.uTreeNode1.prop1);
                                     if (vn is null)
                                     {
-                                        // error(L"Ошибка формата потока 40. Не установлено значение свойства, являющегося счетчиком коллекции."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Свойство", tn->prop1->name
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 40. Не установлено значение свойства, являющегося счетчиком коллекции. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Свойство {2}, " +
+                                                        "Путь {3}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        tn.uTreeNode1.prop1.Name,
+                                                        spath + tr.Path());
                                     }
                                     else if (vn.kind != KindOfValue1C.kv_number)
                                     {
-                                        // error(L"Ошибка формата потока 41. Cвойство, являющееся счетчиком коллекции, имеет значение типа не Число."
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Свойство", tn->prop1->name
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 41. Cвойство, являющееся счетчиком коллекции, имеет значение типа не Число. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Свойство {2}, " +
+                                                        "Путь {3}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        tn.uTreeNode1.prop1.Name,
+                                                        spath + tr.Path());
                                     }
                                     else
                                         j = vn.v_number;
@@ -2014,11 +2200,15 @@ namespace MetaRead
                                     j = getVarValue(tn.str1, t, varvalues, clitem, spath);
                                     break;
                                 default:
-                                    // error(L"Ошибка формата потока 42. Недопусимый тип значения счетчика коллекции дерева сериализации."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Тип значения", tn->typeval1presentation()
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 42. Недопусимый тип значения счетчика коллекции дерева сериализации. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Тип значения {2}, " +
+                                                    "Путь {3}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    tn.typeval1presentation(),
+                                                    spath + tr.Path());
                                     break;
                             }
                             for (tt = tr, i = 0; i < j; ++i)
@@ -2033,18 +2223,24 @@ namespace MetaRead
                     case SerializationTreeNodeType.stt_gentype:
                         if (tr is null)
                         {
-                            // error(L"Ошибка формата потока 97. Отсутствует ожидаемое значение генерируемого типа."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath);
+                            Form1.log.Error("Ошибка формата потока 97. Отсутствует ожидаемое значение генерируемого типа. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}",
+                                            t.Name,
+                                            tn.path(),
+                                            spath);
                             break;
                         }
                         if (v.kind != KindOfValue1C.kv_metaobj)
                         {
-                            // error(L"Ошибка формата потока 197. Попытка загрузки генерируемого типа для значения, не являющегося объектом метаданных."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 197. Попытка загрузки генерируемого типа для значения, не являющегося объектом метаданных. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}",
+                                            t.Name,
+                                            tn.path(),
+                                            spath + tr.Path());
                             break;
                         }
                         gt = new GeneratedType(tr, spath);
@@ -2124,11 +2320,15 @@ namespace MetaRead
                                             }
                                             break;
                                         default:
-                                            // error(L"Ошибка формата потока 53. Ошибка вычисления условия. Не найдено значение свойства"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Свойство", p->name
-                                            //     , L"Путь", spath + tr->path());
+                                            Form1.log.Error("Ошибка формата потока 53. Ошибка вычисления условия. Не найдено значение свойства. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Свойство {2}, " +
+                                                            "Путь {3}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            p.Name,
+                                                            spath + tr.Path());
                                             break;
                                     }
                                 }
@@ -2138,11 +2338,15 @@ namespace MetaRead
                                     vv = val;
                                     if (vv is null)
                                     {
-                                        // error(L"Ошибка формата потока 232. Ошибка вычисления условия. Значение свойства не определено"
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Свойство", p->name
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 232. Ошибка вычисления условия. Значение свойства не определено. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Свойство {2}, " +
+                                                        "Путь {3}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        p.Name,
+                                                        spath + tr.Path());
                                     }
                                     else
                                     {
@@ -2197,12 +2401,17 @@ namespace MetaRead
                                         }
                                         else
                                         {
-                                            // error(L"Ошибка формата потока 54. Ошибка вычисления условия. Недопустимый тип значения свойства"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Свойство", p->name
-                                            //     , L"Тип значения", vv->kind
-                                            //     , L"Путь", spath + tr->path());
+                                            Form1.log.Error("Ошибка формата потока 54. Ошибка вычисления условия. Недопустимый тип значения свойства. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Свойство {2}, " +
+                                                            "Тип значения {3}, " +
+                                                            "Путь {4}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            p.Name,
+                                                            vv.kind,
+                                                            spath + tr.Path());
                                         }
                                     }
 
@@ -2222,12 +2431,17 @@ namespace MetaRead
                                     nv1 = clitem.Cl.GetParamValue(tn.uTreeNode1.classpar1);
                                 else
                                 {
-                                    // error(L"Ошибка формата потока 120. Ошибка вычисления условия. Класс не определён."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Параметр класса", tn->classpar1->name
-                                    //     , L"Тип значения", vv->kind
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 120. Ошибка вычисления условия. Класс не определён. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Параметр класса {2}, " +
+                                                    "Тип значения {3}, " +
+                                                    "Путь {4}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    tn.uTreeNode1.classpar1.Name,
+                                                    vv.kind,
+                                                    spath + tr.Path());
                                     nv1 = -1;
                                 }
                                 break;
@@ -2246,19 +2460,27 @@ namespace MetaRead
                                 }
                                 if (!ok)
                                 {
-                                    // error(L"Ошибка формата потока 123. Ошибка получения первого значения условия. Не удалось получить значение глобальной переменной"
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Глобальная переменная", tn->str1
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 123. Ошибка получения первого значения условия. Не удалось получить значение глобальной переменной. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Глобальная переменная {2}, " +
+                                                    "Путь {3}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    tn.str1,
+                                                    spath + tr.Path());
                                 }
                                 break;
                             default:
-                                // error(L"Ошибка формата потока 55. Ошибка вычисления условия. Недопустимый тип значения 1"
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Тип значения", tn->typeval1presentation()
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error("Ошибка формата потока 55. Ошибка вычисления условия. Недопустимый тип значения 1. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Тип значения {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                tn.typeval1presentation(),
+                                                spath + tr.Path());
                                 break;
 
                         }
@@ -2334,11 +2556,15 @@ namespace MetaRead
                                             }
                                             break;
                                         default:
-                                            // error(L"Ошибка формата потока 53. Ошибка вычисления условия. Не найдено значение свойства"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Свойство", p->name
-                                            //     , L"Путь", spath + tr->path());
+                                            Form1.log.Error("Ошибка формата потока 53. Ошибка вычисления условия. Не найдено значение свойства. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Свойство {2}, " +
+                                                            "Путь {3}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            p.Name,
+                                                            spath + tr.Path());
                                             break;
                                     }
                                 }
@@ -2348,11 +2574,15 @@ namespace MetaRead
                                     vv = val;
                                     if (vv is null)
                                     {
-                                        // error(L"Ошибка формата потока 232. Ошибка вычисления условия. Значение свойства не определено"
-                                        //     , L"Загружаемый тип", t->name
-                                        //     , L"Путь ДС", tn->path()
-                                        //     , L"Свойство", p->name
-                                        //     , L"Путь", spath + tr->path());
+                                        Form1.log.Error("Ошибка формата потока 232. Ошибка вычисления условия. Значение свойства не определено. " +
+                                                        "Загружаемый тип {0}, " +
+                                                        "Путь ДС {1}, " +
+                                                        "Свойство {2}, " +
+                                                        "Путь {3}",
+                                                        t.Name,
+                                                        tn.path(),
+                                                        p.Name,
+                                                        spath + tr.Path());
                                     }
                                     else
                                     {
@@ -2407,12 +2637,17 @@ namespace MetaRead
                                         }
                                         else
                                         {
-                                            // error(L"Ошибка формата потока 54. Ошибка вычисления условия. Недопустимый тип значения свойства"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Свойство", p->name
-                                            //     , L"Тип значения", vv->kind
-                                            //     , L"Путь", spath + tr->path());
+                                            Form1.log.Error("Ошибка формата потока 54. Ошибка вычисления условия. Недопустимый тип значения свойства. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Свойство {2}, " +
+                                                            "Тип значения {3}, " +
+                                                            "Путь {4}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            p.Name,
+                                                            vv.kind,
+                                                            spath + tr.Path());
                                         }
                                     }
 
@@ -2432,12 +2667,17 @@ namespace MetaRead
                                     nv2 = clitem.Cl.GetParamValue(tn.uTreeNode2.classpar2);
                                 else
                                 {
-                                    // error(L"Ошибка формата потока 120. Ошибка вычисления условия. Класс не определён."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Параметр класса", tn->classpar1->name
-                                    //     , L"Тип значения", vv->kind
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 120. Ошибка вычисления условия. Класс не определён. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Параметр класса {2}, " +
+                                                    "Тип значения {3}, " +
+                                                    "Путь {4}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    tn.uTreeNode2.classpar2.Name,
+                                                    vv.kind,
+                                                    spath + tr.Path());
                                     nv2 = -1;
                                 }
                                 break;
@@ -2456,19 +2696,27 @@ namespace MetaRead
                                 }
                                 if (!ok)
                                 {
-                                    // error(L"Ошибка формата потока 123. Ошибка получения первого значения условия. Не удалось получить значение глобальной переменной"
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Глобальная переменная", tn->str1
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 123. Ошибка получения первого значения условия. Не удалось получить значение глобальной переменной. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Глобальная переменная {2}, " +
+                                                    "Путь {3}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    tn.str2,
+                                                    spath + tr.Path());
                                 }
                                 break;
                             default:
-                                // error(L"Ошибка формата потока 55. Ошибка вычисления условия. Недопустимый тип значения 1"
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Тип значения", tn->typeval1presentation()
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error("Ошибка формата потока 55. Ошибка вычисления условия. Недопустимый тип значения 1. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Тип значения {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                tn.typeval2presentation(),
+                                                spath + tr.Path());
                                 break;
 
                         }
@@ -2477,12 +2725,17 @@ namespace MetaRead
                         {
                             if (vt1 != vt2)
                             {
-                                // error(L"Ошибка формата потока 59. Ошибка вычисления условия. Несовпадающие типы сравниваемых значений"
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Тип значения 1", vt1
-                                //     , L"Тип значения 2", vt2
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error("Ошибка формата потока 59. Ошибка вычисления условия. Несовпадающие типы сравниваемых значений. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Тип значения 1 {2}, " +
+                                                "Тип значения 2 {3}, " +
+                                                "Путь {4}",
+                                                t.Name,
+                                                tn.path(),
+                                                vt1,
+                                                vt2,
+                                                spath + tr.Path());
                             }
                             else
                             {
@@ -2509,11 +2762,15 @@ namespace MetaRead
                                             cv = sv1.CompareTo(sv2) >= 0;
                                             break;
                                         default:
-                                            // error(L"Ошибка формата потока 60. Ошибка вычисления условия. Некорректное условие при сравнении строк"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Условие", tn->condition
-                                            //     , L"Путь", spath + tr->path());
+                                            Form1.log.Error("Ошибка формата потока 60. Ошибка вычисления условия. Некорректное условие при сравнении строк. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Условие {2}, " +
+                                                            "Путь {3}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            tn.condition,
+                                                            spath + tr.Path());
                                             break;
                                     }
                                 }
@@ -2542,9 +2799,11 @@ namespace MetaRead
                                         case SerializationTreeCondition.stc_bs:
                                             if (nv2 < 0 || nv2 > 31)
                                             {
-                                                // error(L"Ошибка формата потока 193. Ошибка вычисления условия. Номер бита за пределами 0-31"
-                                                //     , L"Загружаемый тип", t->name
-                                                //     , L"Номер бита", nv2);
+                                                Form1.log.Error("Ошибка формата потока 193. Ошибка вычисления условия. Номер бита за пределами 0-31. " +
+                                                                "Загружаемый тип {0}, " +
+                                                                "Номер бита {1}",
+                                                                t.Name,
+                                                                nv2);
                                                 break;
                                             }
                                             cv = (nv1 & (1 << nv2)) != 0;
@@ -2552,19 +2811,25 @@ namespace MetaRead
                                         case SerializationTreeCondition.stc_bn:
                                             if (nv2 < 0 || nv2 > 31)
                                             {
-                                                // error(L"Ошибка формата потока 194. Ошибка вычисления условия. Номер бита за пределами 0-31"
-                                                //     , L"Загружаемый тип", t->name
-                                                //     , L"Номер бита", nv2);
+                                                Form1.log.Error("Ошибка формата потока 194. Ошибка вычисления условия. Номер бита за пределами 0-31. " +
+                                                                "Загружаемый тип {0}, " +
+                                                                "Номер бита {1}",
+                                                                t.Name,
+                                                                nv2);
                                                 break;
                                             }
                                             cv = (nv1 & (1 << nv2)) == 0;
                                             break;
                                         default:
-                                            // error(L"Ошибка формата потока 61. Ошибка вычисления условия. Некорректное условие при сравнении чисел"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Условие", tn->condition
-                                            //     , L"Путь", spath + tr->path());
+                                            Form1.log.Error("Ошибка формата потока 61. Ошибка вычисления условия. Некорректное условие при сравнении чисел. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Условие {2}, " +
+                                                            "Путь {3}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            tn.condition,
+                                                            spath + tr.Path());
                                             break;
                                     }
                                 }
@@ -2591,11 +2856,15 @@ namespace MetaRead
                                             cv = (uv1.CompareTo(uv2) > 0) || uv1 == uv2;
                                             break;
                                         default:
-                                            // error(L"Ошибка формата потока 62. Ошибка вычисления условия. Некорректное условие при сравнении UID"
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Условие", tn->condition
-                                            //     , L"Путь", spath + tr->path());
+                                            Form1.log.Error("Ошибка формата потока 62. Ошибка вычисления условия. Некорректное условие при сравнении UID. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Условие {2}, " +
+                                                            "Путь {3}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            tn.condition,
+                                                            spath + tr.Path());
                                             break;
                                     }
                                 }
@@ -2607,21 +2876,28 @@ namespace MetaRead
                     case SerializationTreeNodeType.stt_metaid:
                         if (tr is null)
                         {
-                            // error(L"Ошибка формата потока 98. Отсутствует ожидаемое значение идентификатора объекта метаданных."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath);
+                            Form1.log.Error("Ошибка формата потока 98. Отсутствует ожидаемое значение идентификатора объекта метаданных. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}",
+                                            t.Name,
+                                            tn.path(),
+                                            spath);
                             break;
                         }
                         if (tr.Get_Type() == Node_Type.nd_guid)
                         {
                             if (!string_to_GUID(tr.Get_Value(), ref uid))
                             {
-                                // error(L"Ошибка формата потока 38. Ошибка преобразования UID при загрузке ИД метаданных."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Значение", tr->get_value()
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error("Ошибка формата потока 38. Ошибка преобразования UID при загрузке ИД метаданных. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Значение {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                tr.Get_Value(),
+                                                spath);
                             }
                             else
                             {
@@ -2632,12 +2908,17 @@ namespace MetaRead
                                     {
                                         if (vm.v_metaobj.UID != uid)
                                         {
-                                            // error(L"Ошибка формата потока 125. Повторное определение ИД метаданных с отличающимся UID."
-                                            //     , L"Загружаемый тип", t->name
-                                            //     , L"Путь ДС", tn->path()
-                                            //     , L"Существующий ИД", GUID_to_string(vm->v_metaobj->uid)
-                                            //     , L"Загружаемый ИД", GUID_to_string(uid)
-                                            //     , L"Путь", spath + tr->path());
+                                            Form1.log.Error("Ошибка формата потока 125. Повторное определение ИД метаданных с отличающимся UID. " +
+                                                            "Загружаемый тип {0}, " +
+                                                            "Путь ДС {1}, " +
+                                                            "Существующий ИД {2}, " +
+                                                            "Загружаемый ИД {3}, " +
+                                                            "Путь {4}",
+                                                            t.Name,
+                                                            tn.path(),
+                                                            vm.v_metaobj.UID.ToString(),
+                                                            uid.ToString(),
+                                                            spath);
                                         }
                                     }
                                     else
@@ -2649,21 +2930,29 @@ namespace MetaRead
                                 }
                                 else
                                 {
-                                    // error(L"Ошибка формата потока 198. Попытка загрузки ИД метаданных для значения, не являющегося объектом метаданных."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Загружаемый ИД", GUID_to_string(uid)
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 198. Попытка загрузки ИД метаданных для значения, не являющегося объектом метаданных. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Загружаемый ИД {2}, " +
+                                                    "Путь {3}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    uid.ToString(),
+                                                    spath);
                                 }
                             }
                         }
                         else
                         {
-                            // error(L"Ошибка формата потока 39. Тип значения не UID при загрузке ИД метаданных."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 39. Тип значения не UID при загрузке ИД метаданных. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Тип значения {2}, " +
+                                            "Путь {3}",
+                                            t.Name,
+                                            tn.path(),
+                                            get_node_type_presentation(tr.Get_Type()),
+                                            spath);
                         }
                         if (!tn.nomove)
                             tr = tr.Get_Next();
@@ -2671,20 +2960,28 @@ namespace MetaRead
                     case SerializationTreeNodeType.stt_classcol:
                         if (tr is null)
                         {
-                            // error(L"Ошибка формата потока 99. Отсутствует ожидаемое значение счетчика коллекции классов."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath);
+                            Form1.log.Error("Ошибка формата потока 99. Отсутствует ожидаемое значение счетчика коллекции классов. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}",
+                                            t.Name,
+                                            tn.path(),
+                                            spath);
                             break;
                         }
                         if (tr.Get_Type() != Node_Type.nd_number)
                         {
-                            // error(L"Ошибка формата потока 88. Ожидается счетчик коллекции классов. Тип значения не число."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                            //     , L"Значение", tr->get_value()
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 88. Ожидается счетчик коллекции классов. Тип значения не число. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Тип значения {2}, " +
+                                            "Значение {3}, " +
+                                            "Путь {4}",
+                                            t.Name,
+                                            tn.path(),
+                                            get_node_type_presentation(tr.Get_Type()),
+                                            tr.Get_Value(),
+                                            spath + tr.Path());
                             if (!tn.nomove)
                                 tr = tr.Get_Next();
                             break;
@@ -2696,12 +2993,17 @@ namespace MetaRead
                             {
                                 if (tr.Get_Type() != Node_Type.nd_list)
                                 {
-                                    // error(L"Ошибка формата потока 89. Ожидается список очередного класса коллекции классов. Тип значения не Список."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                                    //     , L"Значение", tr->get_value()
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 89. Ожидается список очередного класса коллекции классов. Тип значения не Список. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Тип значения {2}, " +
+                                                    "Значение {3}, " +
+                                                    "Путь {4}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    get_node_type_presentation(tr.Get_Type()),
+                                                    tr.Get_Value(),
+                                                    spath + tr.Path());
                                     continue;
                                 }
                                 tt = tr.Get_First();
@@ -2709,29 +3011,41 @@ namespace MetaRead
                             else tt = tr;
                             if (tt is null)
                             {
-                                // error(L"Ошибка формата потока 90. Ожидается идентификатор очередного класса коллекции классов. Значение отсутствует."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error("Ошибка формата потока 90. Ожидается идентификатор очередного класса коллекции классов. Значение отсутствует. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Путь {2}",
+                                                t.Name,
+                                                tn.path(),
+                                                spath + tr.Path());
                                 continue;
                             }
                             if (tt.Get_Type() != Node_Type.nd_guid)
                             {
-                                // error(L"Ошибка формата потока 91. Ожидается идентификатор очередного класса коллекции классов. Тип значения не UID."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Тип значения", get_node_type_presentation(tt->get_type())
-                                //     , L"Значение", tt->get_value()
-                                //     , L"Путь", spath + tt->path());
+                                Form1.log.Error("Ошибка формата потока 91. Ожидается идентификатор очередного класса коллекции классов. Тип значения не UID. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Тип значения {2}, " +
+                                                "Значение {3}, " +
+                                                "Путь {4}",
+                                                t.Name,
+                                                tn.path(),
+                                                get_node_type_presentation(tr.Get_Type()),
+                                                tr.Get_Value(),
+                                                spath + tr.Path());
                                 continue;
                             }
                             if (!string_to_GUID(tt.Get_Value(), ref uid))
                             {
-                                // error(L"Ошибка формата потока 92. Ожидается идентификатор очередного класса коллекции классов. Ошибка преобразования UID."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Значение", tt->get_value()
-                                //     , L"Путь", spath + tt->path());
+                                Form1.log.Error("Ошибка формата потока 92. Ожидается идентификатор очередного класса коллекции классов. Ошибка преобразования UID. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Значение {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                tr.Get_Value(),
+                                                spath + tr.Path());
                                 continue;
                             }
                             for (tnn = tn.first; tnn != null; tnn = tnn.next)
@@ -2739,11 +3053,15 @@ namespace MetaRead
                                     break;
                             if (tnn is null)
                             {
-                                // error(L"Ошибка формата потока 93. Неизвестный идентификатор класса коллекции классов."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Значение", tt->get_value()
-                                //     , L"Путь", spath + tt->path());
+                                Form1.log.Error("Ошибка формата потока 93. Неизвестный идентификатор класса коллекции классов. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Значение {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                tr.Get_Value(),
+                                                spath + tr.Path());
                                 continue;
                             }
                             cl = Class.GetClass(uid);
@@ -2759,28 +3077,39 @@ namespace MetaRead
                         }
                         break;
                     case SerializationTreeNodeType.stt_class:
-                        // error(L"Ошибка формата потока 87. Неожидаемый тип \"Класс\" узла дерева сериализации."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Путь ДС", tn->path()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 87. Неожидаемый тип \"Класс\" узла дерева сериализации. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Путь {2}",
+                                        t.Name,
+                                        tn.path(),
+                                        spath + tr.Path());
                         break;
                     case SerializationTreeNodeType.stt_idcol:
                         if (tr is null)
                         {
-                            // error(L"Ошибка формата потока 155. Отсутствует ожидаемое значение счетчика коллекции ИД-элементов."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Путь", spath);
+                            Form1.log.Error("Ошибка формата потока 155. Отсутствует ожидаемое значение счетчика коллекции ИД-элементов. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Путь {2}",
+                                            t.Name,
+                                            tn.path(),
+                                            spath + tr.Path());
                             break;
                         }
                         if (tr.Get_Type() != Node_Type.nd_number)
                         {
-                            // error(L"Ошибка формата потока 156. Ожидается счетчик коллекции ИД-элементов. Тип значения не число."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Путь ДС", tn->path()
-                            //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                            //     , L"Значение", tr->get_value()
-                            //     , L"Путь", spath + tr->path());
+                            Form1.log.Error("Ошибка формата потока 156. Ожидается счетчик коллекции ИД-элементов. Тип значения не число. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Путь ДС {1}, " +
+                                            "Тип значения {2}, " +
+                                            "Значение {3}, " +
+                                            "Путь {4}",
+                                            t.Name,
+                                            tn.path(),
+                                            get_node_type_presentation(tr.Get_Type()),
+                                            tr.Get_Value(),
+                                            spath + tr.Path());
                             if (!tn.nomove)
                                 tr = tr.Get_Next();
                             break;
@@ -2793,12 +3122,17 @@ namespace MetaRead
                             {
                                 if (tr.Get_Type() != Node_Type.nd_list)
                                 {
-                                    // error(L"Ошибка формата потока 157. Ожидается список очередного ИД-элемента. Тип значения не Список."
-                                    //     , L"Загружаемый тип", t->name
-                                    //     , L"Путь ДС", tn->path()
-                                    //     , L"Тип значения", get_node_type_presentation(tr->get_type())
-                                    //     , L"Значение", tr->get_value()
-                                    //     , L"Путь", spath + tr->path());
+                                    Form1.log.Error("Ошибка формата потока 157. Ожидается список очередного ИД-элемента. Тип значения не Список. " +
+                                                    "Загружаемый тип {0}, " +
+                                                    "Путь ДС {1}, " +
+                                                    "Тип значения {2}, " +
+                                                    "Значение {3}, " +
+                                                    "Путь {4}",
+                                                    t.Name,
+                                                    tn.path(),
+                                                    get_node_type_presentation(tr.Get_Type()),
+                                                    tr.Get_Value(),
+                                                    spath + tr.Path());
                                     continue;
                                 }
                                 tt = tr.Get_First();
@@ -2807,29 +3141,41 @@ namespace MetaRead
                                 tt = tr;
                             if (tt is null)
                             {
-                                // error(L"Ошибка формата потока 158. Ожидается идентификатор очередного ИД-элемента. Значение отсутствует."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Путь", spath + tr->path());
+                                Form1.log.Error("Ошибка формата потока 158. Ожидается идентификатор очередного ИД-элемента. Значение отсутствует. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Путь {2}",
+                                                t.Name,
+                                                tn.path(),
+                                                spath + tr.Path());
                                 continue;
                             }
                             if (tt.Get_Type() != Node_Type.nd_guid)
                             {
-                                // error(L"Ошибка формата потока 159. Ожидается идентификатор очередного ИД-элемента. Тип значения не UID."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Тип значения", get_node_type_presentation(tt->get_type())
-                                //     , L"Значение", tt->get_value()
-                                //     , L"Путь", spath + tt->path());
+                                Form1.log.Error("Ошибка формата потока 159. Ожидается идентификатор очередного ИД-элемента. Тип значения не UID. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Тип значения {2}, " +
+                                                "Значение {3}, " +
+                                                "Путь {4}",
+                                                t.Name,
+                                                tn.path(),
+                                                get_node_type_presentation(tr.Get_Type()),
+                                                tr.Get_Value(),
+                                                spath + tr.Path());
                                 continue;
                             }
                             if (!string_to_GUID(tt.Get_Value(), ref uid))
                             {
-                                // error(L"Ошибка формата потока 160. Ожидается идентификатор очередного ИД-элемента. Ошибка преобразования UID."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Значение", tt->get_value()
-                                //     , L"Путь", spath + tt->path());
+                                Form1.log.Error("Ошибка формата потока 160. Ожидается идентификатор очередного ИД-элемента. Ошибка преобразования UID. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Значение {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                tr.Get_Value(),
+                                                spath + tr.Path());
                                 continue;
                             }
                             for (tnn = tn.first; tnn != null; tnn = tnn.next)
@@ -2837,11 +3183,15 @@ namespace MetaRead
                                     break;
                             if (tnn is null)
                             {
-                                // error(L"Ошибка формата потока 161. Неизвестный идентификатор ИД-элемента."
-                                //     , L"Загружаемый тип", t->name
-                                //     , L"Путь ДС", tn->path()
-                                //     , L"Значение", tt->get_value()
-                                //     , L"Путь", spath + tt->path());
+                                Form1.log.Error("Ошибка формата потока 161. Неизвестный идентификатор ИД-элемента. " +
+                                                "Загружаемый тип {0}, " +
+                                                "Путь ДС {1}, " +
+                                                "Значение {2}, " +
+                                                "Путь {3}",
+                                                t.Name,
+                                                tn.path(),
+                                                tr.Get_Value(),
+                                                spath + tr.Path());
                                 continue;
                             }
 
@@ -2861,26 +3211,34 @@ namespace MetaRead
                         }
                         break;
                     case SerializationTreeNodeType.stt_idel:
-                        // error(L"Ошибка формата потока 154. Неожидаемый тип \"ИД-элемент\" узла дерева сериализации."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Путь ДС", tn->path()
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 154. Неожидаемый тип \"ИД-элемент\" узла дерева сериализации. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Путь {2}",
+                                        t.Name,
+                                        tn.path(),
+                                        spath + tr.Path());
                         break;
                     default:
-                        // error(L"Ошибка формата потока 23. Неизвестный тип узла дерева сериализации."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Путь ДС", tn->path()
-                        //     , L"Тип узла", tn->type
-                        //     , L"Путь", spath + tr->path());
+                        Form1.log.Error("Ошибка формата потока 23. Неизвестный тип узла дерева сериализации. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Путь ДС {1}, " +
+                                        "Тип узна {2}, " +
+                                        "Путь {3}",
+                                        t.Name,
+                                        tn.path(),
+                                        spath + tr.Path());
                         break;
                 }
             }
             if (checkend) 
                 if (tr != null)
                 {
-                    // error(L"Ошибка формата потока 36. Остались необработанные значения."
-                    //     , L"Загружаемый тип", t->name
-                    //     , L"Путь", spath + tr->path());
+                    Form1.log.Error("Ошибка формата потока 36. Остались необработанные значения. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Путь {1}",
+                                    t.Name,
+                                    spath + tr.Path());
                 }
             ptr = tr;
         }
@@ -2888,21 +3246,30 @@ namespace MetaRead
         public int getVarValue(string vname, MetaType t, VarValue[] varvalues, ClassItem clitem, string path)
         {
             if (vname.CompareTo("ВерсияКонтейнера") == 0)
+            {
                 return (int)containerver;
+            }
+
             if (vname.CompareTo("Версия1С") == 0)
+            {
                 return (int)ver1C;
+            }
+
             if (vname.CompareTo("ВерсияКласса") == 0)
             {
                 if (clitem != null)
+                {
                     return clitem.Version;
-                // TODO : Надо реализовать логирование
-                // error(L"Ошибка формата потока 119. Ошибка получения значения переменной. Класс не определён."
-                //     , L"Загружаемый тип", t->name
-                //     , L"Имя переменной", vname
-                //     , L"Путь", path);
+                }
+
+                Form1.log.Error("Ошибка формата потока 119. Ошибка получения значения переменной. Класс не определён. " +
+                                "Загружаемый тип {0}, " +
+                                "Имя переменной {1}, " +
+                                "Путь {2}", t.Name, vname, path);
                 return -1;
 
             }
+
             if (varvalues != null)
             {
                 for (int i = 0; i < t.SerializationVars.Count; ++i)
@@ -2915,21 +3282,20 @@ namespace MetaRead
                         }
                         else
                         {
-                            // TODO : Надо реализовать логирование
-                            // error(L"Ошибка формата потока 43. Ошибка получения значения переменной. Значение переменной не установлено."
-                            //     , L"Загружаемый тип", t->name
-                            //     , L"Имя переменной", vname
-                            //     , L"Путь", path);
+                            Form1.log.Error("Ошибка формата потока 43. Ошибка получения значения переменной. Значение переменной не установлено. " +
+                                            "Загружаемый тип {0}, " +
+                                            "Имя переменной {1}, " +
+                                            "Путь {2}", t.Name, vname, path);
                             return 0;
                         }
                     }
                 }
             }
-            // TODO : Надо реализовать логирование
-            // error(L"Ошибка формата потока 34. Ошибка получения значения переменной. Недопустимое имя переменной."
-            //     , L"Загружаемый тип", t->name
-            //     , L"Имя переменной", vname
-            //     , L"Путь", path);
+
+            Form1.log.Error("Ошибка формата потока 34. Ошибка получения значения переменной. Недопустимое имя переменной. " +
+                            "Загружаемый тип {0}, " +
+                            "Имя переменной {1}, " +
+                            "Путь {2}", t.Name, vname, path);
             return 0;
 
         }
@@ -2950,23 +3316,20 @@ namespace MetaRead
                         if (clitem.Cl.vervalidvalues[j].value == value)
                             return;
                     }
-                    // TODO : Надо реализовать логирование
-                    // error(L"Ошибка формата потока 122. Недопустимое значение переменной."
-                    //     , L"Загружаемый тип", t->name
-                    //     , L"Имя переменной", vname
-                    //     , L"Значение", value
-                    //     , L"Класс", GUID_to_string(clitem->cl->uid)
-                    //     , L"Путь", path);
-
+                    Form1.log.Error("Ошибка формата потока 122. Недопустимое значение переменной. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Имя переменной {1}, " +
+                                    "Значение {2}, " +
+                                    "Класс {3}, " +
+                                    "Путь {4}", t.Name, vname, value, clitem.Cl.UID.ToString(), path);
                 }
                 else
                 {
-                    // TODO : Надо реализовать логирование
-                    // error(L"Ошибка формата потока 118. Ошибка установки переменной. Класс не определён."
-                    //     , L"Загружаемый тип", t->name
-                    //     , L"Имя переменной", vname
-                    //     , L"Значение", value
-                    //     , L"Путь", path);
+                    Form1.log.Error("Ошибка формата потока 118. Ошибка установки переменной. Класс не определён. " +
+                                    "Загружаемый тип {0}, " +
+                                    "Имя переменной {1}, " +
+                                    "Значение {2}, " +
+                                    "Путь {3}", t.Name, vname, value, path);
                 }
                 return;
             }
@@ -2991,21 +3354,19 @@ namespace MetaRead
                                 return;
                             }
                         }
-                        // TODO : Надо реализовать логирование
-                        // error(L"Ошибка формата потока 64. Недопустимое значение переменной."
-                        //     , L"Загружаемый тип", t->name
-                        //     , L"Имя переменной", vname
-                        //     , L"Значение", value
-                        //     , L"Путь", path);
+                        Form1.log.Error("Ошибка формата потока 64. Недопустимое значение переменной. " +
+                                        "Загружаемый тип {0}, " +
+                                        "Имя переменной {1}, " +
+                                        "Значение {2}, " +
+                                        "Путь {3}", t.Name, vname, value, path);
                         return;
                     }
                 }
             }
-            // TODO : Надо реализовать логирование
-            // error(L"Ошибка формата потока 37. Ошибка установки значения переменной. Недопустимое имя переменной."
-            //     , L"Загружаемый тип", t->name
-            //     , L"Имя переменной", vname
-            //     , L"Путь", path);
+            Form1.log.Error("Ошибка формата потока 37. Ошибка установки значения переменной. Недопустимое имя переменной. " +
+                            "Загружаемый тип {0}, " +
+                            "Имя переменной {1}, " +
+                            "Путь {2}", t.Name, vname, path);
         }
 
         public void readPredefinedValues(Value1C_metaobj v, int ni, int ui, Value1C_obj vStrings, string spath)
@@ -3013,7 +3374,7 @@ namespace MetaRead
             Value1C_obj vo;
             Value1C_obj vvo;
             Value1C_uid vu;
-            Value1C_string vs;
+            Value1C_string vs = null;
             Value1C vv;
             int i;
             Guid u;
@@ -3025,34 +3386,30 @@ namespace MetaRead
                 vo = (Value1C_obj)vStrings.v_objcol[i];
                 if (vo is null)
                 {
-                    // TODO : Надо реализовать логирование
-                    // error(L"Ошибка формата потока 179. Ошибка получения значения предопределенного элемента"
-                    //     , L"Путь", spath);
+                    Form1.log.Error("Ошибка формата потока 179. Ошибка получения значения предопределенного элемента. " +
+                                    "Путь {0}", spath);
                     continue;
                 }
 
                 vvo = (Value1C_obj)vo.v_objcol[ui];
                 if (vvo is null)
                 {
-                    // TODO : Надо реализовать логирование
-                    // error(L"Ошибка формата потока 180. Ошибка получения идентификатора предопределенного элемента"
-                    //     , L"Путь", spath);
+                    Form1.log.Error("Ошибка формата потока 180. Ошибка получения значения идентификатора предопределенного элемента. " +
+                                    "Путь {0}", spath);
                     continue;
                 }
                 vu = (Value1C_uid)vvo.getproperty("Ссылка");
                 if (vvo is null)
                 {
-                    // TODO : Надо реализовать логирование
-                    // error(L"Ошибка формата потока 181. Ошибка получения значения идентификатора предопределенного элемента"
-                    //     , L"Путь", spath);
+                    Form1.log.Error("Ошибка формата потока 181. Ошибка получения значения идентификатора предопределенного элемента. " +
+                                    "Путь {0}", spath);
                     continue;
                 }
                 if (vu.kind != KindOfValue1C.kv_uid)
                 {
-                    // TODO : Надо реализовать логирование
-                    // error(L"Ошибка формата потока 182. Ошибка получения значения идентификатора предопределенного элемента. Тип значения не UID"
-                    //     , L"Путь", spath
-                    //     , L"Тип значения", KindOfValue1C_presantation(vu->kind));
+                    Form1.log.Error("Ошибка формата потока 182. Ошибка получения значения идентификатора предопределенного элемента. Тип значения не UID. " +
+                                    "Путь {0}, " +
+                                    "Тип значения {1}", spath, KindOfValue1C_presantation(vu.kind));
                     continue;
                 }
                 u = vu.v_uid;
@@ -3061,17 +3418,15 @@ namespace MetaRead
                     vv = vo.v_objcol[ni];
                     if (vv is null)
                     {
-                        // TODO : Надо реализовать логирование
-                        // error(L"Ошибка формата потока 183. Ошибка получения имени предопределенного элемента"
-                        //     , L"Путь", spath);
+                        Form1.log.Error("Ошибка формата потока 183. Ошибка получения имени предопределенного элемента. " +
+                                        "Путь {0}", spath);
                         continue;
                     }
                     if (vv.kind != KindOfValue1C.kv_string && vv.kind != KindOfValue1C.kv_binary)
                     {
-                        // TODO : Надо реализовать логирование
-                        // error(L"Ошибка формата потока 184. Ошибка получения имени предопределенного элемента. Тип значения не Строка"
-                        //     , L"Путь", spath
-                        //     , L"Тип значения", KindOfValue1C_presantation(vs->kind));
+                        Form1.log.Error("Ошибка формата потока 184. Ошибка получения имени предопределенного элемента. Тип значения не Строка. " +
+                                        "Путь {0}, " +
+                                        "Тип значения {1}", spath, KindOfValue1C_presantation(vv.kind));
                         continue;
                     }
                     n = vv.presentation();
@@ -3099,19 +3454,21 @@ namespace MetaRead
             {
                 if (reporterror)
                 {
-                    // TODO : Надо реализовать логирование
-                    //error(L"Ошибка чтения контейнера. Не найден файл." , L"Путь", fullpath);
+                    Form1.log.Error("Ошибка чтения контейнера. Не найден файл. Путь {0}", fullpath);
                 }
                 return null;
             }
 
             Tree t = Tree.Parse_1Cstream(cf.str, "", fullpath);
+            string s_tree = "";
+
+            t.OutText(ref s_tree);
+
             stor.close(cf);
 
             if (t is null)
             {
-                // TODO : Надо реализовать логирование
-                //error(L"Ошибка формата потока 140. Ошибка разбора файла.", L"Путь", fullpath);
+                Form1.log.Error("Ошибка формата потока 140. Ошибка разбора файла. Путь {0}", fullpath);
                 return null;
             }
             return t;
@@ -3121,10 +3478,10 @@ namespace MetaRead
         {
             MetaType t;
             MetaType nt;
-            //VarValue varvalues;
+            
             int i, j;
             int k, l;
-            //std::map<MetaProperty*, Value1C*, MetaPropertyLess>::iterator ip;
+            
             MetaProperty p;
             MetaGeneratedType gt;
             SerializationTreeVar var;
@@ -3141,7 +3498,7 @@ namespace MetaRead
             Value1C vv = null;
             Value1C_obj vo;
             Value1C_number vn = null;
-            //std::map<String, int>::iterator icv;
+            
             String spath, npath;
             Tree tt;
             Tree tte;
@@ -3193,10 +3550,9 @@ namespace MetaRead
             {
                 if (((Value1C_metaobj)v).v_metaobj is null)
                 {
-                    // TODO : Требуется реализовать...
-                    // error(L"Ошибка формата потока 203. Не загружен UID объекта метаданных."
-                    //     , L"Загружаемый тип", t->name
-                    //     , L"Путь", spath);
+                    Form1.log.Info("Ошибка формата потока 203. Не загружен UID объекта метаданных. " +
+                                   "Загружаемый тип {0}, " +
+                                   "Путь {1}, ", t.Name, spath);
                 }
             }
 
@@ -4570,6 +4926,8 @@ namespace MetaRead
             if (tr is null) return;
             t = tr.Get_First();
             metats = null;
+
+            // TODO: Данный код пока не работает :( Надо исправлять.......!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             froot = (Value1C_obj)readValue1C(t, MetaTypeSet.mt_container, null, Constants.EmptyUID, metats, null, metaprefix + s, true);
 
             // Заполнение имен объектов метаданных
@@ -4686,10 +5044,16 @@ namespace MetaRead
             }
         }
 
-        public PredefinedValue getPreValue(Guid u)  // Получить предопределенный элемент по УИД
+        /// <summary>
+        /// Получить предопределенный элемент по УИД
+        /// </summary>
+        /// <param name="u"></param>
+        /// <returns></returns>
+        public PredefinedValue getPreValue(Guid u)   
         {
             return fpredefinedvalues.TryGetValue(u, out PredefinedValue val) ? val : null;
         }
+
 
         public bool Export(string path, bool english = false, uint thread_count = 0)
         {

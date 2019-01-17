@@ -67,6 +67,17 @@ namespace MetaRead
             string folder_cf = "D:\\work\\awa15-metaread-e7fe7d987355\\awa15-metaread-e7fe7d987355\\1C";
 
             ConfigStorage Storage = new ConfigStorageCFFile(folder_cf + "\\" + name_cf);
+            // var Container = new MetaContainer(Storage);
+
+            if (((ConfigStorageCFFile)Storage).Cat.Files != null)
+            {
+                
+                foreach (var item_v8 in ((ConfigStorageCFFile)Storage).Cat.Files)
+                {
+                    treeConfig.Nodes[0].Nodes.Add(item_v8.Key);
+                }
+            }
+
             var Container = new MetaContainer(Storage);
 
 
@@ -177,6 +188,14 @@ namespace MetaRead
             MetaTypeSet.StaticTypesLoad(rstr);
 
             rstr.Dispose();
+
+        }
+
+        private void treeConfig_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            richTextBox1.Clear();
+            richTextBox1.Text += e.Node.Text+Environment.NewLine;
+
 
         }
     }

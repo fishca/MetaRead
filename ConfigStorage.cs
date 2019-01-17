@@ -386,6 +386,11 @@ namespace MetaRead
             cat = new V8Catalog(filename);
         }
 
+        public V8Catalog Cat
+        {
+            get { return cat; }
+        }
+
         public override ConfigFile readfile(string path)
         {
             V8Catalog c;
