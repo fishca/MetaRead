@@ -972,6 +972,34 @@ namespace MetaRead
             return Version1C.v1C_min;
         }
 
+        public static string KindOfValue1C_presantation(KindOfValue1C kv)
+        {
+            switch (kv)
+            {
+                case KindOfValue1C.kv_unknown:    return "Неинициализированное значение";
+                case KindOfValue1C.kv_bool:       return "Булево";
+                case KindOfValue1C.kv_string:     return "Строка";
+                case KindOfValue1C.kv_number:     return "Число";
+                case KindOfValue1C.kv_number_exp: return "Число с плавающей запятой";
+                case KindOfValue1C.kv_date:       return "Дата";
+                case KindOfValue1C.kv_null:       return "Null";
+                case KindOfValue1C.kv_undef:      return "Неопределено";
+                case KindOfValue1C.kv_type:       return "Тип";
+                case KindOfValue1C.kv_uid:        return "Уникальный идентификатор";
+                case KindOfValue1C.kv_enum:       return "Системное перечисление";
+                case KindOfValue1C.kv_stdattr:    return "Стандартный реквизит";
+                case KindOfValue1C.kv_stdtabsec:  return "Стандартная табличная часть";
+                case KindOfValue1C.kv_obj:        return "Объект";
+                case KindOfValue1C.kv_metaobj:    return "Объект, являющийся объектом метаданных";
+                case KindOfValue1C.kv_refobj:     return "Ссылка на объект, являющийся объектом метаданных";
+                case KindOfValue1C.kv_refpre:     return "Ссылка на предопределенный элемент";
+                case KindOfValue1C.kv_right:      return "Право";
+                case KindOfValue1C.kv_binary:     return "Двоичные данные";
+            }
+            return "?Неизвестный тип значения 1С";
+        }
+
+
         public static string date_to_string(DateTime dt)
         {
             return "";

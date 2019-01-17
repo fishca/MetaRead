@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using NLog;
+using NLog.Targets;
+using NLog.Config;
 using static MetaRead.APIcfBase;
 
 namespace MetaRead
@@ -19,6 +22,8 @@ namespace MetaRead
             MsgError = _MsgError;
             EventError?.Invoke(null, null);  // запускаем подписчиков на событие        
         }
+
+        //public static Logger error;
 
         public SortedDictionary<String, MetaType> mapname = new SortedDictionary<string, MetaType>(); // соответствие имен (русских и английских) типам
         public SortedDictionary<Guid, MetaType> mapuid = new SortedDictionary<Guid, MetaType>();      // соответствие идентификаторов типам
@@ -71,7 +76,10 @@ namespace MetaRead
         // МетаСсылка
         public static MetaType mt_metaref;
 
-        public MetaTypeSet() { }
+        public MetaTypeSet()
+        {
+            
+        }
 
         // Получить тип по имени
         public MetaType GetTypeByName(string n)
@@ -150,10 +158,13 @@ namespace MetaRead
                 staticTypes = null;
             
             ShowMessage("Начало загрузки статических типов");
+            Form1.log.Info("Начало загрузки статических типов");
 
             staticTypes = new MetaTypeSet();
+
             tr = Tree.Parse_1Cstream(str, "", "static types");
             tt = tr.Get_First().Get_First();
+            
             // Параметры классов
             number = Convert.ToInt32(tt.Get_Value());
             for (i = 0; i < number; ++i)
@@ -179,6 +190,7 @@ namespace MetaRead
                 tt = tt.Get_Next();
                 mtype = new MetaType(staticTypes, tt);
             }
+
             staticTypes.FillAll();
 
             // Значения по умолчанию
@@ -243,10 +255,8 @@ namespace MetaRead
                 t = t.Get_Next();
                 if (!string_to_GUID(t.Get_Value(), ref uid))
                 {
-                    // error(L"Ошибка загрузки статических типов. Ошибка преобразования УИД в предопределенном объекте метаданных"
-                    //         , L"Имя", sn
-                    //         , L"УИД", t->get_value());
                     ShowMessage("Ошибка загрузки статических типов. Ошибка преобразования УИД в предопределенном объекте метаданных. Имя " + sn + ", УИД " + t.Get_Value());
+                    Form1.log.Info("Ошибка загрузки статических типов.Ошибка преобразования УИД в предопределенном объекте метаданных.Имя {0}, УИД {1}", sn, t.Get_Value());
                     continue;
                 }
                 metaobj = new MetaObject(uid, null, sn, sen);
@@ -315,6 +325,7 @@ namespace MetaRead
             }
             
             ShowMessage("Окончание загрузки статических типов");
+            Form1.log.Info("Окончание загрузки статических типов");
         }
 
         public int Number()

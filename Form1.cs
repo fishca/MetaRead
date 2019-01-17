@@ -18,11 +18,32 @@ namespace MetaRead
 {
     public partial class Form1 : Form
     {
+        public static Logger log;
+
         public Form1()
         {
             InitializeComponent();
             MetaTypeSet.EventError += MetaTypeSet_EventError; // подписываемся на событие EventError. Если оно произойдет, то запустить метод (Analyze_EventError).   
             Tree.EventError += Tree_EventError;
+            
+            #region Logs
+            var config = new NLog.Config.LoggingConfiguration();
+
+            var logfile = new NLog.Targets.FileTarget("logfile") { FileName = "log_file.txt" };
+            var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
+
+
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
+
+            NLog.LogManager.Configuration = config;
+
+            log = LogManager.GetCurrentClassLogger();
+
+            #endregion
+
+
+
         }
 
         private void Tree_EventError(object sender, EventArgs e)
@@ -109,18 +130,6 @@ namespace MetaRead
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            #region Logs
-            var config = new NLog.Config.LoggingConfiguration();
-
-            var logfile = new NLog.Targets.FileTarget("logfile") { FileName = "log_file.txt" };
-            var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
-            
-
-            config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
-            config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
-
-            NLog.LogManager.Configuration = config;
-            #endregion
 
             // Stream rstr;
             // string s = Application.ExecutablePath;
