@@ -69,14 +69,18 @@ namespace MetaRead
             ConfigStorage Storage = new ConfigStorageCFFile(folder_cf + "\\" + name_cf);
             // var Container = new MetaContainer(Storage);
 
+            Form1.log.Info($"Добавляем все гуиды внутренних файлов...");
             if (((ConfigStorageCFFile)Storage).Cat.Files != null)
             {
                 
                 foreach (var item_v8 in ((ConfigStorageCFFile)Storage).Cat.Files)
                 {
                     treeConfig.Nodes[0].Nodes.Add(item_v8.Key);
+                    Form1.log.Info($"Добавили в дерево...{item_v8.Key}");
                 }
             }
+
+            Form1.log.Info($"Закончили добавление всех гуидов внутренних файлов...");
 
             var Container = new MetaContainer(Storage);
 
