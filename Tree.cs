@@ -11,61 +11,81 @@ namespace MetaRead
 
     public class Tree
     {
-        public string Value;
+        public static event EventHandler EventError;
+        public static string MsgError { get; set; }
+        public static void ShowMessage(string _MsgError)
+        {
+            MsgError = _MsgError;
+            EventError?.Invoke(null, null);  // запускаем подписчиков на событие        
+        }
+
+        public string Value;  // Значение в дереве
 
         public Node_Type type;
 
         public int num_subnode; // количество подчиненных
+
         public Tree parent;     // +1
+
         public Tree next;       // 0
         public Tree prev;       // 0
+
         public Tree first;      // -1
         public Tree last;       // -1
+
         public uint index;
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="_value"></param>
+        /// <param name="_type"></param>
+        /// <param name="_parent"></param>
         public Tree(string _value, Node_Type _type, Tree _parent)
         {
-            Value = _value;
-            type = _type;
+            Value  = _value;
+            type   = _type;
             parent = _parent;
 
             num_subnode = 0;
             index = 0;
+
             if (parent != null)
             {
                 parent.num_subnode++;
+
                 prev = parent.last;
+
                 if (prev != null)
                 {
                     prev.next = this;
                     index = prev.index + 1;
                 }
                 else
+                {
                     parent.first = this;
+                }
 
                 parent.last = this;
             }
             else
+            {
                 prev = null;
+            }
 
             next = null;
             first = null;
             last = null;
         }
 
-        public Tree AddChild(string _value, Node_Type _type)
+        public Tree AddChild(string _value = "", Node_Type _type = Node_Type.nd_empty)
         {
             return new Tree(_value, _type, this);
         }
 
-        public Tree AddChild()
-        {
-            return new Tree("", Node_Type.nd_empty, this);
-        }
-
         public Tree AddNode()
         {
-            return new Tree("", Node_Type.nd_empty, this.parent);
+            return new Tree("", Node_Type.nd_empty, parent);
         }
 
         public string Get_Value()
@@ -143,7 +163,7 @@ namespace MetaRead
             
         }
 
-        public void OutText(string text)
+        public void OutText(ref string text)
         {
             Node_Type lt = Node_Type.nd_unknown;
 
@@ -156,7 +176,7 @@ namespace MetaRead
                 Tree t = first;
                 while (t != null)
                 {
-                    t.OutText(text);
+                    t.OutText(ref text);
                     lt = t.type;
                     t = t.next;
                     if (t != null)
@@ -210,7 +230,7 @@ namespace MetaRead
             return p;
         }
 
-        public Node_Type ClassificationValue(string Value)
+        public static Node_Type ClassificationValue(string Value)
         {
             string exp_number     = "^-?\\d+$";
             string exp_number_exp = "^-?\\d+(\\.?\\d*)?((e|E)-?\\d+)?$";
@@ -246,13 +266,13 @@ namespace MetaRead
             return Node_Type.nd_unknown;
         }
 
-        public Tree Parse_1Cstream(Stream str, string err, string path)
+        public static Tree Parse_1Cstream(Stream str, string err, string path)
         {
             StringBuilder __curvalue__ = new StringBuilder("");
 
             string curvalue = "";
 
-            _state state = _state.s_nonstring;
+            _state state = _state.s_value;
 
             int i = 0;
 
@@ -266,10 +286,12 @@ namespace MetaRead
 
             Tree t = ret;
 
-            StreamReader reader = new StreamReader(str, true);
+            //StreamReader reader = new StreamReader(str, true);
+            StreamReader reader = new StreamReader(str, Encoding.ASCII, true); // т.к. файл в кодировке win1251
 
             for (i = 1, _sym = reader.Read(); _sym >= 0; i++, _sym = reader.Read())
             {
+                
                 sym = (Char)_sym;
                 //if(i % 0x100000 == 0) if(err) err->Status(String(i/0x100000) + L" MB");
                 switch (state)
@@ -293,9 +315,11 @@ namespace MetaRead
                                 if (t.Get_First() != null)
                                     t.AddChild("", Node_Type.nd_empty);
                                 t = t.Get_Parent();
-                                if (t != null)
+                                //if (t != null)
+                                if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }");
                                     ret = null;
                                     return null;
                                 }
@@ -325,9 +349,11 @@ namespace MetaRead
                                 break;
                             case '}':
                                 t = t.Get_Parent();
-                                if (t != null)
+                                //if (t != null)
+                                if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }");
                                     ret = null;
                                     return null;
                                 }
@@ -335,13 +361,11 @@ namespace MetaRead
                                 break;
                             default:
                                 // Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.
+                                ShowMessage("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.");
                                 __curvalue__.Clear();
                                 __curvalue__.Append(sym);
                                 ret = null;
                                 return null;
-                                
-
-
                         }
                         break;
                     case _state.s_string:
@@ -376,9 +400,11 @@ namespace MetaRead
                                     break;
                                 case '}':
                                     t = t.Get_Parent();
-                                    if (t != null)
+                                    //if (t != null)
+                                    if (t is null)
                                     {
                                         // Ошибка формата потока. Лишняя закрывающая скобка }.
+                                        ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }.");
                                         ret = null;
                                         return null;
                                     }
@@ -386,6 +412,7 @@ namespace MetaRead
                                     break;
                                 default:
                                     // Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.
+                                    ShowMessage("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.");
                                     ret = null;
                                     return null;
 
@@ -401,6 +428,7 @@ namespace MetaRead
                                 if (nt == Node_Type.nd_unknown)
                                 {
                                     // Ошибка формата потока. Неизвестный тип значения.
+                                    ShowMessage("Ошибка формата потока. Неизвестный тип значения.");
                                 }
                                 t.AddChild(curvalue, nt);
                                 state = _state.s_value;
@@ -411,12 +439,15 @@ namespace MetaRead
                                 if (nt == Node_Type.nd_unknown)
                                 {
                                     // Ошибка формата потока. Неизвестный тип значения.
+                                    ShowMessage("Ошибка формата потока. Неизвестный тип значения.");
                                 }
                                 t.AddChild(curvalue, nt);
                                 t = t.Get_Parent();
-                                if (t != null)
+                                //if (t != null)
+                                if (t is null)
                                 {
                                     // Ошибка формата потока. Лишняя закрывающая скобка }.
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }.");
                                     ret = null;
                                     return null;
                                 }
@@ -431,7 +462,7 @@ namespace MetaRead
                         if (1 != 1)
                         {
                             // Ошибка формата потока. Неизвестный режим разбора.
-                            
+                            ShowMessage("Ошибка формата потока. Неизвестный режим разбора.");
                         }
                         ret = null;
                         return null;
@@ -445,6 +476,7 @@ namespace MetaRead
                 if (nt == Node_Type.nd_unknown)
                 {
                     // Ошибка формата потока. Неизвестный тип значения.
+                    ShowMessage("Ошибка формата потока. Неизвестный тип значения.");
                 }
                 t.AddChild(curvalue, nt);
             }
@@ -460,12 +492,299 @@ namespace MetaRead
             if (t != ret)
             {
                 // Ошибка формата потока. Не хватает закрывающих скобок } в конце текста разбора. 
+                ShowMessage("Ошибка формата потока. Не хватает закрывающих скобок } в конце текста разбора. ");
                 ret = null;
                 return null;
             }
             return ret;
         } // end of parce of tree
 
+        /// <summary>
+        /// Парсинг скобочного дерева 1С
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static Tree Parse_1Ctext(String text, String path)
+        {
+
+            StringBuilder __curvalue__ = new StringBuilder("");
+
+            String curvalue = "";
+            Tree ret = new Tree("", Node_Type.nd_list, null);
+            Tree t = ret;
+            int len = text.Length;
+            int i = 0;
+            char sym = '0';
+            Node_Type nt = Node_Type.nd_unknown;
+
+            _state state = _state.s_value;
+
+            //for (i = 0; i <= len-1; i++)
+            for (i = 1; i < len; i++)
+            {
+                sym = text[i];
+
+                if (String.IsNullOrEmpty(sym.ToString())) break;
+
+                switch (state)
+                {
+                    case _state.s_value:
+                        switch (sym)
+                        {
+                            case ' ': // space
+                            case '\t':
+                            case '\r':
+                            case '\n':
+                                break;
+                            case '"':
+
+                                __curvalue__.Clear();
+                                state = _state.s_string;
+                                break;
+
+                            case '{':
+
+                                t = new Tree("", Node_Type.nd_list, t);
+                                break;
+
+                            case '}':
+
+                                if (t.Get_First() != null)
+                                    t.AddChild("", Node_Type.nd_empty);
+
+                                t = t.Get_Parent();
+
+                                if (t == null)
+                                {
+                                    //if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.", "Позиция", i, "Путь", path);
+                                    //delete ret;
+                                    //String msreg = $"Ошибка формата потока. Лишняя закрывающая скобка. Позиция: { i }, Путь: {path}";
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }. Позиция " + i + ", Путь " + path);
+                                    ret = null;
+                                    return null;
+                                }
+                                state = _state.s_delimitier;
+                                break;
+
+                            case ',':
+
+                                t.AddChild("", Node_Type.nd_empty);
+                                break;
+
+                            default:
+
+                                __curvalue__.Clear();
+                                __curvalue__.Append(sym);
+                                state = _state.s_nonstring;
+
+                                break;
+                        }
+                        break;
+                    case _state.s_delimitier:
+                        switch (sym)
+                        {
+                            case ' ': // space
+                            case '\t':
+                            case '\r':
+                            case '\n':
+                                break;
+                            case ',':
+                                state = _state.s_value;
+                                break;
+                            case '}':
+                                t = t.Get_Parent();
+                                if (t == null)
+                                {
+                                    /*
+                                    if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.",
+                                         "Позиция", i,
+                                         "Путь", path);
+                                    */
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }. Позиция " + i + ", Путь " + path);
+                                    ret = null;
+                                    return null;
+                                }
+                                break;
+                            default:
+                                /*
+                                if (msreg) msreg->AddError("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.",
+                                     "Символ", sym,
+                                     "Код символа", tohex(sym),
+                                     "Путь", path);
+                                */
+                                ShowMessage("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя. Символ " + sym + ", Код символа " + sym.ToString() + ", Путь " + path);
+                                ret = null;
+                                return null;
+                        }
+                        break;
+                    case _state.s_string:
+                        if (sym == '"')
+                        {
+                            state = _state.s_quote_or_endstring;
+                        }
+                        else
+                            __curvalue__.Append(sym);
+                        break;
+                    case _state.s_quote_or_endstring:
+                        if (sym == '"')
+                        {
+                            __curvalue__.Append(sym);
+                            state = _state.s_string;
+                        }
+                        else
+                        {
+                            t.AddChild(__curvalue__.ToString(), Node_Type.nd_string);
+                            switch (sym)
+                            {
+                                case ' ': // space
+                                case '\t':
+                                case '\r':
+                                case '\n':
+                                    state = _state.s_delimitier;
+                                    break;
+                                case ',':
+                                    state = _state.s_value;
+                                    break;
+                                case '}':
+                                    t = t.Get_Parent();
+                                    if (t == null)
+                                    {
+                                        /*
+                                        if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.",
+                                             "Позиция", i,
+                                             "Путь", path);
+                                        */
+                                        ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка }. Позиция " + i.ToString() + ", Путь " + path);
+                                        ret = null;
+                                        return null;
+                                    }
+                                    state = _state.s_delimitier;
+                                    break;
+                                default:
+                                    /*
+                                    if (msreg) msreg->AddError("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя.",
+                                         "Символ", sym,
+                                         "Код символа", tohex(sym),
+                                         "Путь", path);
+                                    */
+                                    ShowMessage("Ошибка формата потока. Ошибочный символ в режиме ожидания разделителя. Символ " + sym + ", Код символа " + sym.ToString() + ", Путь " + path);
+                                    ret = null;
+                                    return null;
+                            }
+                        }
+                        break;
+                    case _state.s_nonstring:
+                        switch (sym)
+                        {
+                            case ',':
+                                curvalue = __curvalue__.ToString();
+                                nt = ClassificationValue(curvalue);
+                                if (nt == Node_Type.nd_unknown)
+                                {
+                                    /*
+                                    if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный тип значения.",
+                                      "Значение", curvalue,
+                                      "Путь", path);
+                                      */
+                                    ShowMessage("Ошибка формата потока. Неизвестный тип значения. Значение " + curvalue + ", Путь " + path);
+                                }
+                                t.AddChild(curvalue, nt);
+                                state = _state.s_value;
+                                break;
+                            case '}':
+                                curvalue = __curvalue__.ToString();
+
+                                nt = ClassificationValue(curvalue);
+
+                                if (nt == Node_Type.nd_unknown)
+                                {
+                                    //if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный тип значения.", "Значение", curvalue, "Путь", path);
+                                    ShowMessage("Ошибка формата потока. Неизвестный тип значения. Значение " + curvalue + ", Путь " + path);
+                                }
+                                t.AddChild(curvalue, nt);
+                                t = t.Get_Parent();
+                                if (t == null)
+                                {
+                                    /*
+                                    if (msreg) msreg->AddError("Ошибка формата потока. Лишняя закрывающая скобка }.",
+                                         "Позиция", i,
+                                         "Путь", path);
+                                    */
+                                    ShowMessage("Ошибка формата потока. Лишняя закрывающая скобка. Позиция " + i.ToString() + ", Путь " + path);
+                                    ret = null;
+                                    return null;
+                                }
+                                state = _state.s_delimitier;
+                                break;
+                            default:
+                                __curvalue__.Append(sym);
+                                break;
+                        }
+                        break;
+                    default:
+                        /*
+                        if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный режим разбора.",
+                             "Режим разбора", tohex(state),
+                             "Путь", path);
+                             */
+                        ShowMessage("Ошибка формата потока. Неизвестный режим разбора. Режим разбора " + state.ToString() + ", Путь " + path);
+                        ret = null;
+                        return null;
+                }
+            }
+
+
+            if (state == _state.s_nonstring)
+            {
+                curvalue = __curvalue__.ToString();
+                nt = ClassificationValue(curvalue);
+                if (nt == Node_Type.nd_unknown)
+                {
+                    /*
+                    if (msreg) msreg->AddError("Ошибка формата потока. Неизвестный тип значения.",
+                      "Значение", curvalue,
+                      "Путь", path);
+                      */
+                    ShowMessage("Ошибка формата потока. Неизвестный тип значения. Значение: " + curvalue + ", Путь " + path);
+                }
+                t.AddChild(curvalue, nt);
+            }
+            else
+                if (state == _state.s_quote_or_endstring)
+                t.AddChild(__curvalue__.ToString(), Node_Type.nd_string);
+            else
+                if (state != _state.s_delimitier)
+            {
+                /*
+                if (msreg) msreg->AddError("Ошибка формата потока. Незавершенное значение",
+                     "Режим разбора", tohex(state),
+                     "Путь", path);
+                */
+                ShowMessage("Ошибка формата потока. Незавершенное значение. Режим разбора: " + state.ToString() + ", Путь " + path);
+                ret = null;
+                return null;
+            }
+
+            if (t != ret)
+            {
+                /*
+                if (msreg) msreg->AddError("Ошибка формата потока. Не хватает закрывающих скобок } в конце текста разбора.",
+                     "Путь", path);
+                    */
+                ShowMessage("Ошибка формата потока. Не хватает закрывающих скобок в конце текста разбора, путь " + path);
+                ret = null;
+                return null;
+            }
+
+            return ret;
+
+        } // End parse_1Ctext
+
+        public int Get_num_subnode()
+        {
+            return num_subnode;
+        }
 
 
     }

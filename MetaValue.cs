@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace MetaRead
 {
-    //---------------------------------------------------------------------------
     // Предопределенное значение метаданных
+    // 
     public class MetaValue : MetaBase
     {
         public MetaType owner;
-        public int fvalue;
-        Guid fvalueUID;
+        private int fvalue;
+        private Guid fvalueUID;
 
         public MetaValue()
         {
 
         }
 
-        public MetaValue(MetaType _owner, String _name, String _ename, int _value) : base(_name, _ename)
+        public MetaValue(MetaType _owner, string _name, string _ename, int _value) : base(_name, _ename)
         {
             fvalue = _value;
             owner = _owner;
@@ -47,7 +47,9 @@ namespace MetaRead
         }
 
         public MetaType GetOwner()
-        { return owner; }
+        {
+            return owner;
+        }
 
     }
 }
