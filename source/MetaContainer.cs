@@ -11,9 +11,12 @@ namespace MetaRead
 {
     public class GeneratedType
     {
+        #region Поля класса
         public Guid typeuid;  // УИД типа
         public Guid valueuid; // УИД значения
+        #endregion
 
+        #region Конструктор
         public GeneratedType(Tree ptr, string path)
         {
             typeuid = new Guid(Constants.EMPTY_GUID);
@@ -62,22 +65,27 @@ namespace MetaRead
             }
             ptr = ptr.Get_Next();
         }
-
+        #endregion
     }
 
     public class PredefinedValue
     {
+        #region Поля класса
         public string name; // Имя
         public Guid _ref;   // Ссылка
         public Value1C_metaobj owner; // Владелец предопределенного значения
+        #endregion
 
+        #region Конструктор
         public PredefinedValue(string n, Guid r, Value1C_metaobj o)
         {
             name = n;
             _ref = r;
             owner = o;
         }
+        #endregion
 
+        #region Методы
         public string getfullname(bool english = false)
         {
             string s = "";
@@ -102,6 +110,7 @@ namespace MetaRead
 
             return s;
         }
+        #endregion
     }
 
     /// <summary>
@@ -109,12 +118,15 @@ namespace MetaRead
     /// </summary>
     public class UninitValue1C
     {
+        #region Поля класса
         public Value1C value; // Неинициализированное значение
         public Guid uid;      // УИД значения
         public string path;   // Путь
         public Guid sauid;    // УИД стандартного реквизита
         public Value1C_stdtabsec metats; // Значение стандартной табличной части для стандартного реквизита
+        #endregion
 
+        #region Конструкторы
         public UninitValue1C(Value1C v, string p, Guid u)
         {
             value = v;
@@ -130,6 +142,7 @@ namespace MetaRead
             sauid = su;
             metats = mts;
         }
+        #endregion
     }
 
     /// <summary>
@@ -137,14 +150,18 @@ namespace MetaRead
     /// </summary>
     public class VarValue
     {
+        #region Поля класса
         public int value;
         public bool isset;
+        #endregion
 
+        #region Конструктор
         public VarValue()
         {
             value = 0;
             isset = false;
         }
+        #endregion
     }
 
     #region Соответствия
@@ -156,6 +173,16 @@ namespace MetaRead
     public static class PValues
     {
         public static List<UninitValue1C> puninitvalues;
+
+        public static void Init_puninitvalues()
+        {
+        }
+
+        static PValues()
+        {
+            // инициализируем список "puninitvalues"
+            Init_puninitvalues();
+        }
     }
 
     /// <summary>
@@ -244,24 +271,25 @@ namespace MetaRead
             Tree ttt;
             Tree tx;
 
-            Value1C v = null;
-            Value1C vv;
+            Value1C v  = null;
+            Value1C vv = null;
 
-            Value1C_bool       vb;
-            Value1C_string     vs;
-            Value1C_number     vn;
-            Value1C_number_exp vne;
-            Value1C_date       vd;
-            Value1C_type       vt;
-            Value1C_uid        vu;
-            Value1C_binary     vbn;
-            Value1C_enum       ve;
-            Value1C_stdattr    vsa;
-            Value1C_stdtabsec  vst;
-            Value1C_obj        vo = null;
-            Value1C_refobj     vro;
-            Value1C_stdtabsec  _metats;
-            String s;
+            Value1C_bool       vb      = null;
+            Value1C_string     vs      = null;
+            Value1C_number     vn      = null;
+            Value1C_number_exp vne     = null; 
+            Value1C_date       vd      = null;
+            Value1C_type       vt      = null;
+            Value1C_uid        vu      = null;
+            Value1C_binary     vbn     = null;
+            Value1C_enum       ve      = null;
+            Value1C_stdattr    vsa     = null;
+            Value1C_stdtabsec  vst     = null;
+            Value1C_obj        vo      = null;
+            Value1C_refobj     vro     = null;
+            Value1C_stdtabsec  _metats = null;
+
+            string s;
 
             Guid uid, ouid;
 

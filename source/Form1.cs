@@ -67,9 +67,9 @@ namespace MetaRead
             string folder_cf = "D:\\work\\awa15-metaread-e7fe7d987355\\awa15-metaread-e7fe7d987355\\1C";
 
             ConfigStorage Storage = new ConfigStorageCFFile(folder_cf + "\\" + name_cf);
-            // var Container = new MetaContainer(Storage);
 
             Form1.log.Info($"Добавляем все гуиды внутренних файлов...");
+
             if (((ConfigStorageCFFile)Storage).Cat.Files != null)
             {
                 
@@ -145,7 +145,19 @@ namespace MetaRead
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            new Guids();
 
+            TreeNode rootConfig = treeConfig.Nodes[0];
+            TreeNode Unions = rootConfig.Nodes.Add("Общие");
+
+            foreach (var item_meta in Guids.PredefinedMetaUnions)
+            {
+                Unions.Nodes.Add(item_meta.Value.Key);
+            }
+            foreach (var item_meta in Guids.PredefinedMeta)
+            {
+                rootConfig.Nodes.Add(item_meta.Value.Key);
+            }
             // Stream rstr;
             // string s = Application.ExecutablePath;
             // 
@@ -177,21 +189,24 @@ namespace MetaRead
 
         private void button3_Click(object sender, EventArgs e)
         {
-            Stream rstr;
-            string s = Application.ExecutablePath;
+            /////     Stream rstr;
+            /////     string s = Application.ExecutablePath;
+            /////     
+            /////     string path = Path.GetDirectoryName(s);
+            /////     string path_log = path + "\\" + "MetaTree1.txt";
+            /////     if (File.Exists(path_log))
+            /////         rstr = new FileStream(path_log, FileMode.OpenOrCreate);
+            /////     else
+            /////         rstr = new MemoryStream();
+            /////     
+            /////     //MemoryStream rstr = new MemoryStream();
+            /////     //this.textBox1.Text += "sdfsdfsdf"+Environment.NewLine;
+            /////     MetaTypeSet.StaticTypesLoad(rstr);
+            /////     
+            /////     rstr.Dispose();
 
-            string path = Path.GetDirectoryName(s);
-            string path_log = path + "\\" + "MetaTree1.txt";
-            if (File.Exists(path_log))
-                rstr = new FileStream(path_log, FileMode.OpenOrCreate);
-            else
-                rstr = new MemoryStream();
+            new Guids();
 
-            //MemoryStream rstr = new MemoryStream();
-            //this.textBox1.Text += "sdfsdfsdf"+Environment.NewLine;
-            MetaTypeSet.StaticTypesLoad(rstr);
-
-            rstr.Dispose();
 
         }
 
