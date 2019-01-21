@@ -13,25 +13,16 @@ namespace MetaRead
     /// </summary>
     public class Class : MetaBase, IComparer<ClassParameter>, IComparable<ClassParameter>
     {
+        #region Поля класса
         public Guid fuid = EmptyUID;
         public List<VarValidValue> fvervalidvalues = new List<VarValidValue>();
         public SortedDictionary<ClassParameter, int> fparamvalues = new SortedDictionary<ClassParameter, int>();
         public static SortedDictionary<Guid, Class> map = new SortedDictionary<Guid, Class>();
         public List<MetaStandartAttribute> fstandartattributes = new List<MetaStandartAttribute>(); // Стандартные реквизиты
         public List<MetaStandartTabularSection> fstandarttabularsections = new List<MetaStandartTabularSection>(); // Стандартные табличные части
+        #endregion
 
-        public int Compare(ClassParameter x, ClassParameter y)
-        {
-            string x_str = x.ToString();
-            string y_str = y.ToString();
-            return x_str.CompareTo(y_str);
-        }
-
-        public int CompareTo(ClassParameter y)
-        {
-            return this.CompareTo(y);
-        }
-
+        #region Конструктор класса
         /// <summary>
         /// Конструктор класса
         /// </summary>
@@ -97,7 +88,9 @@ namespace MetaRead
             }
             map[fuid] = this;
         }
+        #endregion
 
+        #region Свойства класса
         public Guid UID
         {
             get
@@ -137,7 +130,9 @@ namespace MetaRead
                 return fstandarttabularsections;
             }
         }
+        #endregion
 
+        #region Методы класса
         public int GetParamValue(ClassParameter p)
         {
             return (fparamvalues.TryGetValue(p, out int val)) ? val : -1;
@@ -148,7 +143,18 @@ namespace MetaRead
             return (map.TryGetValue(id, out Class val)) ? val : null;
         }
 
+        public int Compare(ClassParameter x, ClassParameter y)
+        {
+            string x_str = x.ToString();
+            string y_str = y.ToString();
+            return x_str.CompareTo(y_str);
+        }
 
+        public int CompareTo(ClassParameter y)
+        {
+            return this.CompareTo(y);
+        }
+        #endregion
     }
 
     /// <summary>
@@ -156,16 +162,31 @@ namespace MetaRead
     /// </summary>
     public class ClassItem
     {
+        #region Поля класса
         public Class fcl;
         public bool fversionisset;
         public int fversion;
+        #endregion
 
+        #region Конструктор класса
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="_cl"></param>
+        /// <param name="fverset"></param>
         public ClassItem(Class _cl, bool fverset = false)
         {
             fcl = _cl;
             fversionisset = fverset;
         }
+        #endregion
 
+        #region Методы класса
+        /// <summary>
+        /// Установка версии
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public int setversion(int v)
         {
             fversion = v;
@@ -173,25 +194,38 @@ namespace MetaRead
             return v;
         }
 
+        /// <summary>
+        /// Чтение версии
+        /// </summary>
+        /// <returns></returns>
         public int getversion()
         {
             if (fversionisset)
                 return fversion;
-            //error(L"Ошибка формата потока 117. Ошибка получения значения переменной ВерсияКласса. Значение не установлено.");
+
+            Form1.log.Error($"Ошибка формата потока 117. Ошибка получения значения переменной ВерсияКласса. Значение не установлено.");
+
             return -1;
         }
+        #endregion
 
+        #region Свойства класса
+        /// <summary>
+        /// Свойство Cl
+        /// </summary>
         public Class Cl
         {
             get { return fcl; }
         }
 
+        /// <summary>
+        /// Свойство Версия
+        /// </summary>
         public int Version
         {
             get { return getversion(); }
             set { fversion = setversion(value); }
         }
-
+        #endregion
     }
-
 }
