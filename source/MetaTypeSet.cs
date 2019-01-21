@@ -165,7 +165,7 @@ namespace MetaRead
             tr = Tree.Parse_1Cstream(str, "", "static types");
             string tr_static_types = "";
 
-            tr.OutText(ref tr_static_types);
+            //tr.OutText(ref tr_static_types);
 
             tt = tr.Get_First().Get_First();
             
@@ -206,7 +206,8 @@ namespace MetaRead
                 t = tt.Get_First();
                 mtype = staticTypes.GetTypeByName(t.Get_Value());
                 t = t.Get_Next();
-                prop = mtype?.GetProperty(t.Get_Value());
+                //prop = mtype?.GetProperty(t.Get_Value());
+                prop = mtype.GetProperty(t.Get_Value());
                 t = t.Get_Next();
                 if (prop is null)
                     continue;

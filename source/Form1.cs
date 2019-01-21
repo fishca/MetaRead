@@ -61,7 +61,7 @@ namespace MetaRead
             textBox1.Text += str + Environment.NewLine;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        public void DecompileCF()
         {
             string name_cf = "1Cv8_Test_export.cf";
             string folder_cf = "D:\\work\\awa15-metaread-e7fe7d987355\\awa15-metaread-e7fe7d987355\\1C";
@@ -72,7 +72,7 @@ namespace MetaRead
 
             if (((ConfigStorageCFFile)Storage).Cat.Files != null)
             {
-                
+
                 foreach (var item_v8 in ((ConfigStorageCFFile)Storage).Cat.Files)
                 {
                     treeConfig.Nodes[0].Nodes.Add(item_v8.Key);
@@ -84,63 +84,234 @@ namespace MetaRead
 
             var Container = new MetaContainer(Storage);
 
+        }
+
+        public void DecompileCF_FromCatalog()
+        {
+        }
+
+        public void DecompileCF_FromConfig()
+        {
+        }
+
+        public void DecompileCF_FromConfigDB()
+        {
+        }
+
+        public void AddTreeSerialization(TreeNodeCollection nodes, TreeNode ct, SerializationTreeNode stn)
+        {
+            string s = "";
+            TreeNode nt = null;
+
+            while (stn != null)
+            {
+                if (stn.nomove)
+                    s = "!";
+                switch (stn.type)
+                {
+                    case SerializationTreeNodeType.stt_const:
+                        s += "Константа: ";
+                        if (stn.typeval1 == SerializationTreeValueType.stv_string)
+                        {
+                            s += "\"";
+                            s += stn.str1;
+                            s += "\"";
+                        }
+                        else if (stn.typeval1 == SerializationTreeValueType.stv_number)
+                            s += stn.uTreeNode1.num1;
+                        else if (stn.typeval1 == SerializationTreeValueType.stv_uid)
+                            s += stn.uTreeNode1.uid1.ToString();
+                        else
+                            s += "ОШИБКА";
+                        break;
+                    case SerializationTreeNodeType.stt_var:
+                        s += "Переменная: ";
+                        s += stn.str1;
+                        break;
+                    case SerializationTreeNodeType.stt_list:
+                        s += "Список";
+                        break;
+                    case SerializationTreeNodeType.stt_prop:
+                        s += "Свойство: ";
+                        s += stn.uTreeNode1.prop1.Name;
+                        if (stn.typeprop != null)
+                        {
+                            s += " (тип ";
+                            s += stn.typeprop.Name;
+                            s += ")";
+                        }
+                        break;
+                    case SerializationTreeNodeType.stt_elcol:
+                        s += "ЭлементКоллекции ";
+                        if (stn.typeval1 != SerializationTreeValueType.stv_none)
+                        {
+                            s += " (Счетчик ";
+                            if (stn.typeval1 == SerializationTreeValueType.stv_number)
+                                s += stn.uTreeNode1.num1;
+                            else if (stn.typeval1 == SerializationTreeValueType.stv_var)
+                            {
+                                s += "Переменная ";
+                                s += stn.str1;
+                            }
+                            else if (stn.typeval1 == SerializationTreeValueType.stv_prop)
+                            {
+                                s += "Свойство ";
+                                s += stn.uTreeNode1.prop1.Name;
+                            }
+                            else s += "ОШИБКА";
+                            s += ")";
+                        }
+                        break;
+                    case SerializationTreeNodeType.stt_gentype:
+                        s += "ГенерируемыйТип: ";
+                        s += stn.uTreeNode1.gentype.Name;
+                        break;
+                    case SerializationTreeNodeType.stt_cond:
+                        s += "Условие: ";
+
+                        if (stn.typeval1 == SerializationTreeValueType.stv_string)
+                        {
+                            s += "\"";
+                            s += stn.str1;
+                            s += "\"";
+                        }
+                        else if (stn.typeval1 == SerializationTreeValueType.stv_number) s += stn.uTreeNode1.num1;
+                        else if (stn.typeval1 == SerializationTreeValueType.stv_uid) s += stn.uTreeNode1.uid1.ToString();
+                        else if (stn.typeval1 == SerializationTreeValueType.stv_var)
+                        {
+                            s += "Переменная ";
+                            s += stn.str1;
+                        }
+                        else if (stn.typeval1 == SerializationTreeValueType.stv_prop)
+                        {
+                            s += "Свойство ";
+                            s += stn.uTreeNode1.prop1.Name;
+                        }
+                        else if (stn.typeval1 == SerializationTreeValueType.stv_value)
+                        {
+                            s += "Значение ";
+                            s += stn.uTreeNode1.val1.GetOwner().Name;
+                            s += ".";
+                            s += stn.uTreeNode1.val1.Name;
+                        }
+                        else s += "ОШИБКА";
+
+                        if (stn.condition == SerializationTreeCondition.stc_e) s += " = ";
+				        else if (stn.condition == SerializationTreeCondition.stc_ne) s += " <> ";
+				        else if (stn.condition == SerializationTreeCondition.stc_g) s += " > ";
+				        else if (stn.condition == SerializationTreeCondition.stc_l) s += " < ";
+				        else if (stn.condition == SerializationTreeCondition.stc_ge) s += " >= ";
+				        else if (stn.condition == SerializationTreeCondition.stc_le) s += " <= ";
+				        else s += "ОШИБКА";
+
+                        if (stn.typeval2 == SerializationTreeValueType.stv_string)
+                        {
+                            s += "\"";
+                            s += stn.str2;
+                            s += "\"";
+                        }
+                        else if (stn.typeval2 == SerializationTreeValueType.stv_number) s += stn.uTreeNode2.num2;
+                        else if (stn.typeval2 == SerializationTreeValueType.stv_uid) s += stn.uTreeNode2.uid2.ToString();
+                        else if (stn.typeval2 == SerializationTreeValueType.stv_var)
+                        {
+                            s += "Переменная ";
+                            s += stn.str2;
+                        }
+                        else if (stn.typeval2 == SerializationTreeValueType.stv_prop)
+                        {
+                            s += "Свойство ";
+                            s += stn.uTreeNode2.prop2.Name;
+                        }
+                        else if (stn.typeval2 == SerializationTreeValueType.stv_value)
+                        {
+                            s += "Значение ";
+                            s += stn.uTreeNode2.val2.GetOwner().Name;
+                            s += ".";
+                            s += stn.uTreeNode2.val2.Name;
+                        }
+                        else s += "ОШИБКА";
+                        break;
+                    case SerializationTreeNodeType.stt_metaid:
+                        s += "МетаИД";
+                        break;
+                    default:
+                        s += "ОШИБКА";
+                        break;
+                }
+                nt = nodes.Add(s);
+                AddTreeSerialization(nodes, nt, stn.first);
+                stn = stn.next;
+            }
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (radioButton1.Checked) // Файл конфигурации
+                DecompileCF();
+            else if (radioButton2.Checked) // Каталог конфигурации
+                DecompileCF_FromCatalog();
+            else if (radioButton3.Checked) // Каталог конфигурации
+                DecompileCF_FromConfig();
+            else if (radioButton4.Checked) // Каталог конфигурации
+                DecompileCF_FromConfigDB();
 
             #region Old_Code
-            //              //MetaBase metaBase = new MetaBase("Справочник", "Reference");
-            //              //Text = metaBase.GetName(true);
-            //              
-            //              V8Header_Struct v8Header_Struct = new V8Header_Struct();
-            //              
-            //              v8Header_Struct.Time_Create = new DateTime(2018, 5, 9, 10, 10, 10);
-            //              v8Header_Struct.Time_Modify = new DateTime(2018, 5, 10, 10, 10, 10);
-            //              v8Header_Struct.Zero = 999;
-            //              
-            //              // создаем объект BinaryFormatter
-            //              //BinaryFormatter formatter = new BinaryFormatter();
-            //              
-            //              // получаем поток, куда будем записывать сериализованный объект
-            //              //using (FileStream fs = new FileStream("D:\\work\\git_MetaRead\\bin\\Debug\\test.dat", FileMode.OpenOrCreate))
-            //              //{
-            //              //    formatter.Serialize(fs, v8Header_Struct);
-            //              
-            //              //Console.WriteLine("Объект сериализован");
-            //              //}
-            //              
-            //              using (FileStream fs = new FileStream("D:\\work\\git_MetaRead\\bin\\Debug\\test.dat", FileMode.OpenOrCreate))
-            //              {
-            //                  using (BinaryReader reader = new BinaryReader(fs, Encoding.ASCII))
-            //                  {
-            //                      long tc = reader.ReadInt64();
-            //                      long tm = reader.ReadInt64();
-            //              
-            //                      DateTime dateTime_tc = DateTime.FromBinary(tc);
-            //                      DateTime dateTime_tm = DateTime.FromBinary(tm);
-            //              
-            //                      int zero = reader.ReadInt32();
-            //              
-            //                  }
-            //                  //using (BinaryWriter writer = new BinaryWriter(fs,Encoding.ASCII))
-            //                  //{
-            //                  //    // записываем в файл значение каждого поля структуры
-            //                  //    long tc = v8Header_Struct.Time_Create.ToBinary();
-            //                  //    long tm = v8Header_Struct.Time_Modify.ToBinary();
-            //                  //    writer.Write(tc);
-            //                  //    writer.Write(tm);
-            //                  //    writer.Write(v8Header_Struct.Zero);
-            //              
-            //                  //}
-            //              }
-            //              
-            //              textBox1.Text += ("Новая текстовая строка"+Environment.NewLine);
-            //              // Example usage
-            //              Logger logger = LogManager.GetLogger("Example");
-            //              logger.Trace("trace log message");
-            //              logger.Debug("debug log message");
-            //              logger.Info("info log message");
-            //              logger.Warn("warn log message");
-            //              logger.Error("error log message");
-            //              logger.Fatal("fatal log message");
-            #endregion
+                //              //MetaBase metaBase = new MetaBase("Справочник", "Reference");
+                //              //Text = metaBase.GetName(true);
+                //              
+                //              V8Header_Struct v8Header_Struct = new V8Header_Struct();
+                //              
+                //              v8Header_Struct.Time_Create = new DateTime(2018, 5, 9, 10, 10, 10);
+                //              v8Header_Struct.Time_Modify = new DateTime(2018, 5, 10, 10, 10, 10);
+                //              v8Header_Struct.Zero = 999;
+                //              
+                //              // создаем объект BinaryFormatter
+                //              //BinaryFormatter formatter = new BinaryFormatter();
+                //              
+                //              // получаем поток, куда будем записывать сериализованный объект
+                //              //using (FileStream fs = new FileStream("D:\\work\\git_MetaRead\\bin\\Debug\\test.dat", FileMode.OpenOrCreate))
+                //              //{
+                //              //    formatter.Serialize(fs, v8Header_Struct);
+                //              
+                //              //Console.WriteLine("Объект сериализован");
+                //              //}
+                //              
+                //              using (FileStream fs = new FileStream("D:\\work\\git_MetaRead\\bin\\Debug\\test.dat", FileMode.OpenOrCreate))
+                //              {
+                //                  using (BinaryReader reader = new BinaryReader(fs, Encoding.ASCII))
+                //                  {
+                //                      long tc = reader.ReadInt64();
+                //                      long tm = reader.ReadInt64();
+                //              
+                //                      DateTime dateTime_tc = DateTime.FromBinary(tc);
+                //                      DateTime dateTime_tm = DateTime.FromBinary(tm);
+                //              
+                //                      int zero = reader.ReadInt32();
+                //              
+                //                  }
+                //                  //using (BinaryWriter writer = new BinaryWriter(fs,Encoding.ASCII))
+                //                  //{
+                //                  //    // записываем в файл значение каждого поля структуры
+                //                  //    long tc = v8Header_Struct.Time_Create.ToBinary();
+                //                  //    long tm = v8Header_Struct.Time_Modify.ToBinary();
+                //                  //    writer.Write(tc);
+                //                  //    writer.Write(tm);
+                //                  //    writer.Write(v8Header_Struct.Zero);
+                //              
+                //                  //}
+                //              }
+                //              
+                //              textBox1.Text += ("Новая текстовая строка"+Environment.NewLine);
+                //              // Example usage
+                //              Logger logger = LogManager.GetLogger("Example");
+                //              logger.Trace("trace log message");
+                //              logger.Debug("debug log message");
+                //              logger.Info("info log message");
+                //              logger.Warn("warn log message");
+                //              logger.Error("error log message");
+                //              logger.Fatal("fatal log message");
+                #endregion
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -158,18 +329,20 @@ namespace MetaRead
             {
                 rootConfig.Nodes.Add(item_meta.Value.Key);
             }
-            // Stream rstr;
-            // string s = Application.ExecutablePath;
-            // 
-            // string path = Path.GetDirectoryName(s);
-            // string path_log = path + "\\" + "MetaTree.txt";
-            // if (File.Exists(path_log))
-            //     rstr = new FileStream(path_log, FileMode.OpenOrCreate);
-            // else
-            //     rstr = new MemoryStream();
-            // 
+            radioButton1.Checked = true;
+
+             Stream rstr;
+             string s = Application.ExecutablePath;
+             
+             string path = Path.GetDirectoryName(s);
+             string path_log = path + "\\" + "MetaTree.txt";
+             if (File.Exists(path_log))
+                 rstr = new FileStream(path_log, FileMode.OpenOrCreate);
+             else
+                 rstr = new MemoryStream();
+             
             // //MemoryStream rstr = new MemoryStream();
-            // MetaTypeSet.StaticTypesLoad(rstr);
+            MetaTypeSet.StaticTypesLoad(rstr);
             // 
             // rstr.Dispose();
 
@@ -216,6 +389,22 @@ namespace MetaRead
             richTextBox1.Text += e.Node.Text+Environment.NewLine;
 
 
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                textBox2.Text = openFileDialog1.FileName;
+        }
+
+        private void CloseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
         }
     }
 
